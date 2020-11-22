@@ -7,10 +7,11 @@ local function search_decimal(line, cursor)
     local idx_start = 1
     local s, e
     while idx_start < #line do
-        s, e = string.find(line, "-?%d+", idx_start)
+        s, e = line:find("-?%d+", idx_start)
+        dbg({s, e, line, cursor, idx_start})
         if s then
             -- 検索結果が見つかれば
-            if (cursor <= e) then  -- cursor が終了文字より後ろにあればそれが答え
+            if (cursor <= e) then  -- cursor が終了文字より手前にあればそれが答え
                 return s, e, string.sub(line, s, e)
             else
                 idx_start = e + 1
@@ -28,11 +29,14 @@ local function increment(addend)
 
     -- 現在のカーソル位置、カーソルのある行の取得
     local curpos = vim.call('getcurpos')
-    local col_cursor = curpos[2]
+    local col_cursor = curpos[3]
     local line = vim.fn.getline('.')
 
     -- 数字の検索、加算後のテキストの作成
     local s, e, text = search_decimal(line, col_cursor)
+    if s == nil then
+        return
+    end
     local num = tonumber(text)
     local newnum = num + addend
     local newtext = tostring(newnum)
