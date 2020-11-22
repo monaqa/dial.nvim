@@ -8,7 +8,6 @@ local function search_decimal(line, cursor)
     local s, e
     while idx_start < #line do
         s, e = line:find("-?%d+", idx_start)
-        dbg({s, e, line, cursor, idx_start})
         if s then
             -- 検索結果が見つかれば
             if (cursor <= e) then  -- cursor が終了文字より手前にあればそれが答え
