@@ -6,6 +6,7 @@ local M = {}
 -- -2, -1, 0, 1, 2, ..., 9, 10, 11, ...  にマッチする。
 M.decimal = {
     name = "number.decimal",
+    desc = "decimal number (0, 192, -3, etc.)",
 
     find = common.find_pattern("-?%d+"),
 
@@ -22,6 +23,7 @@ M.decimal = {
 -- 0, 1, 2, ..., 9, 10, 11, ...  にマッチする。
 M.decimal_natural = {
     name = "number.decimal_natural",
+    desc = "decimal natural number (0, 1, 2, ..., 9, 10, 11, ...)",
 
     find = common.find_pattern("%d+"),
 
@@ -41,6 +43,7 @@ M.decimal_natural = {
 -- 0x0, 0x01, 0x1f1f などにマッチする。
 M.hex = {
     name = "number.hex",
+    desc = "hex number (e.g. 0x3f)",
 
     find = common.find_pattern("0x[0-9a-fA-F]+"),
 

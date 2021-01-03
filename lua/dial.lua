@@ -3,8 +3,11 @@ local util = require("./util")
 local M = {}
 
 M.augends = {
+    common = require("./augends/common"),
     number = require("./augends/number"),
     color = require("./augends/color"),
+    date = require("./augends/date"),
+    char = require("./augends/char"),
 }
 
 -- default の augends 候補。
@@ -107,6 +110,12 @@ function M.increment(addend)
         -- 行編集、カーソル位置のアップデート
         vim.fn.setline('.', newline)
         vim.fn.setpos('.', {curpos[1], curpos[2], newcol, curpos[4], curpos[5]})
+    end
+end
+
+function M.print_searchlist()
+    for _, aug in pairs(M.searchlist) do
+        print(aug.name, ":", aug.desc)
     end
 end
 

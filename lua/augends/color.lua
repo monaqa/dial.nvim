@@ -4,9 +4,9 @@ local util = require("./util")
 local M = {}
 
 -- hex 表示の html color。
--- #000000 ~ #ffffff にマッチする。
 M.hex = {
     name = "color.hex",
+    desc = "HTML color (e.g. #12ab0f)",
 
     find = common.find_pattern("#%x%x%x%x%x%x"),
 
