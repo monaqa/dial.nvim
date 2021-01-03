@@ -1,87 +1,50 @@
-local Augend = require("../augend").Augend
-local Span = require("../augend").Span
+local augend = require("../augend")
 
--- 十進数表示された整数を表すクラスのようなもの。
--- Augend の一種。
-local DecimalInteger = {}
-setmetatable(DecimalInteger, {__index = Augend})
+-- decimal_integer
+local decimal_integer = {
+    find = augend.find_pattern("-?%d+"),
 
-function DecimalInteger.new(text)
-    return setmetatable({
-            kind = "number.decimal",
-            n = tonumber(text),
-            text = text
-        }, {__index = DecimalInteger})
-end
+    add = function(cusror, text, addend)
+        local n = tonumber(text)
+        n = n + addend
+        text = tostring(n)
+        cursor = #text
+        return cursor, text
+    end,
+}
 
-function DecimalInteger.pattern()
-    return "-?%d+"
-end
+local decimal_natural_number = {
+    find = augend.find_pattern("%d+"),
 
-function DecimalInteger:add(cursor, addend)
-    -- 現在の cursor （相対位置）と加数 addend を受け取り、
-    -- 足した後の text と新たな cursor 位置を返す。
-    self.n = self.n + addend
-    self.text = tostring(self.n)
-    newcursor = #self.text
-    return self.text, newcursor
-end
+    add = function(cusror, text, addend)
+        local n = tonumber(text)
+        n = n + addend
+        if n < 0 then
+            n = 0
+        end
+        text = tostring(n)
+        cursor = #text
+        return cursor, text
+    end,
+}
 
--- 十進数表示された非負整数を表すクラスのようなもの。
--- Augend の一種。
-local DecimalNaturalNumber = {}
-setmetatable(DecimalNaturalNumber, {__index = Augend})
+local hex_number = {
+    find = augend.find_pattern("0x[0-9a-fA-F]+"),
 
-function DecimalNaturalNumber.new(text)
-    return setmetatable({
-            kind = "number.decimal",
-            n = tonumber(text),
-            text = text
-        }, {__index = DecimalNaturalNumber})
-end
-
-function DecimalNaturalNumber.pattern()
-    return "%d+"
-end
-
-function DecimalNaturalNumber:add(cursor, addend)
-    -- 現在の cursor （相対位置）と加数 addend を受け取り、
-    -- 足した後の text と新たな cursor 位置を返す。
-    self.n = self.n + addend
-    if self.n < 0 then
-        self.n = 0
-    end
-    self.text = tostring(self.n)
-    newcursor = #self.text
-    return self.text, newcursor
-end
-
--- 十六進数表示された数を表すクラスのようなもの。
--- Augend の一種。
-local HexNumber = {}
-setmetatable(HexNumber, {__index = Augend})
-
-function HexNumber.new(text)
-    return setmetatable({
-            kind = "number.hex",
-            n = tonumber(text, 16),
-            text = text
-        }, {__index = HexNumber})
-end
-
-function HexNumber.pattern()
-    return "0x[0-9a-fA-F]+"
-end
-
-function HexNumber:add(cursor, addend)
-    self.n = self.n + addend
-    self.text = "0x" .. string.format("%x", self.n)
-    newcursor = #self.text
-    return self.text, newcursor
-end
+    add = function(cusror, text, addend)
+        local n = tonumber(text, 16)
+        n = n + addend
+        if n < 0 then
+            n = 0
+        end
+        text = "0x" .. string.format("%x", n)
+        cursor = #text
+        return cursor, text
+    end,
+}
 
 return {
-    DecimalInteger = DecimalInteger,
-    DecimalNaturalNumber = DecimalNaturalNumber,
-    HexNumber = HexNumber,
+    decimal_integer = decimal_integer,
+    decimal_natural_number = decimal_natural_number,
+    hex_number = hex_number,
 }

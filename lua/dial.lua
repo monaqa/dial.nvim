@@ -1,34 +1,45 @@
 local util = require("./util")
-local Span = require("./augend").Span
-local Augend = require("./augend").Augend
+local augend = require("./augend")
 local number = require("./augend/number")
-local augends = {
-    number.DecimalInteger, number.DecimalNaturalNumber, number.HexNumber
+
+local M = { }
+
+M.augend = {
+    number = number
+}
+
+M.available_augends = {
+    number.hex_number,
+    number.decimal_integer,
 }
 
 -- インクリメントする。
-local function increment(addend)
+function M.increment(addend)
 
-    -- 現在のカーソル位置、カーソルのある行の取得
+    -- 現在のカーソル位置、カーソルのある行、加数の取得
     local curpos = vim.call('getcurpos')
     local cursor = curpos[3]
     local line = vim.fn.getline('.')
+    if addend == nil then
+        addend = 1
+    end
 
     -- 数字の検索、加算後のテキストの作成
-    if addend == nil then
-        local addend = 1
-    end
-    local idxlst = util.filter_map(function(x) return Augend.match(x, line, cursor) end, augends)
+    local idxlst = util.filter_map_zip(function(aug) return aug.find(cursor, line) end, M.available_augends)
+    -- TODO: 最優先の span を取ってこれるようにする
     -- TODO: sort っていうか min でよくね？
-    table.sort(idxlst, Span.comp_with_corsor(cursor))
-    -- 最優先の span を取ってくる
-    local span = idxlst[1]
-    if span == nil then
+    --     table.sort(idxlst, comp_with_corsor(cursor))
+    -- ひとまず今は一番手前のやつをとる
+    local elem = idxlst[1]
+    if elem == nil then
         return
     else
-        local s, e = span:get_range()
+        local aug = elem[1]
+        local span = elem[2]
+        local s, e = get_range(span)
         local rel_cursor = cursor - s + 1
-        local text, newcol = span.augend:add(rel_cursor, addend)
+        local text = string.sub(line, s, e)
+        local newcol, text = aug.add(rel_cursor, text, addend)
         local newline = string.sub(line, 1, s - 1) .. text .. string.sub(line, e + 1)
         newcol = newcol + s - 1
 
@@ -38,6 +49,4 @@ local function increment(addend)
     end
 end
 
-return {
-    increment = increment
-}
+return M
