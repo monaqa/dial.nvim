@@ -1,8 +1,13 @@
-local augend = require("../augend")
+local common = require("./augends/common")
 
--- decimal_integer
-local decimal_integer = {
-    find = augend.find_pattern("-?%d+"),
+local M = {}
+
+-- 十進整数。
+-- -2, -1, 0, 1, 2, ..., 9, 10, 11, ...  にマッチする。
+M.decimal = {
+    name = "number.decimal",
+
+    find = common.find_pattern("-?%d+"),
 
     add = function(cusror, text, addend)
         local n = tonumber(text)
@@ -13,8 +18,12 @@ local decimal_integer = {
     end,
 }
 
-local decimal_natural_number = {
-    find = augend.find_pattern("%d+"),
+-- 十進の非負整数。
+-- 0, 1, 2, ..., 9, 10, 11, ...  にマッチする。
+M.decimal_natural = {
+    name = "number.decimal_natural",
+
+    find = common.find_pattern("%d+"),
 
     add = function(cusror, text, addend)
         local n = tonumber(text)
@@ -28,8 +37,12 @@ local decimal_natural_number = {
     end,
 }
 
-local hex_number = {
-    find = augend.find_pattern("0x[0-9a-fA-F]+"),
+-- 十六進の非負整数。
+-- 0x0, 0x01, 0x1f1f などにマッチする。
+M.hex = {
+    name = "number.hex",
+
+    find = common.find_pattern("0x[0-9a-fA-F]+"),
 
     add = function(cusror, text, addend)
         local n = tonumber(text, 16)
@@ -43,8 +56,4 @@ local hex_number = {
     end,
 }
 
-return {
-    decimal_integer = decimal_integer,
-    decimal_natural_number = decimal_natural_number,
-    hex_number = hex_number,
-}
+return M

@@ -1,16 +1,16 @@
 local util = require("./util")
-local augend = require("./augend")
-local number = require("./augend/number")
 
-local M = { }
+local M = {}
 
-M.augend = {
-    number = number
+M.augends = {
+    number = require("./augends/number"),
+    color = require("./augends/color"),
 }
 
-M.available_augends = {
-    number.hex_number,
-    number.decimal_integer,
+-- default の augends 候補。
+M.searchlist = {
+    M.augends.number.hex,
+    M.augends.number.decimal,
 }
 
 local function status(span, cursor)
@@ -85,7 +85,7 @@ function M.increment(addend)
             end
             return {augend = aug, from = span.from, to = span.to}
         end,
-        M.available_augends
+        M.searchlist
     )
     -- TODO: 最優先の span を取ってこれるようにする
     -- TODO: sort っていうか min でよくね？

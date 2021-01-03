@@ -1,15 +1,7 @@
--- Augend
+-- augend の find field を簡単に実装する。
+local M = {}
 
--- augend 型は以下のような構造になっている。
--- {
---     -- 行を受け取り、カーソル以降にあるパターンを探す。あればその範囲を返す。
---     find : Fn(cursor: int, line: str) -> {from: int, to: int}
---     -- パターン文字列を受け取り、加算して返す。 cursor 位置に変更がないときは cursor に nil を返す。
---     add : Fn(cursor: int, text: str, addend: int) -> cursor: int, text: str
--- }
-
--- find field を簡単に実装する。
-function find_pattern(ptn)
+function M.find_pattern(ptn)
     function f(cursor, line)
         local idx_start = 1
         while idx_start < #line do
@@ -34,6 +26,4 @@ function find_pattern(ptn)
     return f
 end
 
-return {
-    find_pattern = find_pattern,
-}
+return M
