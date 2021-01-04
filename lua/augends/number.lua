@@ -31,9 +31,9 @@ end
 
 -- 十進整数。
 -- -2, -1, 0, 1, 2, ..., 9, 10, 11, ...  にマッチする。
-M.decimal = {
-    name = "number.decimal",
-    desc = "decimal number (0, 192, -3, etc.)",
+M.decimal_integer = {
+    name = "number.decimal_integer",
+    desc = "decimal integer including negative (0, 192, -3, etc.)",
 
     find = common.find_pattern("-?%d+"),
 
@@ -48,8 +48,8 @@ M.decimal = {
 
 -- 十進の非負整数。
 -- 0, 1, 2, ..., 9, 10, 11, ...  にマッチする。
-M.decimal_natural = {
-    name = "number.decimal_natural",
+M.decimal = {
+    name = "number.decimal",
     desc = "decimal natural number (0, 1, 2, ..., 9, 10, 11, ...)",
 
     find = common.find_pattern("%d+"),

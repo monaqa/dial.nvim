@@ -14,7 +14,7 @@ M.augends = {
 -- default の augends 候補。
 M.searchlist = {
     M.augends.number.hex,
-    M.augends.number.decimal,
+    M.augends.number.decimal_integer,
 }
 
 local function status(span, cursor)
