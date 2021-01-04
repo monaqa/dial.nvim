@@ -2,6 +2,33 @@ local common = require("./augends/common")
 
 local M = {}
 
+local function tostring_with_base(n, b, wid, pad)
+    n = math.floor(n)
+    if not b or b == 10 then return tostring(n) end
+    local digits = "0123456789abcdefghijklmnopqrstuvwxyz"
+    local t = {}
+    if n < 0 then
+        -- be positive
+        n = -n
+    end
+    repeat
+        local d = (n % b) + 1
+        n = math.floor(n / b)
+        table.insert(t, 1, digits:sub(d,d))
+    until n == 0
+    text = table.concat(t,"")
+    if wid then
+        if #text < wid then
+            if pad == nil then
+                pad = " "
+            end
+            padding = pad:rep(wid - #text)
+            return padding .. text
+        end
+    end
+    return text
+end
+
 -- 十進整数。
 -- -2, -1, 0, 1, 2, ..., 9, 10, 11, ...  にマッチする。
 M.decimal = {
@@ -53,7 +80,47 @@ M.hex = {
         if n < 0 then
             n = 0
         end
-        text = "0x" .. string.format("%x", n)
+        text = "0x" .. ("%x"):format(n)
+        cursor = #text
+        return cursor, text
+    end,
+}
+
+-- 八進の非負整数。
+M.octal = {
+    name = "number.octal",
+    desc = "octal number (e.g. 037)",
+
+    find = common.find_pattern("0[0-7]+"),
+
+    add = function(cusror, text, addend)
+        local wid = #text
+        local n = tonumber(text, 8)
+        n = n + addend
+        if n < 0 then
+            n = 0
+        end
+        text = "0" .. tostring_with_base(n, 8, wid - 1, "0")
+        cursor = #text
+        return cursor, text
+    end,
+}
+
+-- バイナリの非負整数。
+M.binary = {
+    name = "number.binary",
+    desc = "binary number (e.g. 0b00110101)",
+
+    find = common.find_pattern("0b[01]+"),
+
+    add = function(cusror, text, addend)
+        local wid = #text
+        local n = tonumber(text:sub(3), 2)
+        n = n + addend
+        if n < 0 then
+            n = 0
+        end
+        text = "0b" .. tostring_with_base(n, 2, wid - 2, "0")
         cursor = #text
         return cursor, text
     end,
