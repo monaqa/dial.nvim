@@ -3,6 +3,16 @@ local util = require("./util")
 
 local M = {}
 
+local function cast_u8(n)
+    if n <= 0 then
+        return 0
+    end
+    if n >= 255 then
+        return 255
+    end
+    return n
+end
+
 -- hex 表示の html color。
 M.hex = {
     name = "color.hex",
@@ -11,15 +21,6 @@ M.hex = {
     find = common.find_pattern("#%x%x%x%x%x%x"),
 
     add = function(cursor, text, addend)
-        local function cast_u8(n)
-            if n <= 0 then
-                return 0
-            end
-            if n >= 255 then
-                return 255
-            end
-            return n
-        end
         local r = tonumber(text:sub(2, 3), 16)
         local g = tonumber(text:sub(4, 5), 16)
         local b = tonumber(text:sub(6, 7), 16)

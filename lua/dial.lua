@@ -8,6 +8,7 @@ M.augends = {
     color = require("./augends/color"),
     date = require("./augends/date"),
     char = require("./augends/char"),
+    markup = require("./augends/markup"),
 }
 
 -- default の augends 候補。
@@ -69,7 +70,7 @@ function M.pickup_augend(lst, cursor)
 end
 
 -- インクリメントする。
-function M.increment(addend)
+function M.increment(addend, override_searchlist)
 
     -- 現在のカーソル位置、カーソルのある行、加数の取得
     local curpos = vim.call('getcurpos')
@@ -77,6 +78,12 @@ function M.increment(addend)
     local line = vim.fn.getline('.')
     if addend == nil then
         addend = 1
+    end
+
+    if override_searchlist then
+        searchlist = override_searchlist
+    else
+        searchlist = M.searchlist
     end
 
     -- 数字の検索、加算後のテキストの作成
@@ -88,12 +95,9 @@ function M.increment(addend)
             end
             return {augend = aug, from = span.from, to = span.to}
         end,
-        M.searchlist
+        searchlist
     )
-    -- TODO: 最優先の span を取ってこれるようにする
-    -- TODO: sort っていうか min でよくね？
-    --     table.sort(auglst, comp_with_corsor(cursor))
-    -- ひとまず今は一番手前のやつをとる
+
     local elem = M.pickup_augend(auglst, cursor)
     if elem == nil then
         return
