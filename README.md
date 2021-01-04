@@ -1,15 +1,24 @@
 # dial.nvim
 
-Extended increment/decrement plugin for Neovim. Mainly written in Lua.
+Extended increment/decrement plugin for [Neovim](https://github.com/neovim/neovim).
+Mainly written in Lua.
+
+![demo.gif](https://github.com/monaqa/dial.nvim/wiki/fig/dial-demo.gif)
+
 
 ## Features
 
-* Increment/decrement decimal/hex/octal/binary natural integers
-* Increment/decrement decimal integers (including negative number)
-* Increment/decrement date
-* Increment/decrement alphabet
-* Increment/decrement hex colors
-* Increment/decrement markdown header
+* Increment/decrement various number and other things
+  * decimal/hex/octal/binary natural integers
+  * decimal integers (including negative number)
+  * date
+  * alphabet
+  * hex colors
+  * markdown header
+
+## Similar plugins
+
+* [tpope/vim-speeddating](https://github.com/tpope/vim-speeddating)
 
 ## Installation
 
@@ -50,7 +59,6 @@ EOF
 
 `dial.searchlist` is the list of augend,
 and `dial.augends` is a submodule that stores augend, which is provided by default.
-
 
 |Augend Name             |Explanation                                |Examples                           |
 |------------------------|-------------------------------------------|-----------------------------------|
@@ -104,3 +112,4 @@ EOF
 * User-friendly error notification
 * Command for visual mode
 * Command for visual-line mode
+* More various data formats
