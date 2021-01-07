@@ -23,7 +23,7 @@ Mainly written in Lua.
 ## Installation
 
 If you use `vim-plug`:
-```
+```vim
 Plug 'monaqa/dial.nvim'
 ```
 
@@ -32,7 +32,7 @@ Plug 'monaqa/dial.nvim'
 This plugin does not provide any default keymap.
 To use this plugin, assign the plugin keymap to the key you like, as shown below:
 
-```
+```vim
 nmap <C-a> <Plug>(dial-increment)
 nmap <C-x> <Plug>(dial-decrement)
 ```
@@ -43,7 +43,8 @@ In this plugin, the target to increment/decrement is called **augend**.
 In `dial.nvim`, you can operate on multiple types of augend.
 
 To specify the list of augend you want to operate on, write the following code in your `.vimrc`:
-```
+
+```vim
 lua << EOF
 local dial = require("dial")
 
@@ -82,7 +83,7 @@ You can even define your own augend.
 Augend is a table that contains two fields (`name` and `desc`) and two methods (`find` and `add`).
 For example, the following code defines `my_augend`, which enables you to double or halve the natural number.
 
-```
+```vim
 lua << EOF
 local dial = require("dial")
 
