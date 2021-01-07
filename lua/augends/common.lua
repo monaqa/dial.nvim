@@ -6,7 +6,7 @@ local M = {}
 function M.find_pattern(ptn)
     function f(cursor, line)
         local idx_start = 1
-        while idx_start < #line do
+        while idx_start <= #line do
             local s, e = line:find(ptn, idx_start)
             if s then
                 -- 検索結果があったら
