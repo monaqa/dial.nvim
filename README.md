@@ -50,7 +50,7 @@ To specify the list of augend you want to operate on, write the following code i
 lua << EOF
 local dial = require("dial")
 
-dial.searchlist = {
+dial.searchlist.normal = {
     dial.augends.number.decimal,
     dial.augends.number.hex,
     dial.augends.number.binary,
