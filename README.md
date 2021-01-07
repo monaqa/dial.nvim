@@ -1,5 +1,7 @@
 # dial.nvim
 
+**NOTICE: This plugin is work-in-progress yet. User interface is subjeect to change without notice.**
+
 Extended increment/decrement plugin for [Neovim](https://github.com/neovim/neovim).
 Mainly written in Lua.
 
