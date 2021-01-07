@@ -155,8 +155,6 @@ function increment_v(addend, override_searchlist)
     local augendlst = util.filter_map(
         function(aug)
             span = aug.find(1, text)
-            util.dbg(text)
-            util.dbg(span)
             -- 完全一致以外は認めない
             if span == nil or span.from ~= 1 or span.to ~= #text then
                 return nil
@@ -166,10 +164,8 @@ function increment_v(addend, override_searchlist)
         searchlist
     )
 
-    util.dbg(augendlst)
-
     -- 優先順位が最も高い augend を選択
-    local elem = M.pickup_augend(augendlst, cursor)
+    local elem = M.pickup_augend(augendlst, 1)
     if elem == nil then
         return
     end
@@ -181,11 +177,12 @@ function increment_v(addend, override_searchlist)
 
     vim.fn.setline('.', newline)
     vim.fn.setpos("'<", {pos_s[1], pos_s[2], pos_s[3], pos_s[4]})
-    vim.fn.setpos("'>", {pos_s[1], pos_s[2] + #text, pos_s[3], pos_s[4]})
+    vim.fn.setpos("'>", {pos_s[1], pos_s[2], pos_s[3] + #text - 1, pos_s[4]})
 
 end
 
 function increment_v_line(addend, override_searchlist)
+    return
 end
 
 -- Increment/Decrement function in visual mode.

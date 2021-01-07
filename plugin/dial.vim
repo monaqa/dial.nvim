@@ -7,8 +7,8 @@ set cpo&vim " reset them to defaults
 nnoremap <expr> <Plug>(dial-increment) '<Cmd>lua require"dial".increment(' .. v:count1 .. ')<CR>'
 nnoremap <expr> <Plug>(dial-decrement) '<Cmd>lua require"dial".increment(' .. -v:count1 .. ')<CR>'
 
-vnoremap <expr> <Plug>(dial-increment) ':<C-u>lua require"dial".increment_visual(' .. v:count1  .. ')<CR>'
-vnoremap <expr> <Plug>(dial-decrement) ':<C-u>lua require"dial".increment_visual(' .. -v:count1 .. ')<CR>'
+vnoremap <expr> <Plug>(dial-increment) ':<C-u>lua require"dial".increment_visual(' .. v:count1  .. ')<CR>gv'
+vnoremap <expr> <Plug>(dial-decrement) ':<C-u>lua require"dial".increment_visual(' .. -v:count1 .. ')<CR>gv'
 
 command! DialShowSearchList lua require"dial".print_searchlist()
 
