@@ -12,6 +12,8 @@ vnoremap <expr> <Plug>(dial-decrement) ':<C-u>lua require"dial".increment_visual
 
 command! DialShowSearchList lua require"dial".print_searchlist()
 
+command! -range -bang -nargs=+ DialIncrement lua require"dial".increment_command_with_range(1, {<f-args>}, {<line1>, <line2>})
+
 let &cpo = s:save_cpo " and restore after
 unlet s:save_cpo
 

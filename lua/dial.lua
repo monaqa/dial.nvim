@@ -3,7 +3,7 @@ local util = require("./util")
 local M = {}
 
 -- Augends: incrementable/decrementable pattern on the buffer
-M.augends = {
+local augends = {
     common = require("./augends/common"),
     number = require("./augends/number"),
     color = require("./augends/color"),
@@ -11,6 +11,8 @@ M.augends = {
     char = require("./augends/char"),
     markup = require("./augends/markup"),
 }
+
+M.augends = augends
 
 -- Default augends list. Customizable
 M.searchlist = {
@@ -68,7 +70,7 @@ function M.pickup_augend(lst, cursor)
         return nil
     end
 
-    for _, s in pairs(lst) do
+    for _, s in ipairs(lst) do
         if comp(s, span) then
             span = s
         end
@@ -145,6 +147,7 @@ function increment_v(addend, override_searchlist)
     end
     local text = line:sub(col_s, col_e)
 
+    -- searchlist 取得
     if override_searchlist then
         searchlist = override_searchlist
     else
@@ -170,19 +173,93 @@ function increment_v(addend, override_searchlist)
         return
     end
 
-    -- 加算後のテキストの作成
+    -- 加算後のテキストの作成・行の更新
     local aug = elem.augend
     local newcol, text = aug.add(rel_cursor, text, addend)
     local newline = string.sub(line, 1, col_s - 1) .. text .. string.sub(line, col_e + 1)
-
     vim.fn.setline('.', newline)
     vim.fn.setpos("'<", {pos_s[1], pos_s[2], pos_s[3], pos_s[4]})
     vim.fn.setpos("'>", {pos_s[1], pos_s[2], pos_s[3] + #text - 1, pos_s[4]})
 
 end
 
-function increment_v_line(addend, override_searchlist)
-    return
+function increment_range(addend, override_searchlist, row_s, row_e)
+    if addend == nil then
+        addend = 1
+    end
+
+    if override_searchlist then
+        searchlist = override_searchlist
+    else
+        searchlist = M.searchlist.normal
+    end
+
+    for row=row_s,row_e do
+        local f = function()
+            local line = vim.fn.getline(row)
+            if line == "" then
+                return
+            end
+            -- 数字の検索
+            local augendlst = util.filter_map(
+                function(aug)
+                    span = aug.find(1, line)
+                    if span == nil then
+                        return nil
+                    end
+                    return {augend = aug, from = span.from, to = span.to}
+                end,
+                searchlist
+                )
+
+            -- 優先順位が最も高い augend を選択
+            local elem = M.pickup_augend(augendlst, 1)
+            if elem == nil then
+                return
+            end
+
+            -- 加算後のテキストの作成
+            local aug = elem.augend
+            local s = elem.from
+            local e = elem.to
+            local rel_cursor = 2 - s
+            local text = string.sub(line, s, e)
+            local newcol, text = aug.add(rel_cursor, text, addend)
+            local newline = string.sub(line, 1, s - 1) .. text .. string.sub(line, e + 1)
+            newcol = newcol + s - 1
+
+            -- 行編集、カーソル位置のアップデート
+            vim.fn.setline(row, newline)
+        end
+        f()
+    end
+
+end
+
+-- tbl = {hoge = {fuga = 1}} のとき get_nested_element(tbl, "hoge.fuga") = 1 となるようなイメージ
+local function get_nested(tbl, key)
+    keys = util.split(key, ".")
+    elem = tbl
+    for _, k in ipairs(keys) do
+        elem = elem[k]
+        if elem == nil then
+            return nil
+        end
+    end
+    return elem
+end
+
+-- Increment/Decrement function with command.
+function M.increment_command_with_range(addend, searchlist, range)
+    override_searchlist = {}
+    for _, aug_str in ipairs(searchlist) do
+        aug = get_nested(M.augends, aug_str)
+        table.insert(override_searchlist, aug)
+    end
+
+    row_s = range[1]
+    row_e = range[2]
+    increment_range(addend, override_searchlist, row_s, row_e)
 end
 
 -- Increment/Decrement function in visual mode.
@@ -192,16 +269,20 @@ function M.increment_visual(addend, override_searchlist)
     if mode == "v" then
         increment_v(addend, override_searchlist)
     elseif mode == "V" then
-        increment_v_line(addend, override_searchlist)
+        -- 選択範囲の取得
+        local row_s = vim.fn.line("'<")
+        local row_e = vim.fn.line("'>")
+
+        increment_range(addend, override_searchlist, row_s, row_e)
     elseif mode == "" then
         -- not yet implemented
         return
     end
 end
 
--- Print available
+-- list normal searchlist up
 function M.print_searchlist()
-    for _, aug in pairs(M.searchlist.normal) do
+    for _, aug in ipairs(M.searchlist.normal) do
         print(aug.name, ":", aug.desc)
     end
 end
