@@ -32,10 +32,14 @@ M.searchlist = {
 -- span が cursor より前方にあるときは 1、
 -- span が cursor より後方にあるときは 2 を出力する。
 -- この数字は採用する際の優先順位に相当する。
-local function status(...)
-    span, cursor = assert(util.check_args({...}, {"table", "number"}))
+local function status(span, cursor)
+    vim.validate{
+        span = {span, "table"},
+        ["span.from"] = {span.from, "number"},
+        ["span.to"] = {span.to, "number"},
+        cursor = {cursor, "number"},
+    }
 
-    span = assert(util.check_struct(span, {from = "number", to = "number"}))
     local s, e = span.from, span.to
     if cursor < s then
         return 1
@@ -49,8 +53,11 @@ end
 -- 現在の cursor 位置をもとに、
 -- span: {augend: augend, from: int, to:int} を要素に持つ配列 lst から
 -- 適切な augend を一つ取り出す。
-function M.pickup_augend(...)
-    lst, cursor = assert(util.check_args({...}, {"table", "number"}))
+function M.pickup_augend(lst, cursor)
+    vim.validate{
+        lst = {lst, "table"},
+        cursor = {cursor, "number"},
+    }
 
     local function comp(span1, span2)
         -- span1 の優先順位が span2 よりも高いかどうか。
@@ -74,10 +81,16 @@ function M.pickup_augend(...)
     if span == nil then
         return nil
     end
-    assert(util.check_struct(span, {from = "number", to = "number"}))
+    vim.validate{
+        ["span.from"] = {span.from, "number"},
+        ["span.to"] = {span.to, "number"},
+    }
 
     for _, s in ipairs(lst) do
-        assert(util.check_struct(s, {from = "number", to = "number"}))
+        vim.validate{
+            ["s.from"] = {s.from, "number"},
+            ["s.to"] = {s.to, "number"},
+        }
         if comp(s, span) then
             span = s
         end
@@ -86,8 +99,18 @@ function M.pickup_augend(...)
 end
 
 -- Increment/Decrement function in normal mode. This edits the current buffer.
-function M.increment(...)
-    addend, override_searchlist = assert(util.check_args({...}, {"number", "table/nil"}))
+function M.increment(addend, override_searchlist)
+    vim.validate{
+        addend = {addend, "number"},
+        override_searchlist = {override_searchlist, "table", true}
+    }
+
+    if override_searchlist then
+        searchlist = override_searchlist
+    else
+        searchlist = M.searchlist.normal
+    end
+    util.validate_list("searchlist", searchlist, util.has_augend_field, "is augend")
 
     -- 現在のカーソル位置、カーソルのある行、加数の取得
     local curpos = vim.call('getcurpos')
@@ -95,12 +118,6 @@ function M.increment(...)
     local line = vim.fn.getline('.')
     if addend == nil then
         addend = 1
-    end
-
-    if override_searchlist then
-        searchlist = override_searchlist
-    else
-        searchlist = M.searchlist.normal
     end
 
     -- 数字の検索
@@ -163,6 +180,7 @@ function increment_v(addend, override_searchlist)
     else
         searchlist = M.searchlist.visual
     end
+    util.validate_list("searchlist", searchlist, util.has_augend_field, "is augend")
 
     -- 数字の検索
     local augendlst = util.filter_map(
@@ -184,7 +202,8 @@ function increment_v(addend, override_searchlist)
     end
 
     -- 加算後のテキストの作成・行の更新
-    local aug = assert(util.check_struct(elem.augend, {name = "string", desc = "string", find = "function", add = "function"}))
+    aug = elem.augend
+
     local newcol, text = aug.add(rel_cursor, text, addend)
     local newline = string.sub(line, 1, col_s - 1) .. text .. string.sub(line, col_e + 1)
     vim.fn.setline('.', newline)
@@ -204,6 +223,7 @@ function increment_range(addend, override_searchlist, row_s, row_e)
     else
         searchlist = M.searchlist.normal
     end
+    util.validate_list("searchlist", searchlist, util.has_augend_field, "is augend")
 
     for row=row_s,row_e do
         local f = function()

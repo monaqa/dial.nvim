@@ -26,66 +26,64 @@ function M.split(str, delim)
   return t
 end
 
--- Signature assertion
---
--- Example(w/o type check):
--- ```
--- function f(a, b, c)
---     -- Dummy function with 3 augments,
---     -- whose types are "number", "string", "Option<string>", respectively.
---     if c ~= nil then
---         print(c)
---     end
---     print("%d, %s", a, b)
--- end
--- ```
---
--- Example(w/ type check):
--- ```
--- function f(...)
---     a, b, c = assert(util.check_args({...}, {"number", "string", "string/nil"}))
---     if c ~= nil then
---         print(c)
---     end
---     print("%d, %s", a, b)
--- end
--- ```
-function M.check_args(args, typelist)
-    if #args > #typelist then
-        errormsg = ("The number of arguments is excessive. Expect: %d, Actual: %d"):format(#typelist, #args)
-        return nil, errormsg
+-- Check function for vim.validate.
+function M.validate_list(name, list, arg1, arg2)
+    if not vim.tbl_islist(list) then
+        error(("%s is not list."):format(name))
     end
-    for idx, value in ipairs(typelist) do
-        list_type_expect = M.Set(M.split(value, "/"))
-        type_actual = type(args[idx])
-        if not list_type_expect[type_actual] then
-            -- 期待する型名リストの中に実際の args[idx] の型が無ければエラー
-            errormsg = ("The type of %d-th argument should be %s, but actual type was %s."):format(
-                idx, value, type_actual)
-            return nil, errormsg
+
+    if type(arg1) == "string" then
+        typename, allow_nil = arg1, arg2
+
+        for idx, value in ipairs(list) do
+            if type(value) ~= typename then
+                error(("Type error: %s[%d] should have type %s, got %s"):format(
+                        name, idx, typename, type(value)
+                    ))
+            end
+        end
+
+    else
+        checkf, errormsg = arg1, arg2
+
+        for idx, value in ipairs(list) do
+            ok, err = checkf(value)
+            if not ok then
+                error(("List validation error: %s[%d] does not satisfy '%s' (%s)"):format(
+                        name, idx, errormsg, err
+                    ))
+            end
         end
     end
-    return unpack(args)
 end
 
--- いわゆる構造体（として扱いたい table）の型チェックを行う。
--- 必要なフィールドに適切な型がついてればひとまずOK。
-function M.check_struct(struct, typestruct)
-    for key, value in pairs(typestruct) do
-        list_type_expect = M.Set(M.split(value, "/"))
-        type_actual = type(struct[key])
-        if not list_type_expect[type_actual] then
-            -- 期待する型名リストの中に実際の args[idx] の型が無ければエラー
-            if type_actual == "nil" then
-                errormsg = ("The struct does not have field '%s', which is required by check_struct."):format(key)
-                return nil, errormsg
-            end
-            errormsg = ("The type of filed '%s' should be %s, but actual type was %s."):format(
-                key, value, type_actual)
-            return nil, errormsg
-        end
+
+function M.has_augend_field(tbl)
+    if type(tbl) ~= "table" then
+        return false, "not table"
     end
-    return struct
+
+    if vim.tbl_islist(tbl) then
+        return false, "augend have to be a map, not list"
+    end
+
+    if type(tbl.find) ~= "function" then
+        return false, "augend should have a method (function field) 'find'"
+    end
+
+    if type(tbl.add) ~= "function" then
+        return false, "augend should have a method (function field) 'add'"
+    end
+
+    if type(tbl.name) ~= "string" then
+        return false, "augend should have a string field 'name'"
+    end
+
+    if type(tbl.desc) ~= "string" then
+        return false, "augend should have a string field 'desc'"
+    end
+
+    return true
 end
 
 function M.filter(fn, ary)
