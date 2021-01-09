@@ -26,13 +26,16 @@ M.searchlist = {
     }
 }
 
-local function status(span, cursor)
-    -- cursor 入力が与えられたとき、
-    -- 自らのスパンが cursor に対してどのような並びになっているか出力する。
-    -- span が cursor を含んでいるときは0、
-    -- span が cursor より前方にあるときは 1、
-    -- span が cursor より後方にあるときは 2 を出力する。
-    -- この数字は採用する際の優先順位に相当する。
+-- cursor 入力が与えられたとき、
+-- 自らのスパンが cursor に対してどのような並びになっているか出力する。
+-- span が cursor を含んでいるときは0、
+-- span が cursor より前方にあるときは 1、
+-- span が cursor より後方にあるときは 2 を出力する。
+-- この数字は採用する際の優先順位に相当する。
+local function status(...)
+    span, cursor = assert(util.check_args({...}, {"table", "number"}))
+
+    span = assert(util.check_struct(span, {from = "number", to = "number"}))
     local s, e = span.from, span.to
     if cursor < s then
         return 1
@@ -43,10 +46,11 @@ local function status(span, cursor)
     end
 end
 
+-- 現在の cursor 位置をもとに、
+-- span: {augend: augend, from: int, to:int} を要素に持つ配列 lst から
+-- 適切な augend を一つ取り出す。
 function M.pickup_augend(lst, cursor)
-    -- 現在の cursor 位置をもとに、
-    -- span: {augend: augend, from: int, to:int} を要素に持つ配列 lst から
-    -- 適切な augend を一つ取り出す。
+
     local function comp(span1, span2)
         -- span1 の優先順位が span2 よりも高いかどうか。
         -- まずは status（カーソルとspanの位置関係）に従って優先順位を決定する。
@@ -79,7 +83,8 @@ function M.pickup_augend(lst, cursor)
 end
 
 -- Increment/Decrement function in normal mode.
-function M.increment(addend, override_searchlist)
+function M.increment(...)
+    addend, override_searchlist = assert(util.check_args({...}, {"number", "table/nil"}))
 
     -- 現在のカーソル位置、カーソルのある行、加数の取得
     local curpos = vim.call('getcurpos')

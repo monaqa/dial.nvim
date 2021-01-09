@@ -111,8 +111,8 @@ EOF
 
 ## TODO
 
-* Write help file
-* User-friendly error notification
-* Command for visual mode
-* Command for visual-line mode
-* More various data formats
+* [ ] Write help file
+* [ ] User-friendly error notification
+* [x] Command for visual mode
+* [x] Command for visual-line mode
+* [ ] More various data formats
