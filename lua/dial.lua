@@ -49,7 +49,8 @@ end
 -- 現在の cursor 位置をもとに、
 -- span: {augend: augend, from: int, to:int} を要素に持つ配列 lst から
 -- 適切な augend を一つ取り出す。
-function M.pickup_augend(lst, cursor)
+function M.pickup_augend(...)
+    lst, cursor = assert(util.check_args({...}, {"table", "number"}))
 
     local function comp(span1, span2)
         -- span1 の優先順位が span2 よりも高いかどうか。
@@ -73,8 +74,10 @@ function M.pickup_augend(lst, cursor)
     if span == nil then
         return nil
     end
+    assert(util.check_struct(span, {from = "number", to = "number"}))
 
     for _, s in ipairs(lst) do
+        assert(util.check_struct(s, {from = "number", to = "number"}))
         if comp(s, span) then
             span = s
         end
@@ -82,7 +85,7 @@ function M.pickup_augend(lst, cursor)
     return span
 end
 
--- Increment/Decrement function in normal mode.
+-- Increment/Decrement function in normal mode. This edits the current buffer.
 function M.increment(...)
     addend, override_searchlist = assert(util.check_args({...}, {"number", "table/nil"}))
 
@@ -134,6 +137,8 @@ function M.increment(...)
 
 end
 
+-- Increment/Decrement function in visual (not visual-line or visual-block) mode.
+-- This edits the current buffer.
 function increment_v(addend, override_searchlist)
 
     -- 選択範囲の取得
@@ -179,7 +184,7 @@ function increment_v(addend, override_searchlist)
     end
 
     -- 加算後のテキストの作成・行の更新
-    local aug = elem.augend
+    local aug = assert(util.check_struct(elem.augend, {name = "string", desc = "string", find = "function", add = "function"}))
     local newcol, text = aug.add(rel_cursor, text, addend)
     local newline = string.sub(line, 1, col_s - 1) .. text .. string.sub(line, col_e + 1)
     vim.fn.setline('.', newline)
@@ -188,6 +193,7 @@ function increment_v(addend, override_searchlist)
 
 end
 
+-- Increment/Decrement function for specified line. This edits the current buffer.
 function increment_range(addend, override_searchlist, row_s, row_e)
     if addend == nil then
         addend = 1
@@ -241,7 +247,7 @@ function increment_range(addend, override_searchlist, row_s, row_e)
 
 end
 
--- tbl = {hoge = {fuga = 1}} のとき get_nested_element(tbl, "hoge.fuga") = 1 となるようなイメージ
+-- tbl = {hoge = {fuga = 1}} のとき get_nested(tbl, "hoge.fuga") == 1 となるようなイメージ
 local function get_nested(tbl, key)
     keys = util.split(key, ".")
     elem = tbl
@@ -281,7 +287,7 @@ function M.increment_visual(addend, override_searchlist)
         increment_range(addend, override_searchlist, row_s, row_e)
     elseif mode == "" then
         -- not yet implemented
-        return
+        error("Not yet implemented!")
     end
 end
 
