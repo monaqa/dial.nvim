@@ -37,6 +37,28 @@ M["%Y/%m/%d"] = {
     end
 }
 
+M["%m/%d"] = {
+    name = "date['%m/%d']",
+    desc = "standard date %m/%d",
+
+    find = common.find_pattern("%d%d/%d%d"),
+    add = function(cursor, text, addend)
+        local month = tonumber(text:sub(1, 2))
+        local day = tonumber(text:sub(4, 5))
+        if cursor >= 1 and cursor <= 2 then
+            month = month + addend
+            cursor = 2
+        else
+            day = day + addend
+            cursor = 5
+        end
+        local thisyear = os.date("*t").year
+        local date = os.time{year=thisyear, month=month, day=day}
+        text = os.date("%m/%d", date)
+        return cursor, text
+    end
+}
+
 M["%Y-%m-%d"] = {
     name = "date['%Y-%m-%d']",
     desc = "standard date %Y-%m-%d",
