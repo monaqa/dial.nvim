@@ -3,7 +3,10 @@ local util = require("./util")
 
 local M = {}
 
-M.weekday_ja = common.enum_cyclic("date.weekday_ja", {"日", "月", "火", "水", "木", "金", "土"})
+M.weekday_ja = common.enum_cyclic{
+    name = "date.weekday_ja",
+    strlist = {"日", "月", "火", "水", "木", "金", "土"},
+}
 
 M.date = {
     name = "date.date",
