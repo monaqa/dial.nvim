@@ -10,6 +10,7 @@ M["%ja"] = common.enum_cyclic{
 M["%jA"] = common.enum_cyclic{
     name = "date['%jA']",
     strlist = { '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日', '日曜日', },
+    ptn_format = "\\C\\M\\(%s\\)",
 }
 
 M["%Y/%m/%d"] = {
