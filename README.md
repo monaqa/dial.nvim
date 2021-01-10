@@ -44,9 +44,31 @@ nmap <C-x> <Plug>(dial-decrement)
 In this plugin, the target to increment/decrement is called **augend**.
 In `dial.nvim`, you can operate on multiple types of augend.
 
+|Augend Name                      |Explanation                                      |Examples                           |
+|---------------------------------|-------------------------------------------------|-----------------------------------|
+|`number.decimal`                 |decimal natural number                           |`0`, `1`, ..., `9`, `10`, `11`, ...|
+|`number.hex`                     |hex natural number                               |`0x00`, `0x3f3f`, ...              |
+|`number.octal`                   |octal natural number                             |`000`, `011`, `024`, ...           |
+|`number.binary`                  |binary natural number                            |`0b0101`, `0b11001111`, ...        |
+|`number.decimal_integer`         |decimal integer (including negative number)      |`0`, `314`, `-1592`, ...           |
+|`number.decimal_fixeddigit_zero` |decimal number with fixed digit (filled with `0`)|`00`, `01`, ..., `11`, ..., `99`   |
+|`number.decimal_fixeddigit_space`|decimal number with fixed digit (filled with `␣`)|`␣0`, `␣1`, ..., `11`, ..., `99`   |
+|`date["%Y/%m/%d"]`               |Date in the format `%Y/%m/%d`                    |`2021/01/04`, ...                  |
+|`date["%m/%d"]`                  |Date in the format `%m/%d`                       |`01/04`, ...                       |
+|`date["%Y-%m-%d"]`               |Date in the format `%Y-%m-%d`                    |`2021-01-04`, ...                  |
+|`date["%Y年%m月%d日"]`           |Date in the format `%Y年%m月%d日`                |`2021年01月04日`, ...              |
+|`date["%H:%M:%S"]`               |Time in the format `%H:%M:%S`                    |`14:30:00`, ...                    |
+|`date["%H:%M"]`                  |Time in the format `%H:%M`                       |`14:30`, ...                       |
+|`date["%ja"]`                    |Japanese weekday                                 |`月`, `火`, ..., `土`, `日`        |
+|`date["%jA"]`                    |Japanese full weekday                            |`月曜日`, `火曜日`, ..., `日曜日`  |
+|`char.alph_small`                |Lowercase alphabet letter (word)                 |`a`, `b`, `c`, ..., `z`            |
+|`char.alph_capital`              |Uppercase alphabet letter (word)                 |`A`, `B`, `C`, ..., `Z`            |
+|`color.hex`                      |hex triplet                                      |`#00ff00`, `#ababab`, ...          |
+|`markup.markdown_header`         |Markdown Header                                  |`#`, `##`, ..., `######`           |
+
 To specify the list of augend you want to operate on, write the following code in your `.vimrc`:
 
-```vim
+```lua
 lua << EOF
 local dial = require("dial")
 
@@ -63,19 +85,39 @@ EOF
 `dial.searchlist` is the list of augend,
 and `dial.augends` is a submodule that stores augend, which is provided by default.
 
-|Augend Name             |Explanation                                |Examples                           |
-|------------------------|-------------------------------------------|-----------------------------------|
-|`number.decimal`        |decimal natural number                     |`0`, `1`, ..., `9`, `10`, `11`, ...|
-|`number.hex`            |hex natural number                         |`0x00`, `0x3f3f`, ...              |
-|`number.octal`          |octal natural number                       |`000`, `011`, `024`, ...           |
-|`number.binary`         |binary natural number                      |`0b0101`, `0b11001111`, ...        |
-|`number.decimal_integer`|decimal integer (including negative number)|`0`, `314`, `-1592`, ...           |
-|`date.date`             |Date in the format `%Y/%m/%d`              |`2020/01/04`, `1970/01/01`, ...    |
-|`date.weekday_ja`       |Japanese weekday                           |`月`, `火`, ..., `土`, `日`        |
-|`char.alph_small`       |Lowercase alphabet letter (word)           |`a`, `b`, `c`, ..., `z`            |
-|`char.alph_capital`     |Uppercase alphabet letter (word)           |`A`, `B`, `C`, ..., `Z`            |
-|`color.hex`             |hex triplet                                |`#00ff00`, `#ababab`, ...          |
-|`markup.markdown_header`|Markdown Header                            |`#`, `##`, ..., `######`           |
+The default set of available augends are shown here:
+
+|Augend Name                      |Normal mode|Visual mode|
+|---------------------------------|-----------|-----------|
+|`number.decimal`                 |✓          |✓          |
+|`number.hex`                     |✓          |✓          |
+|`number.octal`                   |           |           |
+|`number.binary`                  |✓          |✓          |
+|`number.decimal_integer`         |           |           |
+|`number.decimal_fixeddigit_zero` |           |           |
+|`number.decimal_fixeddigit_space`|           |           |
+|`date["%Y/%m/%d"]`               |✓          |           |
+|`date["%m/%d"]`                  |✓          |           |
+|`date["%Y-%m-%d"]`               |✓          |           |
+|`date["%Y年%m月%d日"]`           |           |           |
+|`date["%H:%M:%S"]`               |           |           |
+|`date["%H:%M"]`                  |✓          |           |
+|`date["%ja"]`                    |✓          |           |
+|`date["%jA"]`                    |✓          |           |
+|`char.alph_small`                |           |✓          |
+|`char.alph_capital`              |           |✓          |
+|`color.hex`                      |✓          |           |
+|`markup.markdown_header`         |           |           |
+
+If you just want to add a few of augends into default `searchlist`, you can also write the configuration like this:
+
+```lua
+lua << EOF
+local dial = require("dial")
+
+table.insert(dial.searchlist.normal, dial.augends.markup.markdown_header)
+EOF
+```
 
 The list of currently enabled augends can be checked with `:DialShowSearchList` command.
 
@@ -85,7 +127,7 @@ You can even define your own augend.
 Augend is a table that contains two fields (`name` and `desc`) and two methods (`find` and `add`).
 For example, the following code defines `my_augend`, which enables you to double or halve the natural number.
 
-```vim
+```lua
 lua << EOF
 local dial = require("dial")
 
@@ -109,10 +151,17 @@ dial.searchlist = {
 EOF
 ```
 
+If you want to toggle `true` / `false` with `dial.nvim`'s command, try this:
+
+```lua
+dial.augends.boolean = dial.augends.common.enum_cyclic{
+    name = "boolean",
+    strlist = {"true", "false"},
+}
+table.insert(dial.searchlist.normal, dial.augends.boolean)
+```
+
 ## TODO
 
 * [ ] Write help file
-* [ ] User-friendly error notification
-* [x] Command for visual mode
-* [x] Command for visual-line mode
-* [ ] More various data formats
+* [ ] Command for visual-block mode
