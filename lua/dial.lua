@@ -17,12 +17,22 @@ M.augends = augends
 -- Default augends list. Customizable
 M.searchlist = {
     normal = {
-        M.augends.number.decimal_integer,
+        M.augends.number.decimal,
         M.augends.number.hex,
+        M.augends.number.binary,
+        M.augends.color.hex,
+        M.augends.date["%Y/%m/%d"],
+        M.augends.date["%Y-%m-%d"],
+        M.augends.date["%H:%M"],
+        M.augends.date["%ja"],
+        M.augends.date["%jA"],
     },
     visual = {
-        M.augends.number.decimal_integer,
+        M.augends.number.decimal,
         M.augends.number.hex,
+        M.augends.number.binary,
+        M.augends.char.alph_small,
+        M.augends.char.alph_capital,
     }
 }
 
