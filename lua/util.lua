@@ -26,38 +26,50 @@ function M.split(str, delim)
   return t
 end
 
--- Check function for vim.validate.
+-- Check if the argument is a valid list (which does not contain nil).
 function M.validate_list(name, list, arg1, arg2)
     if not vim.tbl_islist(list) then
         error(("%s is not list."):format(name))
     end
 
     if type(arg1) == "string" then
-        typename, allow_nil = arg1, arg2
+        typename, _ = arg1, arg2
 
+        local count_idx = 1
         for idx, value in ipairs(list) do
-            -- nil 許容の場合は continue
-            if not (allow_nil and type(value) == "nil") then
-
-                -- 型名が一致しない場合
-                if type(value) ~= typename then
-                    error(("Type error: %s[%d] should have type %s, got %s"):format(
-                            name, idx, typename, type(value)
-                        ))
-                end
+            count_idx = idx
+            -- 型名が一致しない場合
+            if type(value) ~= typename then
+                error(("Type error: %s[%d] should have type %s, got %s"):format(
+                        name, idx, typename, type(value)
+                    ))
             end
+        end
+
+        if count_idx ~= #list then
+            error(("The %s[%d] is nil. nil is not allowed in a list."):format(
+                    name, count_idx + 1
+                ))
         end
 
     else
         checkf, errormsg = arg1, arg2
 
+        local count_idx = 1
         for idx, value in ipairs(list) do
+            count_idx = idx
             ok, err = checkf(value)
             if not ok then
                 error(("List validation error: %s[%d] does not satisfy '%s' (%s)"):format(
                         name, idx, errormsg, err
                     ))
             end
+        end
+
+        if count_idx ~= #list then
+            error(("The %s[%d] is nil. nil is not allowed in valid list."):format(
+                    name, count_idx + 1
+                ))
         end
     end
 end
