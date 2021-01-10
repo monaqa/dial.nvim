@@ -36,10 +36,15 @@ function M.validate_list(name, list, arg1, arg2)
         typename, allow_nil = arg1, arg2
 
         for idx, value in ipairs(list) do
-            if type(value) ~= typename then
-                error(("Type error: %s[%d] should have type %s, got %s"):format(
-                        name, idx, typename, type(value)
-                    ))
+            -- nil 許容の場合は continue
+            if not (allow_nil and type(value) == "nil") then
+
+                -- 型名が一致しない場合
+                if type(value) ~= typename then
+                    error(("Type error: %s[%d] should have type %s, got %s"):format(
+                            name, idx, typename, type(value)
+                        ))
+                end
             end
         end
 

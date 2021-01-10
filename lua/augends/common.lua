@@ -112,6 +112,7 @@ function M.enum_cyclic(tbl)
         desc = {tbl.desc, "string", true},
         ptn_format = {tbl.ptn_format, "string", true},
     }
+    util.validate_list(("strlist of %s"):format(tbl.name), tbl.strlist, "string", false)
     local name, desc, strlist, ptn_format = tbl.name, tbl.desc, tbl.strlist, tbl.ptn_format
 
     -- option 引数

@@ -33,6 +33,7 @@ M.searchlist = {
 -- span が cursor より後方にあるときは 2 を出力する。
 -- この数字は採用する際の優先順位に相当する。
 local function status(span, cursor)
+    -- type check
     vim.validate{
         span = {span, "table"},
         ["span.from"] = {span.from, "number"},
@@ -54,6 +55,7 @@ end
 -- span: {augend: augend, from: int, to:int} を要素に持つ配列 lst から
 -- 適切な augend を一つ取り出す。
 function M.pickup_augend(lst, cursor)
+    -- type check
     vim.validate{
         lst = {lst, "table"},
         cursor = {cursor, "number"},
@@ -100,6 +102,7 @@ end
 
 -- Increment/Decrement function in normal mode. This edits the current buffer.
 function M.increment(addend, override_searchlist)
+    -- type check
     vim.validate{
         addend = {addend, "number"},
         override_searchlist = {override_searchlist, "table", true}
@@ -110,6 +113,7 @@ function M.increment(addend, override_searchlist)
     else
         searchlist = M.searchlist.normal
     end
+    -- type check
     util.validate_list("searchlist", searchlist, util.has_augend_field, "is augend")
 
     -- 現在のカーソル位置、カーソルのある行、加数の取得
@@ -156,7 +160,7 @@ end
 
 -- Increment/Decrement function in visual (not visual-line or visual-block) mode.
 -- This edits the current buffer.
-function increment_v(addend, override_searchlist)
+local function increment_v(addend, override_searchlist)
 
     -- 選択範囲の取得
     local pos_s = vim.fn.getpos("'<")
@@ -180,6 +184,7 @@ function increment_v(addend, override_searchlist)
     else
         searchlist = M.searchlist.visual
     end
+    -- type check
     util.validate_list("searchlist", searchlist, util.has_augend_field, "is augend")
 
     -- 数字の検索
@@ -213,7 +218,14 @@ function increment_v(addend, override_searchlist)
 end
 
 -- Increment/Decrement function for specified line. This edits the current buffer.
-function increment_range(addend, override_searchlist, row_s, row_e)
+local function increment_range(addend, override_searchlist, row_s, row_e)
+    vim.validate{
+        addend = {addend, "number"},
+        override_searchlist = {override_searchlist, "table", true},
+        row_s = {row_s, "number"},
+        row_e = {row_e, "number"},
+    }
+
     if addend == nil then
         addend = 1
     end
@@ -223,6 +235,7 @@ function increment_range(addend, override_searchlist, row_s, row_e)
     else
         searchlist = M.searchlist.normal
     end
+    -- type check
     util.validate_list("searchlist", searchlist, util.has_augend_field, "is augend")
 
     for row=row_s,row_e do
@@ -282,9 +295,20 @@ end
 
 -- Increment/Decrement function with command.
 function M.increment_command_with_range(addend, searchlist, range)
+    vim.validate{
+        addend = {addend, "number"},
+        searchlist = {searchlist, "table"},
+        range = {range, "table"},
+    }
+    util.validate_list("searchlist", searchlist, "string")
+    util.validate_list("range", range, "number")
+
     override_searchlist = {}
     for _, aug_str in ipairs(searchlist) do
         aug = get_nested(M.augends, aug_str)
+        vim.validate{
+            aug = {aug, util.has_augend_field, "augend table"}
+        }
         table.insert(override_searchlist, aug)
     end
 
