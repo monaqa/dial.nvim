@@ -22,6 +22,7 @@ M.searchlist = {
         M.augends.number.binary,
         M.augends.color.hex,
         M.augends.date["%Y/%m/%d"],
+        M.augends.date["%m/%d"],
         M.augends.date["%Y-%m-%d"],
         M.augends.date["%H:%M"],
         M.augends.date["%ja"],
