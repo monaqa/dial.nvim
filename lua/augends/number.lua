@@ -1,4 +1,5 @@
 local common = require("./augends/common")
+local util = require("./util")
 
 local M = {}
 
@@ -62,6 +63,46 @@ M.decimal = {
         end
         text = tostring(n)
         cursor = #text
+        return cursor, text
+    end,
+}
+
+-- 固定された桁の十進非負整数。
+-- 桁は0埋めする。
+M.decimal_fixeddigit_zero = {
+    name = "number.decimal_fixeddigit_zero",
+    desc = "fixed-digit decimal natural number (e.g. 00, 01, 02, ..., 97, 98, 99)",
+
+    find = common.find_pattern("%d+"),
+
+    add = function(cusror, text, addend)
+        local n_digit = #text
+        local n = tonumber(text)
+        n = n + addend
+        if n < 0 then n = 0 end
+        if n > (10 ^ n_digit) - 1 then n = (10 ^ n_digit) - 1 end
+        text = ("%0" .. n_digit .. "d"):format(n)
+        cursor = n_digit
+        return cursor, text
+    end,
+}
+
+-- 固定された桁の十進非負整数。
+-- 桁は半角空白で埋める。
+M.decimal_fixeddigit_space = {
+    name = "number.decimal_fixeddigit_space",
+    desc = "fixed-digit decimal natural number (e.g. ␣0, ␣1, ␣2, ..., 97, 98, 99)",
+
+    find = common.find_pattern(" *%d+"),
+
+    add = function(cusror, text, addend)
+        local n_digit = #text
+        local n = tonumber(text)
+        n = n + addend
+        if n < 0 then n = 0 end
+        if n > (10 ^ n_digit) - 1 then n = (10 ^ n_digit) - 1 end
+        text = ("%" .. n_digit .. "d"):format(n)
+        cursor = n_digit
         return cursor, text
     end,
 }
