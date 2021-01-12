@@ -67,6 +67,8 @@ M["%-m/%-d"] = {
     desc = "standard date %-m/%-d (1/1, 2/28, 12/25, etc.)",
 
     find = function(cursor, line)
+        -- 1/4 などに反応させたいが、これは必ずしも日付を表すとは限らない。
+        -- 誤反応を減らすため、日付として有効でない数字の組（13/32 など）は棄却する。
         local range = common.find_pattern("%d%d?/%d%d?")(cursor, line)
         if range == nil then
             return nil
@@ -94,15 +96,15 @@ M["%-m/%-d"] = {
         local month_s, month_e = 1, #month_str
         local day_s, day_e = #month_str + 2, #text
         local month, day = tonumber(month_str), tonumber(day_str)
+        local objective
 
         if cursor == nil then cursor = day_e end  -- default: day
-        local objective
         if cursor >= month_s and cursor <= month_e then
-            month = month + addend
             objective = "month"
+            month = month + addend
         else
-            day = day + addend
             objective = "day"
+            day = day + addend
         end
         local thisyear = os.date("*t").year
         local date = os.time{year=thisyear, month=month, day=day}
@@ -110,7 +112,7 @@ M["%-m/%-d"] = {
 
         -- determine cursor position
         if objective == "month" then
-            if date.month >= 10 then
+            if tbl_date.month >= 10 then
                 cursor = 2
             else
                 cursor = 1
@@ -149,29 +151,95 @@ M["%Y-%m-%d"] = {
     end
 }
 
-M["%Y年%m月%d日"] = {
-    name = "date['%Y年%m月%d日']",
-    desc = "standard date %Y年%m月%d日",
+M["%Y年%-m月%-d日"] = {
+    name = "date['%Y年%-m月%-d日']",
+    desc = "standard date %Y年%-m月%-d日",
 
     find = common.find_pattern("(%d%d%d%d)年(%d%d?)月(%d%d?)日"),
     add = function(cursor, text, addend)
-        _, _, year_str, month_str, day_str = text:find("(%d%d%d%d)年(%d%d)月(%d%d)日")
-        year = tonumber(year_str)
-        month = tonumber(month_str)
-        day = tonumber(day_str)
-        if cursor == nil then cursor = 14 end  -- default: day
-        if cursor >= 1 and cursor <= 7 then
+        local _, _, year_str, month_str, day_str = text:find("(%d%d%d%d)年(%d%d?)月(%d%d?)日")
+        local year_s, year_e = 1, 7
+        local month_s, month_e = 8, #month_str + 10
+        local day_s, day_e = #month_str + 11, #text
+        local year, month, day = tonumber(year_str), tonumber(month_str), tonumber(day_str)
+        local objective
+
+        if cursor == nil then cursor = day_e end  -- default: day
+        if cursor >= year_s and cursor <= year_e then
+            objective = "year"
             year = year + addend
-            cursor = 4
-        elseif cursor >= 8 and cursor <= 12 then
+        elseif cursor >= month_s and cursor <= month_e then
+            objective = "month"
             month = month + addend
-            cursor = 9
         else
+            objective = "day"
             day = day + addend
-            cursor = 14
         end
         local date = os.time{year=year, month=month, day=day}
-        text = os.date("%Y年%m月%d日", date)
+        local tbl_date = os.date("*t", date)
+        text = os.date("%Y年%-m月%-d日", date)
+
+        -- determine cursor position
+        if objective == "year" then
+            cursor = 4
+        elseif objective == "month" then
+            if tbl_date.month >= 10 then
+                cursor = 9 -- = %Y(4) + 年(3) + %-m(2)
+            else
+                cursor = 8 -- = %Y(4) + 年(3) + %-m(1)
+            end
+        else
+            cursor = #text
+        end
+
+        return cursor, text
+    end
+}
+
+M["%Y年%-m月%-d日(%ja)"] = {
+    name = "date['%Y年%-m月%-d日(%ja)']",
+    desc = "standard date %Y年%-m月%-d日(%ja), e.g. 2021年1月13日(水)",
+
+    find = common.find_pattern_regex([[\v\d{4}年\d{1,2}月\d{1,2}日\((日|月|火|水|木|金|土)\)]]),
+    add = function(cursor, text, addend)
+        local _, _, year_str, month_str, day_str = text:find("(%d%d%d%d)年(%d%d?)月(%d%d?)日")
+        local year_s, year_e = 1, 7
+        local month_s, month_e = 8, #month_str + 10
+        local day_s, day_e = #month_str + 11, #text
+        local year, month, day = tonumber(year_str), tonumber(month_str), tonumber(day_str)
+        local objective
+
+        if cursor == nil then cursor = day_e end  -- default: day
+        if cursor >= year_s and cursor <= year_e then
+            objective = "year"
+            year = year + addend
+        elseif cursor >= month_s and cursor <= month_e then
+            objective = "month"
+            month = month + addend
+        else
+            objective = "day"
+            day = day + addend
+        end
+        local date = os.time{year=year, month=month, day=day}
+        local date_str = os.date("%Y年%-m月%-d日", date)
+        local tbl_date = os.date("*t", date)
+        local weekday = {"日", "月", "火", "水", "木", "金", "土"}
+        local weekday_str = weekday[tbl_date.wday]
+        text = date_str .. ("(%s)"):format(weekday_str)
+
+        -- determine cursor position
+        if objective == "year" then
+            cursor = 4
+        elseif objective == "month" then
+            if tbl_date.month >= 10 then
+                cursor = 9 -- = %Y(4) + 年(3) + %-m(2)
+            else
+                cursor = 8 -- = %Y(4) + 年(3) + %-m(1)
+            end
+        else
+            cursor = #text - 8
+        end
+
         return cursor, text
     end
 }
