@@ -32,6 +32,13 @@ M.searchlist = {
         M.augends.number.decimal,
         M.augends.number.hex,
         M.augends.number.binary,
+        M.augends.color.hex,
+        M.augends.date["%Y/%m/%d"],
+        M.augends.date["%m/%d"],
+        M.augends.date["%Y-%m-%d"],
+        M.augends.date["%H:%M"],
+        M.augends.date["%ja"],
+        M.augends.date["%jA"],
         M.augends.char.alph_small,
         M.augends.char.alph_capital,
     }
@@ -220,7 +227,7 @@ local function increment_v(addend, override_searchlist)
     -- 加算後のテキストの作成・行の更新
     aug = elem.augend
 
-    local newcol, text = aug.add(rel_cursor, text, addend)
+    local newcol, text = aug.add(nil, text, addend)
     local newline = string.sub(line, 1, col_s - 1) .. text .. string.sub(line, col_e + 1)
     vim.fn.setline('.', newline)
     vim.fn.setpos("'<", {pos_s[1], pos_s[2], pos_s[3], pos_s[4]})

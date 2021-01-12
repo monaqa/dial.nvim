@@ -24,7 +24,9 @@ M.hex = {
         local r = tonumber(text:sub(2, 3), 16)
         local g = tonumber(text:sub(4, 5), 16)
         local b = tonumber(text:sub(6, 7), 16)
+        if cursor == nil then cursor = 1 end  -- default: all
         if cursor <= 1 then
+            -- increment all
             r = cast_u8(r + addend)
             g = cast_u8(g + addend)
             b = cast_u8(b + addend)
@@ -35,7 +37,7 @@ M.hex = {
         elseif cursor == 4 or cursor == 5 then
             g = cast_u8(g + addend)
             cursor = 5
-        elseif cursor == 6 or cursor == 7 then
+        else  -- (if cursor == 6 or cursor == 7 then)
             b = cast_u8(b + addend)
             cursor = 7
         end

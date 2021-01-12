@@ -22,6 +22,7 @@ M["%Y/%m/%d"] = {
         local year = tonumber(text:sub(1, 4))
         local month = tonumber(text:sub(6, 7))
         local day = tonumber(text:sub(9, 10))
+        if cursor == nil then cursor = 10 end  -- default: day
         if cursor >= 1 and cursor <= 4 then
             year = year + addend
             cursor = 4
@@ -46,6 +47,7 @@ M["%m/%d"] = {
     add = function(cursor, text, addend)
         local month = tonumber(text:sub(1, 2))
         local day = tonumber(text:sub(4, 5))
+        if cursor == nil then cursor = 5 end  -- default: day
         if cursor >= 1 and cursor <= 2 then
             month = month + addend
             cursor = 2
@@ -69,6 +71,7 @@ M["%Y-%m-%d"] = {
         local year = tonumber(text:sub(1, 4))
         local month = tonumber(text:sub(6, 7))
         local day = tonumber(text:sub(9, 10))
+        if cursor == nil then cursor = 10 end  -- default: day
         if cursor >= 1 and cursor <= 4 then
             year = year + addend
             cursor = 4
@@ -95,6 +98,7 @@ M["%Y年%m月%d日"] = {
         year = tonumber(year_str)
         month = tonumber(month_str)
         day = tonumber(day_str)
+        if cursor == nil then cursor = 14 end  -- default: day
         if cursor >= 1 and cursor <= 7 then
             year = year + addend
             cursor = 4
@@ -120,6 +124,7 @@ M["%H:%M:%S"] = {
         local hour = tonumber(text:sub(1, 2))
         local minute = tonumber(text:sub(4, 5))
         local second = tonumber(text:sub(7, 8))
+        if cursor == nil then cursor = 8 end  -- default: second
         if cursor >= 1 and cursor <= 2 then
             hour = hour + addend
             cursor = 2
@@ -144,6 +149,7 @@ M["%H:%M"] = {
     add = function(cursor, text, addend)
         local hour = tonumber(text:sub(1, 2))
         local minute = tonumber(text:sub(4, 5))
+        if cursor == nil then cursor = 5 end  -- default: second
         if cursor >= 1 and cursor <= 2 then
             hour = hour + addend
             cursor = 2
