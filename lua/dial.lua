@@ -20,19 +20,18 @@ M.searchlist = {
         M.augends.number.decimal,
         M.augends.number.hex,
         M.augends.number.binary,
-        M.augends.color.hex,
         M.augends.date["%Y/%m/%d"],
         M.augends.date["%m/%d"],
         M.augends.date["%Y-%m-%d"],
         M.augends.date["%H:%M"],
         M.augends.date["%ja"],
         M.augends.date["%jA"],
+        M.augends.color.hex,
     },
     visual = {
         M.augends.number.decimal,
         M.augends.number.hex,
         M.augends.number.binary,
-        M.augends.color.hex,
         M.augends.date["%Y/%m/%d"],
         M.augends.date["%m/%d"],
         M.augends.date["%Y-%m-%d"],
@@ -41,6 +40,7 @@ M.searchlist = {
         M.augends.date["%jA"],
         M.augends.char.alph_small,
         M.augends.char.alph_capital,
+        M.augends.color.hex,
     }
 }
 
