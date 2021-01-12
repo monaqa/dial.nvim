@@ -45,7 +45,7 @@ In this plugin, the target to increment/decrement is called **augend**.
 In `dial.nvim`, you can operate on multiple types of augend.
 
 |Augend Name                      |Explanation                                      |Examples                           |
-|---------------------------------|:-----------------------------------------------:|:---------------------------------:|
+|---------------------------------|:------------------------------------------------|:----------------------------------|
 |`number.decimal`                 |decimal natural number                           |`0`, `1`, ..., `9`, `10`, `11`, ...|
 |`number.hex`                     |hex natural number                               |`0x00`, `0x3f3f`, ...              |
 |`number.octal`                   |octal natural number                             |`000`, `011`, `024`, ...           |
