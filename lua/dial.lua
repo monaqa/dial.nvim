@@ -395,14 +395,18 @@ local function get_nested(tbl, key)
 end
 
 -- Increment/Decrement function with command.
-function M.increment_command_with_range(addend, searchlist, range)
+function M.increment_command_with_range(addend, searchlist, range, additional)
     vim.validate{
         addend = {addend, "number"},
         searchlist = {searchlist, "table"},
         range = {range, "table"},
+        additional = {additional, "boolean", true},
     }
     util.validate_list("searchlist", searchlist, "string")
     util.validate_list("range", range, "number")
+    if additional == nil then
+        additional = false
+    end
 
     override_searchlist = {}
     for _, aug_str in ipairs(searchlist) do
@@ -415,7 +419,7 @@ function M.increment_command_with_range(addend, searchlist, range)
 
     row_s = range[1]
     row_e = range[2]
-    increment_range(addend, override_searchlist, row_s, row_e)
+    increment_range(addend, override_searchlist, row_s, row_e, additional)
 end
 
 -- Increment/Decrement function in visual mode.
