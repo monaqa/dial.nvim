@@ -445,8 +445,31 @@ end
 
 -- list normal searchlist up
 function M.print_searchlist()
+    local len_names = vim.tbl_map(
+        function(aug)
+            return vim.fn.strdisplaywidth(aug.name)
+        end,
+        M.searchlist.normal
+        )
+    local max_names = vim.fn.max(len_names)
+
+    print("[Normal mode]")
     for _, aug in ipairs(M.searchlist.normal) do
-        print(aug.name, ":", aug.desc)
+        print(("%-" .. max_names .. "s : %s"):format(aug.name, aug.desc))
+    end
+    print("")
+
+    local len_names = vim.tbl_map(
+        function(aug)
+            return vim.fn.strdisplaywidth(aug.name)
+        end,
+        M.searchlist.visual
+        )
+    local max_names = vim.fn.max(len_names)
+
+    print("[Visual mode]")
+    for _, aug in ipairs(M.searchlist.visual) do
+        print(("%-" .. max_names .. "s : %s"):format(aug.name, aug.desc))
     end
 end
 
