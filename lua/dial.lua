@@ -232,16 +232,92 @@ local function increment_v(addend, override_searchlist)
     vim.fn.setline('.', newline)
     vim.fn.setpos("'<", {pos_s[1], pos_s[2], pos_s[3], pos_s[4]})
     vim.fn.setpos("'>", {pos_s[1], pos_s[2], pos_s[3] + #text - 1, pos_s[4]})
+end
+
+local function increment_v_block(addend, override_searchlist, additional)
+    -- 選択範囲の取得
+    local pos_s = vim.fn.getpos("'<")
+    local pos_e = vim.fn.getpos("'>")
+    local row_s, row_e, col_s, col_e
+    if pos_s[2] < pos_e[2] then
+        row_s = pos_s[2]
+        row_e = pos_e[2]
+    else
+        row_s = pos_e[2]
+        row_e = pos_s[2]
+    end
+    if pos_s[3] < pos_e[3] then
+        col_s = pos_s[3]
+        col_e = pos_e[3]
+    else
+        col_s = pos_e[3]
+        col_e = pos_s[3]
+    end
+
+    if override_searchlist then
+        searchlist = override_searchlist
+    else
+        searchlist = M.searchlist.visual
+    end
+    if addend == nil then
+        addend = 1
+    end
+
+    local cursor = col_s
+
+    for row=row_s,row_e do
+        local line = vim.fn.getline(row)
+        local text = line:sub(col_s, col_e)
+
+        -- 数字の検索
+        local augendlst = util.filter_map(
+            function(aug)
+                -- 選択範囲に含まれるもののみ検索
+                span = aug.find(1, text)
+                if span == nil then
+                    return nil
+                end
+                return {augend = aug, from = cursor + span.from - 1, to = cursor + span.to - 1}
+            end,
+            searchlist
+            )
+
+        -- 優先順位が最も高い augend を選択
+        local elem = M.pickup_augend(augendlst, cursor)
+
+        if elem ~= nil then
+
+            -- addend の計算
+            if additional then
+                actual_addend = addend * (row - row_s + 1)
+            else
+                actual_addend = addend
+            end
+
+            -- 加算後のテキストの作成
+            local aug = elem.augend
+            local s = elem.from
+            local e = elem.to
+            text = line:sub(s, e)
+            local newcol, text = aug.add(nil, text, actual_addend)
+            local newline = string.sub(line, 1, s - 1) .. text .. string.sub(line, e + 1)
+            newcol = newcol + s - 1
+
+            -- 行編集、カーソル位置のアップデート
+            vim.fn.setline(row, newline)
+        end
+    end
 
 end
 
 -- Increment/Decrement function for specified line. This edits the current buffer.
-local function increment_range(addend, override_searchlist, row_s, row_e)
+local function increment_range(addend, override_searchlist, row_s, row_e, additional)
     vim.validate{
         addend = {addend, "number"},
         override_searchlist = {override_searchlist, "table", true},
         row_s = {row_s, "number"},
         row_e = {row_e, "number"},
+        additional = {additional, "boolean"}
     }
 
     if addend == nil then
@@ -280,13 +356,20 @@ local function increment_range(addend, override_searchlist, row_s, row_e)
                 return
             end
 
+            -- addend の計算
+            if additional then
+                actual_addend = addend * (row - row_s + 1)
+            else
+                actual_addend = addend
+            end
+
             -- 加算後のテキストの作成
             local aug = elem.augend
             local s = elem.from
             local e = elem.to
             local rel_cursor = 2 - s
             local text = string.sub(line, s, e)
-            local newcol, text = aug.add(rel_cursor, text, addend)
+            local newcol, text = aug.add(rel_cursor, text, actual_addend)
             local newline = string.sub(line, 1, s - 1) .. text .. string.sub(line, e + 1)
             newcol = newcol + s - 1
 
@@ -336,7 +419,16 @@ function M.increment_command_with_range(addend, searchlist, range)
 end
 
 -- Increment/Decrement function in visual mode.
-function M.increment_visual(addend, override_searchlist)
+function M.increment_visual(addend, override_searchlist, additional)
+    vim.validate{
+        addend = {addend, "number"},
+        override_searchlist = {override_searchlist, "table", true},
+        additional = {additional, "boolean", true},
+    }
+    if additional == nil then
+        additional = false
+    end
+
     -- 現在のカーソル位置、カーソルのある行、加数の取得
     local mode = vim.fn.visualmode()
     if mode == "v" then
@@ -345,11 +437,9 @@ function M.increment_visual(addend, override_searchlist)
         -- 選択範囲の取得
         local row_s = vim.fn.line("'<")
         local row_e = vim.fn.line("'>")
-
-        increment_range(addend, override_searchlist, row_s, row_e)
+        increment_range(addend, override_searchlist, row_s, row_e, additional)
     elseif mode == "" then
-        -- not yet implemented
-        error("Not yet implemented!")
+        increment_v_block(addend, override_searchlist, additional)
     end
 end
 

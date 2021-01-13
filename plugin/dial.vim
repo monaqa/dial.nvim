@@ -10,6 +10,9 @@ nnoremap <silent><expr> <Plug>(dial-decrement) '<Cmd>lua require"dial".increment
 vnoremap <silent><expr> <Plug>(dial-increment) ':<C-u>lua require"dial".increment_visual(' .. v:count1  .. ')<CR>gv'
 vnoremap <silent><expr> <Plug>(dial-decrement) ':<C-u>lua require"dial".increment_visual(' .. -v:count1 .. ')<CR>gv'
 
+vnoremap <silent><expr> <Plug>(dial-increment-additional) ':<C-u>lua require"dial".increment_visual(' .. v:count1  .. ', nil, true)<CR>gv'
+vnoremap <silent><expr> <Plug>(dial-decrement-additional) ':<C-u>lua require"dial".increment_visual(' .. -v:count1 .. ', nil, true)<CR>gv'
+
 command! DialShowSearchList lua require"dial".print_searchlist()
 
 command! -range -bang -nargs=1 DialIncrement lua require"dial".increment_command_with_range(1, {<f-args>}, {<line1>, <line2>})
