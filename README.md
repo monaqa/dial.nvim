@@ -37,6 +37,10 @@ To use this plugin, assign the plugin keymap to the key you like, as shown below
 ```vim
 nmap <C-a> <Plug>(dial-increment)
 nmap <C-x> <Plug>(dial-decrement)
+vmap <C-a> <Plug>(dial-increment)
+vmap <C-x> <Plug>(dial-decrement)
+vmap g<C-a> <Plug>(dial-increment-additional)
+vmap g<C-x> <Plug>(dial-decrement-additional)
 ```
 
 ## Configuration
