@@ -78,13 +78,13 @@ dial.searchlist.normal = {
     dial.augends.number.decimal,
     dial.augends.number.hex,
     dial.augends.number.binary,
-    dial.augends.date.date,
+    dial.augends.date["%Y/%m/%d"],
     dial.augends.markup.markdown_header,
 }
 EOF
 ```
 
-`dial.searchlist` is the list of augend,
+`dial.searchlist.normal` is the list of available augends in normal mode,
 and `dial.augends` is a submodule that stores augend, which is provided by default.
 
 The default set of available augends are shown here:
@@ -122,6 +122,8 @@ local dial = require("dial")
 table.insert(dial.searchlist.normal, dial.augends.markup.markdown_header)
 EOF
 ```
+
+Changing `dial.serchlist.visual` table, you can also customize the behavior of `<C-a>` / `<C-x>` in visual mode.
 
 The list of currently enabled augends can be checked with `:DialShowSearchList` command.
 
@@ -168,4 +170,4 @@ table.insert(dial.searchlist.normal, dial.augends.boolean)
 ## TODO
 
 * [ ] Write help file
-* [ ] Command for visual-block mode
+* [x] Command for visual-block mode
