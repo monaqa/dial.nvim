@@ -137,4 +137,31 @@ function M.eval(inStr)
     return assert(load(inStr))()
 end
 
+local function tostring_with_base(n, b, wid, pad)
+    n = math.floor(n)
+    if not b or b == 10 then return tostring(n) end
+    local digits = "0123456789abcdefghijklmnopqrstuvwxyz"
+    local t = {}
+    if n < 0 then
+        -- be positive
+        n = -n
+    end
+    repeat
+        local d = (n % b) + 1
+        n = math.floor(n / b)
+        table.insert(t, 1, digits:sub(d,d))
+    until n == 0
+    text = table.concat(t,"")
+    if wid then
+        if #text < wid then
+            if pad == nil then
+                pad = " "
+            end
+            padding = pad:rep(wid - #text)
+            return padding .. text
+        end
+    end
+    return text
+end
+
 return M
