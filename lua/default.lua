@@ -8,12 +8,12 @@ M.searchlist = {}
 
 M.searchlist.normal = {
     "number#decimal",
-    "number#decimal#hex",
+    "number#hex",
 }
 
 M.searchlist.visual = {
     "number#decimal",
-    "number#decimal#hex",
+    "number#hex",
 }
 
 return M

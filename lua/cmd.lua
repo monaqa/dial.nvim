@@ -1,4 +1,6 @@
 local util = require("./util")
+local default = require("./default")
+local augends = require("./augends")
 
 local M = {}
 
@@ -87,10 +89,12 @@ function M.increment(addend, override_searchlist)
     if override_searchlist then
         searchlist = override_searchlist
     else
-        searchlist = M.searchlist.normal
+        searchlist = default.searchlist.normal
     end
+    local search_augends = assert(util.try_get_keys(augends, searchlist))
+
     -- type check
-    util.validate_list("searchlist", searchlist, util.has_augend_field, "is augend")
+    util.validate_list("search_augends", search_augends, util.has_augend_field, "is augend")
 
     -- 現在のカーソル位置、カーソルのある行、加数の取得
     local curpos = vim.call('getcurpos')
@@ -109,7 +113,7 @@ function M.increment(addend, override_searchlist)
             end
             return {augend = aug, from = span.from, to = span.to}
         end,
-        searchlist
+        search_augends
     )
 
     -- 優先順位が最も高い augend を選択
@@ -158,10 +162,10 @@ local function increment_v(addend, override_searchlist)
     if override_searchlist then
         searchlist = override_searchlist
     else
-        searchlist = M.searchlist.visual
+        searchlist = default.searchlist.visual
     end
     -- type check
-    util.validate_list("searchlist", searchlist, util.has_augend_field, "is augend")
+    util.validate_list("search_augends", search_augends, util.has_augend_field, "is augend")
 
     -- 数字の検索
     local augendlst = util.filter_map(
@@ -173,7 +177,7 @@ local function increment_v(addend, override_searchlist)
             end
             return {augend = aug, from = span.from, to = span.to}
         end,
-        searchlist
+        search_augends
     )
 
     -- 優先順位が最も高い augend を選択
@@ -183,7 +187,7 @@ local function increment_v(addend, override_searchlist)
     end
 
     -- 加算後のテキストの作成・行の更新
-    aug = elem.augend
+    local aug = elem.augend
 
     local newcol, text = aug.add(nil, text, addend)
     local newline = string.sub(line, 1, col_s - 1) .. text .. string.sub(line, col_e + 1)
@@ -215,8 +219,10 @@ local function increment_v_block(addend, override_searchlist, additional)
     if override_searchlist then
         searchlist = override_searchlist
     else
-        searchlist = M.searchlist.visual
+        searchlist = default.searchlist.visual
     end
+    local search_augends = assert(util.try_get_keys(augends, searchlist))
+
     if addend == nil then
         addend = 1
     end
@@ -237,7 +243,7 @@ local function increment_v_block(addend, override_searchlist, additional)
                 end
                 return {augend = aug, from = cursor + span.from - 1, to = cursor + span.to - 1}
             end,
-            searchlist
+            search_augends
             )
 
         -- 優先順位が最も高い augend を選択
@@ -285,10 +291,12 @@ local function increment_range(addend, override_searchlist, row_s, row_e, additi
     if override_searchlist then
         searchlist = override_searchlist
     else
-        searchlist = M.searchlist.normal
+        searchlist = default.searchlist.normal
     end
+    local search_augends = assert(util.try_get_keys(augends, searchlist))
+
     -- type check
-    util.validate_list("searchlist", searchlist, util.has_augend_field, "is augend")
+    util.validate_list("search_augends", search_augends, util.has_augend_field, "is augend")
 
     for row=row_s,row_e do
         local f = function()
@@ -305,7 +313,7 @@ local function increment_range(addend, override_searchlist, row_s, row_e, additi
                     end
                     return {augend = aug, from = span.from, to = span.to}
                 end,
-                searchlist
+                search_augends
                 )
 
             -- 優先順位が最も高い augend を選択
@@ -366,18 +374,9 @@ function M.increment_command_with_range(addend, searchlist, range, additional)
         additional = false
     end
 
-    override_searchlist = {}
-    for _, aug_str in ipairs(searchlist) do
-        aug = get_nested(M.augends, aug_str)
-        vim.validate{
-            aug = {aug, util.has_augend_field, "augend table"}
-        }
-        table.insert(override_searchlist, aug)
-    end
-
     row_s = range[1]
     row_e = range[2]
-    increment_range(addend, override_searchlist, row_s, row_e, additional)
+    increment_range(addend, searchlist, row_s, row_e, additional)
 end
 
 -- Increment/Decrement function in visual mode.
@@ -411,12 +410,12 @@ function M.print_searchlist()
         function(aug)
             return vim.fn.strdisplaywidth(aug.name)
         end,
-        M.searchlist.normal
+        default.searchlist.normal
         )
     local max_names = vim.fn.max(len_names)
 
     print("[Normal mode]")
-    for _, aug in ipairs(M.searchlist.normal) do
+    for _, aug in ipairs(default.searchlist.normal) do
         print(("%-" .. max_names .. "s : %s"):format(aug.name, aug.desc))
     end
     print("")
@@ -425,12 +424,12 @@ function M.print_searchlist()
         function(aug)
             return vim.fn.strdisplaywidth(aug.name)
         end,
-        M.searchlist.visual
+        default.searchlist.visual
         )
     local max_names = vim.fn.max(len_names)
 
     print("[Visual mode]")
-    for _, aug in ipairs(M.searchlist.visual) do
+    for _, aug in ipairs(default.searchlist.visual) do
         print(("%-" .. max_names .. "s : %s"):format(aug.name, aug.desc))
     end
 end

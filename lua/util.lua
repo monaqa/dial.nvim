@@ -92,10 +92,6 @@ function M.has_augend_field(tbl)
         return false, "augend should have a method (function field) 'add'"
     end
 
-    if type(tbl.name) ~= "string" then
-        return false, "augend should have a string field 'name'"
-    end
-
     if type(tbl.desc) ~= "string" then
         return false, "augend should have a string field 'desc'"
     end
@@ -133,11 +129,7 @@ function M.filter_map_zip(fn, ary)
     return a
 end
 
-function M.eval(inStr)
-    return assert(load(inStr))()
-end
-
-local function tostring_with_base(n, b, wid, pad)
+function M.tostring_with_base(n, b, wid, pad)
     n = math.floor(n)
     if not b or b == 10 then return tostring(n) end
     local digits = "0123456789abcdefghijklmnopqrstuvwxyz"
@@ -162,6 +154,28 @@ local function tostring_with_base(n, b, wid, pad)
         end
     end
     return text
+end
+
+-- util.try_get_keys({foo = "bar", hoge = "fuga", teka = "pika"}, ["teka", "foo"])
+-- -> ["pika", "bar"]
+function M.try_get_keys(tbl, keylst)
+    if not vim.tbl_islist(keylst) then
+        return nil, "the 2nd argument is not list."
+    end
+
+    local values = {}
+
+    for _, key in ipairs(keylst) do
+        val = tbl[key]
+        if val ~= nil then
+            table.insert(values, val)
+        else
+            errmsg = ("The value corresponding to the key '%s' is not found in the table."):format(key)
+            return nil, errmsg
+        end
+    end
+
+    return values
 end
 
 return M

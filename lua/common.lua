@@ -62,12 +62,11 @@ end
 
 function M.enum_sequence(tbl)
     vim.validate{
-        name = {tbl.name, "string"},
         strlist = {tbl.strlist, "table"},
         desc = {tbl.desc, "string", true},
         ptn_format = {tbl.ptn_format, "string", true},
     }
-    local name, desc, strlist, ptn_format = tbl.name, tbl.desc, tbl.strlist, tbl.ptn_format
+    local desc, strlist, ptn_format = tbl.desc, tbl.strlist, tbl.ptn_format
 
     -- option 引数
     if ptn_format == nil then
@@ -98,7 +97,6 @@ function M.enum_sequence(tbl)
     end
 
     return {
-        name = name,
         desc = desc,
         find = find,
         add = add,
@@ -107,13 +105,12 @@ end
 
 function M.enum_cyclic(tbl)
     vim.validate{
-        name = {tbl.name, "string"},
         strlist = {tbl.strlist, "table"},
         desc = {tbl.desc, "string", true},
         ptn_format = {tbl.ptn_format, "string", true},
     }
-    util.validate_list(("strlist of %s"):format(tbl.name), tbl.strlist, "string", false)
-    local name, desc, strlist, ptn_format = tbl.name, tbl.desc, tbl.strlist, tbl.ptn_format
+    util.validate_list("enum_cyclic", tbl.strlist, "string", false)
+    local desc, strlist, ptn_format = tbl.desc, tbl.strlist, tbl.ptn_format
 
     -- option 引数
     if ptn_format == nil then
