@@ -13,7 +13,7 @@ vnoremap <silent><expr> <Plug>(dial-decrement) ':<C-u>lua require"dial".cmd.incr
 vnoremap <silent><expr> <Plug>(dial-increment-additional) ':<C-u>lua require"dial".cmd.increment_visual(' .. v:count1  .. ', nil, true)<CR>gv'
 vnoremap <silent><expr> <Plug>(dial-decrement-additional) ':<C-u>lua require"dial".cmd.increment_visual(' .. -v:count1 .. ', nil, true)<CR>gv'
 
-command! DialShowSearchList lua require"dial".cmd.print_searchlist()
+command! DialShowSearchList lua require"dial".cmd.show_searchlist_info()
 
 command! -range -nargs=1 -complete=customlist,DialShowAugends DialIncrement lua require"dial".cmd.increment_range(1, {from = <line1>, to = <line2>}, {<f-args>})
 command! -range -nargs=1 -complete=customlist,DialShowAugends DialDecrement lua require"dial".cmd.increment_range(-1, {from = <line1>, to = <line2>}, {<f-args>})

@@ -388,6 +388,49 @@ function M.pickup_augend(lst, cursor)
     return span
 end
 
+local function get_augend_info_line(name, augend, max_name_len)
+    local normal_mark, visual_mark
+    if vim.tbl_contains(default.searchlist.normal, name) then
+        normal_mark = 'o'
+    else
+        normal_mark = ' '
+    end
+    if vim.tbl_contains(default.searchlist.visual, name) then
+        visual_mark = 'o'
+    else
+        visual_mark = ' '
+    end
+
+    local name_length = vim.fn.strdisplaywidth(name)
+    local name_with_padding = name .. (" "):rep(max_name_len - name_length)
+
+    return ("| %s | %s | %s | %s"):format(name_with_padding, normal_mark, visual_mark, augend.desc)
+end
+
+-- searchlist のキー名とその説明を表示する。
+function M.show_searchlist_info()
+    local augend_name_header = "Augend name"
+    local augend_names = vim.tbl_keys(augends)
+    local name_lengths = vim.tbl_map(
+        function(name)
+            return vim.fn.strdisplaywidth(name)
+        end,
+        augend_names
+        )
+
+    local max_name_len = vim.fn.max(name_lengths)
+    if max_name_len < augend_name_header:len() then
+        max_name_len = augend_name_header:len()
+    end
+
+    print(("| %-" .. max_name_len .. "s | n | v | desc"):format(augend_name_header))
+    print(("-"):rep(100))  -- 適当
+    table.sort(augend_names)
+    for _, name in ipairs(augend_names) do
+        print(get_augend_info_line(name, augends[name], max_name_len))
+    end
+end
+
 return M
 
 -- -- Increment/Decrement function in normal mode. This edits the current buffer.
