@@ -4,129 +4,6 @@ local augends = require("./augends")
 
 local M = {}
 
-function M.increment_normal(addend, override_searchlist)
-    -- signature
-    vim.validate{
-        -- 加数。
-        addend = {addend, "number"},
-        -- 対象とする被加数の種類のリスト (optional)。
-        override_searchlist = {override_searchlist, "table", true},
-    }
-    util.validate_list("override searchlist", override_searchlist, "string")
-
-    -- 対象の searchlist 文字列に対応する augends のリストを取得
-    if override_searchlist then
-        searchlist = override_searchlist
-    else
-        searchlist = default.searchlist.normal
-    end
-    local search_augends = assert(util.try_get_keys(augends, searchlist))
-
-    -- 現在のカーソル位置、行内容を取得
-    local curpos = vim.call('getcurpos')
-    local cursor = curpos[3]
-    local line = vim.fn.getline('.')
-
-    -- 更新後の行内容、新たなカーソル位置を取得
-    cursor, line = get_incremented_text(cursor, line, addend, search_augends)
-
-    -- 対象行の内容及びカーソル位置を更新
-    if line ~= nil then
-        vim.fn.setline('.', line)
-    end
-    if cursor ~=nil then
-        vim.fn.setpos('.', {curpos[1], curpos[2], cursor, curpos[4], curpos[5]})
-    end
-
-end
-
-function M.increment_visual(addend, override_searchlist, is_additional)
-    vim.validate{
-        -- 加数。
-        addend = {addend, "number"},
-        -- 対象とする被加数の種類のリスト (optional)。
-        override_searchlist = {override_searchlist, "table", true},
-        -- 複数行に渡るインクリメントの場合、加数を
-        -- 1行目は1、2行目は2、3行目は3、…と増やしていくかどうか。
-        -- default は false。
-        additional = {additional, "boolean", true},
-    }
-    util.validate_list("override searchlist", override_searchlist, "string")
-
-    -- 対象の searchlist 文字列に対応する augends のリストを取得
-    if override_searchlist then
-        searchlist = override_searchlist
-    else
-        searchlist = default.searchlist.visual
-    end
-    local search_augends = assert(util.try_get_keys(augends, searchlist))
-
-    -- VISUAL mode の種類により場合分け
-    local mode = vim.fn.visualmode()
-    if mode == "v" then
-        increment_visual_normal(addend, override_searchlist)
-    elseif mode == "V" then
-        -- 選択範囲の取得
-        local row_s = vim.fn.line("'<")
-        local row_e = vim.fn.line("'>")
-        M.increment_range(addend, {from = row_s, to = row_e}, override_searchlist, additional)
-    elseif mode == "" then
-        increment_visual_block(addend, override_searchlist, additional)
-    end
-
-end
-
-function M.increment_range(addend, range, override_searchlist, additional)
-    -- signature
-    vim.validate{
-        -- 加数。
-        addend = {addend, "number"},
-        -- テキストの範囲を表すテーブル。
-        -- {from = m, to = n } で "m行目からn行目まで（両端含む）" を表す。
-        range = {range, "table"},
-        ["range.from"] = {range.from, "number"},
-        ["range.to"] = {range.to, "number"},
-        -- 対象とする被加数の種類のリスト (optional)。
-        override_searchlist = {override_searchlist, "table", true},
-    }
-    util.validate_list("override searchlist", override_searchlist, "string")
-
-    -- 対象の searchlist 文字列に対応する augends のリストを取得
-    if override_searchlist then
-        searchlist = override_searchlist
-    else
-        searchlist = default.searchlist.normal
-    end
-    local search_augends = assert(util.try_get_keys(augends, searchlist))
-
-    for row=row_s,row_e do
-        local f = function()
-            -- 対象となる行の内容を取得
-            local line = vim.fn.getline(row)
-            if line == "" then
-                return  -- continue
-            end
-
-            -- addend の計算
-            if additional then
-                actual_addend = addend * (row - row_s + 1)
-            else
-                actual_addend = addend
-            end
-
-            -- 更新後のそれぞれの行内容を取得
-            local _, line = get_incremented_text(1, line, actual_addend, search_augends)
-
-            -- 対象行の内容を更新
-            if line ~= nil then
-                vim.fn.setline(row, line)
-            end
-        end
-        f()
-    end
-
-end
-
 -- 完全一致を条件としたインクリメント。
 local function get_incremented_text_fullmatch(cursor, text, addend, search_augends)
     -- signature
@@ -217,6 +94,44 @@ local function get_incremented_text(cursor, text, addend, search_augends)
     return cursor, text
 end
 
+function M.increment_normal(addend, override_searchlist)
+    -- signature
+    vim.validate{
+        -- 加数。
+        addend = {addend, "number"},
+        -- 対象とする被加数の種類のリスト (optional)。
+        override_searchlist = {override_searchlist, "table", true},
+    }
+    if override_searchlist ~= nil then
+        util.validate_list("override searchlist", override_searchlist, "string")
+    end
+
+    -- 対象の searchlist 文字列に対応する augends のリストを取得
+    if override_searchlist then
+        searchlist = override_searchlist
+    else
+        searchlist = default.searchlist.normal
+    end
+    local search_augends = assert(util.try_get_keys(augends, searchlist))
+
+    -- 現在のカーソル位置、行内容を取得
+    local curpos = vim.call('getcurpos')
+    local cursor = curpos[3]
+    local line = vim.fn.getline('.')
+
+    -- 更新後の行内容、新たなカーソル位置を取得
+    cursor, line = get_incremented_text(cursor, line, addend, search_augends)
+
+    -- 対象行の内容及びカーソル位置を更新
+    if line ~= nil then
+        vim.fn.setline('.', line)
+    end
+    if cursor ~=nil then
+        vim.fn.setpos('.', {curpos[1], curpos[2], cursor, curpos[4], curpos[5]})
+    end
+
+end
+
 -- Increment/Decrement function in visual (not visual-line or visual-block) mode.
 -- This edits the current buffer.
 local function increment_visual_normal(addend, override_searchlist)
@@ -249,7 +164,7 @@ local function increment_visual_normal(addend, override_searchlist)
     -- 対象行の内容及びカーソル位置を更新
     if text ~= nil then
         local line = string.sub(line, 1, col_s - 1) .. text .. string.sub(line, col_e + 1)
-        vim.fn.setline('.', newline)
+        vim.fn.setline('.', line)
         vim.fn.setpos("'<", {pos_s[1], pos_s[2], pos_s[3], pos_s[4]})
         vim.fn.setpos("'>", {pos_s[1], pos_s[2], pos_s[3] + #text - 1, pos_s[4]})
     end
@@ -300,10 +215,101 @@ local function increment_visual_block(addend, override_searchlist, additional)
         end
 
         local _, text = get_incremented_text(1, text, actual_addend, search_augends)
-        local line = string.sub(line, 1, s - 1) .. text .. string.sub(line, e + 1)
+        local line = string.sub(line, 1, col_s - 1) .. text .. string.sub(line, col_e + 1)
 
         -- 行編集、カーソル位置のアップデート
         vim.fn.setline(row, line)
+    end
+end
+
+
+function M.increment_visual(addend, override_searchlist, is_additional)
+    vim.validate{
+        -- 加数。
+        addend = {addend, "number"},
+        -- 対象とする被加数の種類のリスト (optional)。
+        override_searchlist = {override_searchlist, "table", true},
+        -- 複数行に渡るインクリメントの場合、加数を
+        -- 1行目は1、2行目は2、3行目は3、…と増やしていくかどうか。
+        -- default は false。
+        additional = {additional, "boolean", true},
+    }
+    if override_searchlist ~= nil then
+        util.validate_list("override searchlist", override_searchlist, "string")
+    end
+
+    -- 対象の searchlist 文字列に対応する augends のリストを取得
+    if override_searchlist then
+        searchlist = override_searchlist
+    else
+        searchlist = default.searchlist.visual
+    end
+    local search_augends = assert(util.try_get_keys(augends, searchlist))
+
+    -- VISUAL mode の種類により場合分け
+    local mode = vim.fn.visualmode()
+    if mode == "v" then
+        increment_visual_normal(addend, override_searchlist)
+    elseif mode == "V" then
+        -- 選択範囲の取得
+        local row_s = vim.fn.line("'<")
+        local row_e = vim.fn.line("'>")
+        M.increment_range(addend, {from = row_s, to = row_e}, override_searchlist, additional)
+    elseif mode == "" then
+        increment_visual_block(addend, override_searchlist, additional)
+    end
+
+end
+
+function M.increment_range(addend, range, override_searchlist, additional)
+    -- signature
+    vim.validate{
+        -- 加数。
+        addend = {addend, "number"},
+        -- テキストの範囲を表すテーブル。
+        -- {from = m, to = n } で "m行目からn行目まで（両端含む）" を表す。
+        range = {range, "table"},
+        ["range.from"] = {range.from, "number"},
+        ["range.to"] = {range.to, "number"},
+        -- 対象とする被加数の種類のリスト (optional)。
+        override_searchlist = {override_searchlist, "table", true},
+    }
+    if override_searchlist ~= nil then
+        util.validate_list("override searchlist", override_searchlist, "string")
+    end
+
+    -- 対象の searchlist 文字列に対応する augends のリストを取得
+    if override_searchlist then
+        searchlist = override_searchlist
+    else
+        searchlist = default.searchlist.normal
+    end
+    local search_augends = assert(util.try_get_keys(augends, searchlist))
+
+    for row=range.from,range.to do
+        local f = function()
+            -- 対象となる行の内容を取得
+            local line = vim.fn.getline(row)
+            if line == "" then
+                return  -- continue
+            end
+
+            -- addend の計算
+            if additional then
+                actual_addend = addend * (row - range.from + 1)
+            else
+                actual_addend = addend
+            end
+
+            -- 更新後のそれぞれの行内容を取得
+            local _, line = get_incremented_text(1, line, actual_addend, search_augends)
+
+            -- 対象行の内容を更新
+            if line ~= nil then
+                vim.fn.setline(row, line)
+            end
+        end
+        f()
     end
 end
 
@@ -381,6 +387,8 @@ function M.pickup_augend(lst, cursor)
     end
     return span
 end
+
+return M
 
 -- -- Increment/Decrement function in normal mode. This edits the current buffer.
 -- function M.increment(addend, override_searchlist)
@@ -676,5 +684,3 @@ end
 --         print(("%-" .. max_names .. "s : %s"):format(aug.name, aug.desc))
 --     end
 -- end
--- 
--- return M
