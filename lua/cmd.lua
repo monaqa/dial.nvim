@@ -170,7 +170,7 @@ local function increment_visual_normal(addend, override_searchlist)
     end
 end
 
-local function increment_visual_block(addend, override_searchlist, additional)
+local function increment_visual_block(addend, override_searchlist, is_additional)
 
     if override_searchlist then
         searchlist = override_searchlist
@@ -208,7 +208,7 @@ local function increment_visual_block(addend, override_searchlist, additional)
         local line = vim.fn.getline(row)
         local text = line:sub(col_s, col_e)
 
-        if additional then
+        if is_additional then
             actual_addend = addend * (row - row_s + 1)
         else
             actual_addend = addend
@@ -232,7 +232,7 @@ function M.increment_visual(addend, override_searchlist, is_additional)
         -- 複数行に渡るインクリメントの場合、加数を
         -- 1行目は1、2行目は2、3行目は3、…と増やしていくかどうか。
         -- default は false。
-        additional = {additional, "boolean", true},
+        is_additional = {is_additional, "boolean", true},
     }
     if override_searchlist ~= nil then
         util.validate_list("override searchlist", override_searchlist, "string")
@@ -254,14 +254,14 @@ function M.increment_visual(addend, override_searchlist, is_additional)
         -- 選択範囲の取得
         local row_s = vim.fn.line("'<")
         local row_e = vim.fn.line("'>")
-        M.increment_range(addend, {from = row_s, to = row_e}, override_searchlist, additional)
+        M.increment_range(addend, {from = row_s, to = row_e}, override_searchlist, is_additional)
     elseif mode == "" then
-        increment_visual_block(addend, override_searchlist, additional)
+        increment_visual_block(addend, override_searchlist, is_additional)
     end
 
 end
 
-function M.increment_range(addend, range, override_searchlist, additional)
+function M.increment_range(addend, range, override_searchlist, is_additional)
     -- signature
     vim.validate{
         -- 加数。
@@ -295,7 +295,7 @@ function M.increment_range(addend, range, override_searchlist, additional)
             end
 
             -- addend の計算
-            if additional then
+            if is_additional then
                 actual_addend = addend * (row - range.from + 1)
             else
                 actual_addend = addend
