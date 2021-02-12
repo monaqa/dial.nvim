@@ -1,6 +1,6 @@
 -- デフォルトの設定値をまとめたもの。
 
-local augends = require("./augends")
+local augends = require("dial/augends")
 
 local M = {}
 

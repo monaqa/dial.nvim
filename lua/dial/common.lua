@@ -1,4 +1,4 @@
-local util = require("./util")
+local util = require("dial/util")
 
 local M = {}
 

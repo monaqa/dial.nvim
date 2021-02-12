@@ -1,5 +1,5 @@
-local util = require("./util")
-local common = require("./common")
+local util = require("dial/util")
+local common = require("dial/common")
 
 local M = {}
 

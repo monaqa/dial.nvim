@@ -1,6 +1,6 @@
-local util = require("./util")
-local default = require("./default")
-local augends = require("./augends")
+local util = require("dial/util")
+local default = require("dial/default")
+local augends = require("dial/augends")
 
 local M = {}
 
