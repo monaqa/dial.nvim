@@ -1,7 +1,8 @@
-*dial.txt* 日本語ヘルプ （最終更新：2020/02/12）
+*dial.txt* help （Last updated: 2020/02/12）
 
-Vimの標準機能である CTRL-A / CTRL-X を拡張し、英数字に限らない様々な文字列を
-インクリメント/デクリメントできるようにするパッケージです。
+A package that extends the standard Vim commands CTRL-A / CTRL-X to allow
+increment/decrement of various strings, not limited to alphanumeric
+characters.
 
 Author: Mogami Shinichi (@monaqa) <mogassy{at}yahoo.co.jp>
 Version: 0.2.0
@@ -29,17 +30,19 @@ Customize						|dial-customize|
 ==============================================================================
 REQUIREMENTS							*dial-requirements*
 
-* Neovim 0.5.0 or later (2020/01/16 現在、Nightly 版のみ提供)
+* Neovim 0.5.0 or later (as of 2020/01/16, only available in nightly.)
 
 ==============================================================================
 INTRODUCTION							*dial-introduction*
 
-*dial.nvim* は、様々な形式の文字列をインクリメント/デクリメントするパッケージ
-です。標準の CTRL-A や CTRL-X、 g CTRL-A といったコマンドの動きを拡張します。
-例えば以下のような文字列が対象となります。
+*dial.nvim* is a package that increments/decrements strings of various
+formats. It extends the standard Vim commands such as CTRL-A, CTRL-X, and g
+CTRL-A in VISUAL mode. For example, the following strings are covered.
 
-標準ではキーマップの置き換えまでは行わないため、プラグインをインストールした上
-で、以下のような記述を設定ファイルに追加する必要があります。
+Since this plugin does not replace the default key-mapping, you need to add
+the following description to the configuration file after installing the
+plugin.
+
 >
 	nmap <C-a> <Plug>(dial-increment)
 	nmap <C-x> <Plug>(dial-decrement)
@@ -56,43 +59,48 @@ Normal Mode~
 
 <Plug>(dial-increment)					*<Plug>(dial-increment)*
 
-	カーソル下または後の被加数を [count] だけインクリメントします。既存の
-	CTRL-A コマンドの代替です。
-	カーソルと同じ行にある被加数にのみ反応します。基本的にはカーソルより手前に
-	ある被加数には反応しないものの、被加数の種類によっては例外的にカーソルの手
-	前にあってもインクリメントを許すものがあります。(cf.
-	|dial-augends-markup#markdown#header|)
+	Increments the number of addends under or after the cursor by [count].
+	This is an alternative to the existing CTRL-A command.
+	It responds only to addends that are on the same line as the cursor.
+	Basically, it is not applied to addends that are before the cursor, but
+	some types of addends may allow incrementing even if they are before the
+	cursor.  (cf. |dial-augends-markup#markdown#header|)
 
 <Plug>(dial-decrement)					*<Plug>(dial-decrement)*
 
-	カーソル下または後の被加数を [count] だけデクリメントします。既存の
-	CTRL-X コマンドの代替です。
+	Decrements the number of addends under or after the cursor by [count].
+	This is an alternative to the existing CTRL-X command.
 
 Visual Mode~
 
 {Visual}<Plug>(dial-increment)			*v_<Plug>(dial-increment)*
 
-	以下のどのモードに入っているかによって挙動が変化します。
-	* 通常の VISUAL モード (|v|)
-	* 行 VISUAL モード (|V|)
-	* 矩形 VISUAL モード (|CTRL-V|)
+	The behavior changes depending on which of the following modes you are in.
+	* normal VISUAL mode (|v|)
+	* linweise VISUAL mode (|V|)
+	* blockwise VISUAL mode (|CTRL-V|)
 
-	通常のビジュアルモード (|v|) の場合、ビジュアル選択されたテキスト中の被加
-	数を [count] だけインクリメントします。既存の CTRL-A コマンドの代替です。
-	選択したテキストが完全一致である必要があります。たとえば十進数のインクリメ
-	ント(||)及び日付のインクリメント (||) が有効になっている場合、`12/3456`の
-	うち `12/3` が選択されていれば12月3日を表す文字列とみなされ `12/4456` とな
-	りますが、`12` のみが選択されている場合は単なる数値列とみなされ `13/3456`
-	となります。
+	In normal VISUAL mode, this command increments the number of addends in
+	the visually selected text by [count]. This is an alternative to the
+	existing CTRL-A command in VISUAL mode.
 
-	行選択ビジュアルモード (|V|) の場合、
-	ビジュアル行選択されたテキスト中の被加数を、行ごとに [count] だけインクリ
-	メントします。各行ごとに被加数の位置を探索し、マッチしたもののうち最も手前
-	の被加数を一つだけ対象とします。
+	The selected text must match the predetermined pattern exactly.  For
+	example, assume that decimal increment (|dial-augends-number#decimal|) and
+	date increment (|dial-augends-date#[%-m/%-d]|) are enabled.  If `12/3` is
+	selected out of `12/3456`, it will be assumed to be the string for
+	December 3 and will result in `12/4456`, while if only `12` is selected,
+	it will be assumed to be just a decimal number and will result in
+	`13/3456`.
 
-	矩形選択ビジュアルモード (|CTRL-V|) の場合は行選択ビジュアルモードの場合と
-	似ているものの、マッチする対象が矩形選択された範囲に絞られます。通常のビジ
-	ュアルモードとことなり、選択範囲が完全一致している必要はありません。
+	In linweise VISUAL mode (|V|),
+	this command increments the addends in the selected text by [count] per
+	line. For each line, it searches for the position of the addend and
+	targets only the one addend that is most left-hand.
+
+	In linweise VISUAL mode (|V|), this command works similarly in linewise
+	VISUAL mode, but the target is narrowed down to the selection.
+	Unlike that in normal VISUAL mode, the selected text does not have to
+	match the predetermined pattern exactly.
 
 {Visual}<Plug>(dial-decrement)			*v_<Plug>(dial-decrement)*
 
