@@ -176,6 +176,10 @@ dial.augends["custom#boolean"] = dial.common.enum_cyclic{
 table.insert(dial.config.searchlist.normal, "custom#boolean")
 ```
 
+## Changelog
+
+See [HISTORY](./HISTORY.md).
+
 ## TODO
 
 * [ ] Write help file
