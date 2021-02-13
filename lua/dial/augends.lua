@@ -1,20 +1,139 @@
-local common = require("./augends/common")
-local util = require("./util")
+local util = require("dial/util")
+local common = require("dial/common")
 
 local M = {}
 
-M["%ja"] = common.enum_cyclic{
-    name = "date['%ja']",
-    strlist = {"日", "月", "火", "水", "木", "金", "土"},
-}
-M["%jA"] = common.enum_cyclic{
-    name = "date['%jA']",
-    strlist = { '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日', '日曜日', },
-    ptn_format = "\\C\\M\\(%s\\)",
+-- 十進整数。
+-- -2, -1, 0, 1, 2, ..., 9, 10, 11, ...  にマッチする。
+M['number#decimal'] = {
+    desc = "decimal natural number (0, 1, 2, ..., 9, 10, 11, ...)",
+
+    find = common.find_pattern("%d+"),
+
+    add = function(cusror, text, addend)
+        local n = tonumber(text)
+        n = n + addend
+        if n < 0 then
+            n = 0
+        end
+        text = tostring(n)
+        cursor = #text
+        return cursor, text
+    end,
 }
 
-M["%Y/%m/%d"] = {
-    name = "date['%Y/%m/%d']",
+-- 十進の非負整数。
+-- 0, 1, 2, ..., 9, 10, 11, ...  にマッチする。
+M['number#decimal#int'] = {
+    desc = "decimal integer including negative (0, 192, -3, etc.)",
+
+    find = common.find_pattern("-?%d+"),
+
+    add = function(cusror, text, addend)
+        local n = tonumber(text)
+        n = n + addend
+        text = tostring(n)
+        cursor = #text
+        return cursor, text
+    end,
+}
+
+-- 固定された桁の十進非負整数。
+-- 桁は0埋めする。
+M['number#decimal#fixed#zero'] = {
+    desc = "fixed-digit decimal natural number (e.g. 00, 01, 02, ..., 97, 98, 99)",
+
+    find = common.find_pattern("%d+"),
+
+    add = function(cusror, text, addend)
+        local n_digit = #text
+        local n = tonumber(text)
+        n = n + addend
+        if n < 0 then n = 0 end
+        if n > (10 ^ n_digit) - 1 then n = (10 ^ n_digit) - 1 end
+        text = ("%0" .. n_digit .. "d"):format(n)
+        cursor = n_digit
+        return cursor, text
+    end,
+}
+
+-- 固定された桁の十進非負整数。
+-- 桁は0埋めする。
+M['number#decimal#fixed#space'] = {
+    desc = "fixed-digit decimal natural number (e.g. ␣0, ␣1, ␣2, ..., 97, 98, 99)",
+
+    find = common.find_pattern(" *%d+"),
+
+    add = function(cusror, text, addend)
+        local n_digit = #text
+        local n = tonumber(text)
+        n = n + addend
+        if n < 0 then n = 0 end
+        if n > (10 ^ n_digit) - 1 then n = (10 ^ n_digit) - 1 end
+        text = ("%" .. n_digit .. "d"):format(n)
+        cursor = n_digit
+        return cursor, text
+    end,
+}
+
+-- 十六進の非負整数。
+-- 0x0, 0x01, 0x1f1f などにマッチする。
+M['number#hex'] = {
+    desc = "hex number (e.g. 0x3f)",
+
+    find = common.find_pattern("0x[0-9a-fA-F]+"),
+
+    add = function(cusror, text, addend)
+        local n = tonumber(text, 16)
+        n = n + addend
+        if n < 0 then
+            n = 0
+        end
+        text = "0x" .. ("%x"):format(n)
+        cursor = #text
+        return cursor, text
+    end,
+}
+
+-- 八進の非負整数。
+M['number#octal'] = {
+    desc = "octal number (e.g. 037)",
+
+    find = common.find_pattern("0[0-7]+"),
+
+    add = function(cusror, text, addend)
+        local wid = #text
+        local n = tonumber(text, 8)
+        n = n + addend
+        if n < 0 then
+            n = 0
+        end
+        text = "0" .. util.tostring_with_base(n, 8, wid - 1, "0")
+        cursor = #text
+        return cursor, text
+    end,
+}
+
+-- バイナリの非負整数。
+M['number#binary'] = {
+    desc = "binary number (e.g. 0b00110101)",
+
+    find = common.find_pattern("0b[01]+"),
+
+    add = function(cusror, text, addend)
+        local wid = #text
+        local n = tonumber(text:sub(3), 2)
+        n = n + addend
+        if n < 0 then
+            n = 0
+        end
+        text = "0b" .. util.tostring_with_base(n, 2, wid - 2, "0")
+        cursor = #text
+        return cursor, text
+    end,
+}
+
+M['date#[%Y/%m/%d]'] = {
     desc = "standard date %Y/%m/%d",
 
     find = common.find_pattern("%d%d%d%d/%d%d/%d%d"),
@@ -39,8 +158,7 @@ M["%Y/%m/%d"] = {
     end
 }
 
-M["%m/%d"] = {
-    name = "date['%m/%d']",
+M['date#[%m/%d]'] = {
     desc = "standard date %m/%d (01/01, 02/28, 12/25, etc.)",
 
     find = common.find_pattern("%d%d/%d%d"),
@@ -62,8 +180,7 @@ M["%m/%d"] = {
     end
 }
 
-M["%-m/%-d"] = {
-    name = "date['%-m/%-d']",
+M['date#[%-m/%-d]'] = {
     desc = "standard date %-m/%-d (1/1, 2/28, 12/25, etc.)",
 
     find = function(cursor, line)
@@ -125,8 +242,7 @@ M["%-m/%-d"] = {
     end
 }
 
-M["%Y-%m-%d"] = {
-    name = "date['%Y-%m-%d']",
+M['date#[%Y-%m-%d]'] = {
     desc = "standard date %Y-%m-%d",
 
     find = common.find_pattern("%d%d%d%d-%d%d-%d%d"),
@@ -151,8 +267,7 @@ M["%Y-%m-%d"] = {
     end
 }
 
-M["%Y年%-m月%-d日"] = {
-    name = "date['%Y年%-m月%-d日']",
+M['date#[%Y年%-m月%-d日]'] = {
     desc = "standard date %Y年%-m月%-d日",
 
     find = common.find_pattern("(%d%d%d%d)年(%d%d?)月(%d%d?)日"),
@@ -196,8 +311,7 @@ M["%Y年%-m月%-d日"] = {
     end
 }
 
-M["%Y年%-m月%-d日(%ja)"] = {
-    name = "date['%Y年%-m月%-d日(%ja)']",
+M['date#[%Y年%-m月%-d日(%ja)]'] = {
     desc = "standard date %Y年%-m月%-d日(%ja), e.g. 2021年1月13日(水)",
 
     find = common.find_pattern_regex([[\v\d{4}年\d{1,2}月\d{1,2}日\((日|月|火|水|木|金|土)\)]]),
@@ -244,8 +358,7 @@ M["%Y年%-m月%-d日(%ja)"] = {
     end
 }
 
-M["%H:%M:%S"] = {
-    name = "date['%H:%M:%S']",
+M['date#[%H:%M:%S]'] = {
     desc = "standard time %H:%M:%S",
 
     find = common.find_pattern("%d%d:%d%d:%d%d"),
@@ -270,8 +383,7 @@ M["%H:%M:%S"] = {
     end
 }
 
-M["%H:%M"] = {
-    name = "date['%H:%M']",
+M['date#[%H:%M]'] = {
     desc = "standard time %H:%M",
 
     find = common.find_pattern("%d%d:%d%d"),
@@ -292,5 +404,105 @@ M["%H:%M"] = {
     end
 }
 
+M['date#[%ja]'] = common.enum_cyclic{
+    strlist = {"日", "月", "火", "水", "木", "金", "土"},
+}
+
+M['date#[%jA]'] = common.enum_cyclic{
+    strlist = { '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日', '日曜日', },
+    ptn_format = "\\C\\M\\(%s\\)",
+}
+
+M['char#alph#small#word'] = common.enum_sequence{
+    strlist = {
+        "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
+        "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
+}}
+
+M['char#alph#capital#word'] = common.enum_sequence{
+    strlist = {
+        "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
+        "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
+}}
+
+M['char#alph#small#str'] = common.enum_sequence{
+    strlist = {
+        "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
+        "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
+    },
+    ptn_format = "\\C\\M\\(%s\\)",
+}
+
+M['char#alph#capital#str'] = common.enum_sequence{
+    strlist = {
+        "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
+        "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
+    },
+    ptn_format = "\\C\\M\\(%s\\)",
+}
+
+local function cast_u8(n)
+    if n <= 0 then
+        return 0
+    end
+    if n >= 255 then
+        return 255
+    end
+    return n
+end
+
+-- hex 表示の html color。
+M['color#hex'] = {
+    desc = "HTML color (e.g. #12ab0f)",
+
+    find = common.find_pattern("#%x%x%x%x%x%x"),
+
+    add = function(cursor, text, addend)
+        local r = tonumber(text:sub(2, 3), 16)
+        local g = tonumber(text:sub(4, 5), 16)
+        local b = tonumber(text:sub(6, 7), 16)
+        if cursor == nil then cursor = 1 end  -- default: all
+        if cursor <= 1 then
+            -- increment all
+            r = cast_u8(r + addend)
+            g = cast_u8(g + addend)
+            b = cast_u8(b + addend)
+            cursor = 1
+        elseif cursor == 2 or cursor == 3 then
+            r = cast_u8(r + addend)
+            cursor = 3
+        elseif cursor == 4 or cursor == 5 then
+            g = cast_u8(g + addend)
+            cursor = 5
+        else  -- (if cursor == 6 or cursor == 7 then)
+            b = cast_u8(b + addend)
+            cursor = 7
+        end
+        text = "#" .. string.format("%02x", r) .. string.format("%02x", g) .. string.format("%02x", b)
+        return cursor, text
+    end,
+}
+
+M['markup#markdown#header'] = {
+    desc = "Markdown Header (# Title)",
+
+    find = function(cursor, line)
+        header_mark_s, header_mark_e = line:find("^#+")
+        if header_mark_s == nil or header_mark_e > 7 then
+            return nil
+        end
+        return {from = header_mark_s, to = header_mark_e}
+    end,
+
+    add = function(cursor, text, addend)
+        n = #text
+        n = n + addend
+        if n < 1 then n = 1 end
+        if n > 6 then n = 6 end
+        text = ("#"):rep(n)
+        cursor = 1
+        return cursor, text
+    end
+}
 
 return M

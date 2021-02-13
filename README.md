@@ -48,29 +48,31 @@ vmap g<C-x> <Plug>(dial-decrement-additional)
 In this plugin, the target to increment/decrement is called **augend**.
 In `dial.nvim`, you can operate on multiple types of augend.
 
-|Augend Name                      |Explanation                                      |Examples                           |
-|---------------------------------|:------------------------------------------------|:----------------------------------|
-|`number.decimal`                 |decimal natural number                           |`0`, `1`, ..., `9`, `10`, `11`, ...|
-|`number.hex`                     |hex natural number                               |`0x00`, `0x3f3f`, ...              |
-|`number.octal`                   |octal natural number                             |`000`, `011`, `024`, ...           |
-|`number.binary`                  |binary natural number                            |`0b0101`, `0b11001111`, ...        |
-|`number.decimal_integer`         |decimal integer (including negative number)      |`0`, `314`, `-1592`, ...           |
-|`number.decimal_fixeddigit_zero` |fixed-digit decimal number (`0` padding)         |`00`, `01`, ..., `11`, ..., `99`   |
-|`number.decimal_fixeddigit_space`|fixed-digit decimal number (half space padding)  |`␣0`, `␣1`, ..., `11`, ..., `99`   |
-|`date["%Y/%m/%d"]`               |Date in the format `%Y/%m/%d` (`0` padding)      |`2021/01/04`, ...                  |
-|`date["%m/%d"]`                  |Date in the format `%m/%d` (`0` padding)         |`01/04`, `02/28`, `12/25`, ...     |
-|`date["%-m/%-d"]`                |Date in the format `%-m/%-d` (no paddings)       |`1/4`, `2/28`, `12/25`, ...        |
-|`date["%Y-%m-%d"]`               |Date in the format `%Y-%m-%d` (`0` padding)      |`2021-01-04`, ...                  |
-|`date["%Y年%-m月%-d日"]`         |Date in the format `%Y年%-m月%-d日` (no paddings)|`2021年1月4日`, ...                |
-|`date["%Y年%-m月%-d日(%ja)"]`    |Date in the format `%Y年%-m月%-d日(%ja)`         |`2021年1月4日(月)`, ...            |
-|`date["%H:%M:%S"]`               |Time in the format `%H:%M:%S`                    |`14:30:00`, ...                    |
-|`date["%H:%M"]`                  |Time in the format `%H:%M`                       |`14:30`, ...                       |
-|`date["%ja"]`                    |Japanese weekday                                 |`月`, `火`, ..., `土`, `日`        |
-|`date["%jA"]`                    |Japanese full weekday                            |`月曜日`, `火曜日`, ..., `日曜日`  |
-|`char.alph_small`                |Lowercase alphabet letter (word)                 |`a`, `b`, `c`, ..., `z`            |
-|`char.alph_capital`              |Uppercase alphabet letter (word)                 |`A`, `B`, `C`, ..., `Z`            |
-|`color.hex`                      |hex triplet                                      |`#00ff00`, `#ababab`, ...          |
-|`markup.markdown_header`         |Markdown Header                                  |`#`, `##`, ..., `######`           |
+|Augend Name                  |Explanation                                      |Examples                           |
+|-----------------------------|:------------------------------------------------|:----------------------------------|
+|`number#decimal`             |decimal natural number                           |`0`, `1`, ..., `9`, `10`, `11`, ...|
+|`number#decimal#int`         |decimal integer (including negative number)      |`0`, `314`, `-1592`, ...           |
+|`number#decimal#fixed#zero`  |fixed-digit decimal number (`0` padding)         |`00`, `01`, ..., `11`, ..., `99`   |
+|`number#decimal#fixed#space` |fixed-digit decimal number (half space padding)  |`␣0`, `␣1`, ..., `11`, ..., `99`   |
+|`number#hex`                 |hex natural number                               |`0x00`, `0x3f3f`, ...              |
+|`number#octal`               |octal natural number                             |`000`, `011`, `024`, ...           |
+|`number#binary`              |binary natural number                            |`0b0101`, `0b11001111`, ...        |
+|`date#[%Y/%m/%d]`            |Date in the format `%Y/%m/%d` (`0` padding)      |`2021/01/04`, ...                  |
+|`date#[%m/%d]`               |Date in the format `%m/%d` (`0` padding)         |`01/04`, `02/28`, `12/25`, ...     |
+|`date#[%-m/%-d]`             |Date in the format `%-m/%-d` (no paddings)       |`1/4`, `2/28`, `12/25`, ...        |
+|`date#[%Y-%m-%d]`            |Date in the format `%Y-%m-%d` (`0` padding)      |`2021-01-04`, ...                  |
+|`date#[%Y年%-m月%-d日]`      |Date in the format `%Y年%-m月%-d日` (no paddings)|`2021年1月4日`, ...                |
+|`date#[%Y年%-m月%-d日(%ja)]` |Date in the format `%Y年%-m月%-d日(%ja)`         |`2021年1月4日(月)`, ...            |
+|`date#[%H:%M:%S]`            |Time in the format `%H:%M:%S`                    |`14:30:00`, ...                    |
+|`date#[%H:%M]`               |Time in the format `%H:%M`                       |`14:30`, ...                       |
+|`date#[%ja]`                 |Japanese weekday                                 |`月`, `火`, ..., `土`, `日`        |
+|`date#[%jA]`                 |Japanese full weekday                            |`月曜日`, `火曜日`, ..., `日曜日`  |
+|`char#alph#small#word`       |Lowercase alphabet letter (word)                 |`a`, `b`, `c`, ..., `z`            |
+|`char#alph#capital#word`     |Uppercase alphabet letter (word)                 |`A`, `B`, `C`, ..., `Z`            |
+|`char#alph#small#str`        |Lowercase alphabet letter (string)               |`a`, `b`, `c`, ..., `z`            |
+|`char#alph#capital#str`      |Uppercase alphabet letter (string)               |`A`, `B`, `C`, ..., `Z`            |
+|`color#hex`                  |hex triplet                                      |`#00ff00`, `#ababab`, ...          |
+|`markup#markdown#header`     |Markdown Header                                  |`#`, `##`, ..., `######`           |
 
 To specify the list of augend you want to operate on, write the following code in your `.vimrc`:
 
@@ -78,11 +80,11 @@ To specify the list of augend you want to operate on, write the following code i
 lua << EOF
 local dial = require("dial")
 
-dial.searchlist.normal = {
+dial.config.searchlist.normal = {
     dial.augends.number.decimal,
     dial.augends.number.hex,
     dial.augends.number.binary,
-    dial.augends.date["%Y/%m/%d"],
+    dial.augends.date[%Y/%m/%d],
     dial.augends.markup.markdown_header,
 }
 EOF
@@ -93,29 +95,31 @@ and `dial.augends` is a submodule that stores augend, which is provided by defau
 
 The default set of available augends are shown here:
 
-|Augend Name                      |Normal mode|Visual mode|
-|:--------------------------------|:---------:|:---------:|
-|`number.decimal`                 |✓          |✓          |
-|`number.hex`                     |✓          |✓          |
-|`number.octal`                   |           |           |
-|`number.binary`                  |✓          |✓          |
-|`number.decimal_integer`         |           |           |
-|`number.decimal_fixeddigit_zero` |           |           |
-|`number.decimal_fixeddigit_space`|           |           |
-|`date["%Y/%m/%d"]`               |✓          |✓          |
-|`date["%m/%d"]`                  |✓          |✓          |
-|`date["%-m/%-d"]`                |           |           |
-|`date["%Y-%m-%d"]`               |✓          |✓          |
-|`date["%Y年%-m月%-d日"]`         |           |           |
-|`date["%Y年%-m月%-d日"](%ja)`    |           |           |
-|`date["%H:%M:%S"]`               |           |           |
-|`date["%H:%M"]`                  |✓          |✓          |
-|`date["%ja"]`                    |✓          |✓          |
-|`date["%jA"]`                    |✓          |✓          |
-|`char.alph_small`                |           |✓          |
-|`char.alph_capital`              |           |✓          |
-|`color.hex`                      |✓          |✓          |
-|`markup.markdown_header`         |           |           |
+|Augend Name                  |Normal mode|Visual mode|
+|:----------------------------|:---------:|:---------:|
+|`number#decimal`             |✓          |✓          |
+|`number#decimal#int`         |           |           |
+|`number#decimal#fixed#zero`  |           |           |
+|`number#decimal#fixed#space` |           |           |
+|`number#hex`                 |✓          |✓          |
+|`number#octal`               |           |           |
+|`number#binary`              |✓          |✓          |
+|`date#[%Y/%m/%d]`            |✓          |✓          |
+|`date#[%m/%d]`               |✓          |✓          |
+|`date#[%-m/%-d]`             |           |           |
+|`date#[%Y-%m-%d]`            |✓          |✓          |
+|`date#[%Y年%-m月%-d日]`      |           |           |
+|`date#[%Y年%-m月%-d日(%ja)]` |           |           |
+|`date#[%H:%M:%S]`            |           |           |
+|`date#[%H:%M]`               |✓          |✓          |
+|`date#[%ja]`                 |           |           |
+|`date#[%jA]`                 |✓          |✓          |
+|`char#alph#small#word`       |           |✓          |
+|`char#alph#capital#word`     |           |✓          |
+|`char#alph#small#str`        |           |           |
+|`char#alph#capital#str`      |           |           |
+|`color#hex`                  |✓          |✓          |
+|`markup#markdown#header`     |           |           |
 
 If you just want to add a few of augends into default `searchlist`, you can also write the configuration like this:
 
@@ -123,7 +127,7 @@ If you just want to add a few of augends into default `searchlist`, you can also
 lua << EOF
 local dial = require("dial")
 
-table.insert(dial.searchlist.normal, dial.augends.markup.markdown_header)
+table.insert(dial.config.searchlist.normal, dial.augends.markup.markdown_header)
 EOF
 ```
 
@@ -142,10 +146,9 @@ lua << EOF
 local dial = require("dial")
 
 local my_augend = {
-    name = "my_augend",
     desc = "double or halve the number. (1 <-> 2 <-> 4 <-> 8 <-> ...)",
 
-    find = dial.augends.common.find_pattern("%d+"),
+    find = dial.common.find_pattern("%d+"),
     add = function(cursor, text, addend)
         local n = tonumber(text)
         n = math.floor(n * (2 ^ addend))
@@ -155,8 +158,10 @@ local my_augend = {
     end
 }
 
-dial.searchlist = {
-    my_augend
+dial.augends["custom#my_augend"] = my_augend
+
+dial.config.searchlist.normal = {
+    "custom#my_augend"
 }
 EOF
 ```
@@ -164,11 +169,11 @@ EOF
 If you want to toggle `true` / `false` with `dial.nvim`'s command, try this:
 
 ```lua
-dial.augends.boolean = dial.augends.common.enum_cyclic{
+dial.augends["custom#boolean"] = dial.common.enum_cyclic{
     name = "boolean",
     strlist = {"true", "false"},
 }
-table.insert(dial.searchlist.normal, dial.augends.boolean)
+table.insert(dial.config.searchlist.normal, "custom#boolean")
 ```
 
 ## TODO
