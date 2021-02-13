@@ -1,0 +1,615 @@
+*dial.txt* 日本語ヘルプ （最終更新：2020/02/12）
+
+Vimの標準機能である CTRL-A / CTRL-X を拡張し、英数字に限らない様々な文字列を
+インクリメント/デクリメントできるようにするパッケージです。
+
+Author: Mogami Shinichi (@monaqa) <mogassy{at}yahoo.co.jp>
+Version: 0.2.0
+License: MIT license
+		<https://github.com/monaqa/dial.nvim/blob/master/LICENSE>
+
+}}}
+
+==============================================================================
+CONTENTS								*dial-contents*
+
+Requirements					|dial-requirements|
+Introduction					|dial-introduction|
+Keymappings						|dial-keymappings|
+Commands						|dial-commands|
+Configurations					|dial-configurations|
+  Augends						|dial-augends|
+    Number						|dial-augends-number|
+    Date						|dial-augends-date|
+    Char						|dial-augends-char|
+  Default Augends				|dial-default-augends|
+Customize						|dial-customize|
+  Define Augends				|dial-define-augends|
+
+==============================================================================
+REQUIREMENTS							*dial-requirements*
+
+* Neovim 0.5.0 or later (2020/01/16 現在、Nightly 版のみ提供)
+
+==============================================================================
+INTRODUCTION							*dial-introduction*
+
+*dial.nvim* は、様々な形式の文字列をインクリメント/デクリメントするパッケージ
+です。標準の CTRL-A や CTRL-X、 g CTRL-A といったコマンドの動きを拡張します。
+例えば以下のような文字列が対象となります。
+
+標準ではキーマップの置き換えまでは行わないため、プラグインをインストールした上
+で、以下のような記述を設定ファイルに追加する必要があります。
+>
+	nmap <C-a> <Plug>(dial-increment)
+	nmap <C-x> <Plug>(dial-decrement)
+	vmap <C-a> <Plug>(dial-increment)
+	vmap <C-x> <Plug>(dial-decrement)
+	vmap g<C-a> <Plug>(dial-increment-additional)
+	vmap g<C-x> <Plug>(dial-decrement-additional)
+<
+
+==============================================================================
+KEYMAPPINGS								*dial-keymappings*
+
+Normal Mode~
+
+<Plug>(dial-increment)					*<Plug>(dial-increment)*
+
+	カーソル下または後の被加数を [count] だけインクリメントします。既存の
+	CTRL-A コマンドの代替です。
+	カーソルと同じ行にある被加数にのみ反応します。基本的にはカーソルより手前に
+	ある被加数には反応しないものの、被加数の種類によっては例外的にカーソルの手
+	前にあってもインクリメントを許すものがあります。(cf. ||)
+
+<Plug>(dial-decrement)					*<Plug>(dial-decrement)*
+
+	カーソル下または後の被加数を [count] だけデクリメントします。既存の
+	CTRL-X コマンドの代替です。
+
+Visual Mode~
+
+{Visual}<Plug>(dial-increment)			*v_<Plug>(dial-increment)*
+
+	ビジュアルモードのうち、通常のモード・行選択モード・矩形選択モードのいずれ
+	かであるかによって挙動が変化します。
+
+	通常のビジュアルモード (|v|) の場合、ビジュアル選択されたテキスト中の被加
+	数を [count] だけインクリメントします。既存の CTRL-A コマンドの代替です。
+	選択したテキストが完全一致である必要があります。たとえば十進数のインクリメ
+	ント(||)及び日付のインクリメント (||) が有効になっている場合、`12/3456`の
+	うち `12/3` が選択されていれば12月3日を表す文字列とみなされ `12/4456` とな
+	りますが、`12` のみが選択されている場合は単なる数値列とみなされ `13/3456`
+	となります。
+
+	行選択ビジュアルモード (|V|) の場合、
+	ビジュアル行選択されたテキスト中の被加数を、行ごとに [count] だけインクリ
+	メントします。各行ごとに被加数の位置を探索し、マッチしたもののうち最も手前
+	の被加数を一つだけ対象とします。
+
+	矩形選択ビジュアルモード (|CTRL-V|) の場合は行選択ビジュアルモードの場合と
+	似ているものの、マッチする対象が矩形選択された範囲に絞られます。通常のビジ
+	ュアルモードとことなり、選択範囲が完全一致している必要はありません。
+
+{Visual}<Plug>(dial-decrement)			*v_<Plug>(dial-decrement)*
+
+	ビジュアル選択されたテキスト中の被加数を [count] だけデクリメントします。
+	既存の CTRL-X コマンドの代替です。
+
+										*v_<Plug>(dial-increment-additional)*
+{Visual}<Plug>(dial-increment-additional)
+
+	通常のビジュアルモードの場合は |v_<Plug>(dial-increment)| と変わりません。
+	行選択及び矩形選択ビジュアルモードの場合、上から数えてn行目にある被加数はn
+	* [count]だけ増加します。既存の g CTRL-A コマンドの代替です。
+	箇条書きや予定表など、 一定の数値ずつ増加する等差数列を作成したい場合に便
+	利です。たとえば
+>
+		09/12
+		09/12
+		09/12
+		09/12
+<
+	という日付のリストがある時、2番目の `1/1` へと移動して下3行を行選択ビジュ
+	アルモードで選択し、 `7g<C-a>` と押すと
+>
+		09/12
+		09/19
+		09/26
+		10/03
+<
+	のように、1週間ごとの日付が得られます（日付の被加数 `date#[%m/%d]` が有効
+	のときに限ります）。
+
+										*v_<Plug>(dial-decrement-additional)*
+{Visual}<Plug>(dial-decrement-additional)
+
+	通常のビジュアルモードの場合は |v_<Plug>(dial-increment)| と変わりません。
+	行選択及び矩形選択ビジュアルモードの場合、上から数えてn行目にある被加数はn
+	* [count]だけ減少します。既存の g CTRL-X コマンドの代替です。
+
+==============================================================================
+COMMANDS								*dial-commands*
+
+:[range]DialIncrement {augend}			*:DialIncrement*
+
+	選択範囲に対して、{augend} で指定された被加数を1だけインクリメントします。
+	行選択ビジュアルモードにおける |v_<Plug>(dial-increment)| と似ていますが、
+	被加数を指定し、そのルールに制限することができます。
+	加数（いくつ増加させるか）を指定することはできないため、 |@:| などを用いて
+	繰り返すことが想定されています。
+
+										*:DialIncrementAdditional*
+:[range]DialIncrementAdditional {augend}
+
+	選択範囲に対して、{augend} で指定された被加数を1だけデクリメントします。
+
+==============================================================================
+CONFIGURATIONS							*dial-configurations*
+
+dial.nvim では、Lua スクリプトを用いて被加数の種類を指定することができます。
+被加数には |number#decimal| などの名前が付いており、自身の設定ファイルにて以下
+のように被加数を指定することで好きな被加数が使えるようになります。
+
+>
+	lua << EOF
+	local dial = require"dial"
+	dial.config.searchlist = {
+	  normal = {
+		% add some augend names here
+		"number#decimal",
+		"date#[%Y/%m/%d]",
+		"date#[%m/%d]",
+		"date#[%H:%M]",
+	  },
+	  visual = {
+		% add some augend names here
+		"number#decimal",
+		"date#[%Y/%m/%d]",
+		"date#[%m/%d]",
+		"date#[%H:%M]",
+		"color#hex",
+		"char#alph#small#word",
+		"char#alph#capital#word",
+	  }
+	}
+	EOF
+<
+
+被加数の種類は以下の通りです。
+
+------------------------------------------------------------------------------
+AUGENDS									*dial-augends*
+
+NUMBER									*dial-augends-number*
+------
+
+										*dial-augends-number#decimal*
+number#decimal~
+
+十進数の非負値をインクリメント・デクリメントします。
+>
+	0
+	123
+	3141592
+<
+といった文字列にマッチし、1つインクリメントするごとにその数値を1増加させます。
+標準の CTRL-A と異なり、数字の先頭に `-` が付いていても考慮しません。
+>
+	file-1.jpg
+<
+という文字列の `1` にカーソルがある状態で |<Plug>(dial-increment)| を行うと
+>
+	file-2.jpg
+<
+となります。
+
+										*dial-augends-number#decimal#int*
+number#decimal#int~
+
+基本的には |dial-augends-number#decimal| と同じですが、こちらは負の整数にも
+マッチします。
+>
+	file-1.jpg
+<
+という文字列の `1` にカーソルがある状態で |<Plug>(dial-increment)| を行うと
+>
+	file0.jpg
+<
+となります。
+
+									*dial-augends-number#decimal#fixed#zero*
+number#decimal#fixed#zero~
+
+マッチする対象は|dial-augends-number#decimal|と同じですが、こちらは対象を固定
+長の整数とみなし、桁数が変わらない範囲でインクリメント/デクリメントします。た
+だし、桁埋めには `0` が使われていると仮定します。たとえば
+>
+	file001.jpg
+<
+という文字列の `1` にカーソルがある状態で|100<Plug>(dial-increment)| を行うと
+>
+	file101.jpg
+<
+となり、その状態で更に|1000<Plug>(dial-increment)| を行うと
+>
+	file999.jpg
+<
+となります（3桁の最大の数は999ですから、999でインクリメントが打ち止めになりま
+す）。さらにその状態から|995<Plug>(dial-decrement)| を行うと
+>
+	file004.jpg
+<
+となります（桁を補うのに足りない部分はゼロ埋めされます）。
+
+									*dial-augends-number#decimal#fixed#space*
+number#decimal#fixed#space~
+
+対象を固定長の整数とみなし、桁数が変わらない範囲でインクリメント/デクリメント
+します。ただし、桁埋めには半角空白が使われていると仮定します。たとえば
+>
+	file  1.jpg
+<
+という文字列の `1` にカーソルがある状態で|100<Plug>(dial-increment)| を行うと
+>
+	file101.jpg
+<
+となり、その状態で更に|1000<Plug>(dial-increment)| を行うと
+>
+	file999.jpg
+<
+となります（3桁の最大の数は999ですから、999でインクリメントが打ち止めになりま
+す）。さらにその状態から|995<Plug>(dial-decrement)| を行うと
+>
+	file  4.jpg
+<
+となります（桁を補うのに足りない部分は半角空白で埋められます）。
+
+										*dial-augends-number#hex*
+number#hex~
+
+16進数の非負整数にマッチし、16進数の表記でインクリメント・デクリメントが行われ
+ます。
+>
+	0x12
+	0xafbf
+	0xAFBF
+<
+などの文字列にマッチします。
+
+										*dial-augends-number#octal*
+number#octal~
+
+8進数の非負整数にマッチし、8進数の表記でインクリメント・デクリメントが行われま
+す。
+>
+	037
+	0567
+	001212
+<
+などの文字列にマッチします。 |number#decimal| などとの衝突に注意。
+
+										*dial-augends-number#binary*
+number#binary~
+
+2進数の非負整数にマッチし、2進数の表記でインクリメント・デクリメントが行われま
+す。
+>
+	0b00
+	0b1010
+	0b10100101
+<
+などの文字列にマッチします。
+
+DATE									*dial-augends-date*
+-----
+
+										*dial-augends-date#[%Y/%m/%d]*
+date#[%Y/%m/%d]~
+
+以下のようなフォーマットの日付にマッチします。
+>
+	1970/12/31
+	2021/01/01
+	2021/02/13
+<
+
+カーソルが当該フォーマットより左にある場合は日付単位でのインクリメントが行われ
+ますが、カーソルがフォーマット上にある場合、具体的なカーソルの位置によってイン
+クリメントの対象が変化します。
+
+`1970/12/31` を例に取ってみます。
+
+`1970` の4文字のいずれかの上にカーソルがあるときにインクリメントを行うと
+>
+	1971/12/31
+<
+のように年がインクリメントされます。
+
+`/12` のいずれかの上にカーソルがあるときにインクリメントを行うと
+>
+	1971/01/31
+<
+のように月がインクリメントされます。
+
+`/31` のいずれかの上にカーソルがあるときにインクリメントを行うと
+>
+	1971/01/01
+<
+のように日付がインクリメントされます。
+
+当該フォーマットでは
+>
+	2021/02/29
+	2021/14/59
+<
+のように現実には存在しない日付でもマッチするものの、インクリメントを行う際に現
+実に存在する日付へと強制的に修正されます。
+
+										*dial-augends-date#[%m/%d]*
+date#[%m/%d]~
+
+以下のような日付にマッチします。
+
+>
+	12/31
+	01/01
+	02/13
+<
+
+`12/31` の例の場合、
+
+* カーソルが `12` より左にある場合：日付
+* カーソルが `12` のいずれかの上にある場合：月
+* カーソルが `/31` のいずれかの上にある場合：日付
+
+がインクリメントされます。
+
+当該フォーマットでは現実に存在しない日付でもマッチするものの、インクリメントの
+際に現実に存在する日付へと強制的に修正されます。
+
+										*dial-augends-date#[%-m/%-d]*
+date#[%-m/%-d]~
+
+基本的に |date#[%m/%d]| と同様ですが、こちらは月日が2桁にパディングされていな
+くてもマッチします。すなわち、
+>
+	12/31
+	1/1
+	2/13
+<
+などにマッチします。
+
+当該フォーマットでは現実に存在しない日付にはマッチしません（分数など、日付以外
+を表す文字列に誤ってマッチすることを極力避けるため）。
+
+										*dial-augends-date#[%Y-%m-%d]*
+date#[%Y-%m-%d]~
+
+以下のようなフォーマットの日付にマッチします。
+>
+	1970-12-31
+	2021-01-01
+	2021-02-13
+<
+フォーマットの違いを除いては|date#[%Y/%m/%d]|と同じです。
+
+										*dial-augends-date#[%Y年%-m月%-d日]*
+date#[%Y年%-m月%-d日]~
+
+以下のようなフォーマットの日付にマッチします。
+>
+	1970年12月31日
+	2021年1月1日
+	2021年2月13日
+<
+フォーマットの違いを除いては|date#[%Y/%m/%d]|と同じです。
+
+									*dial-augends-date#[%Y年%-m月%-d日(%ja)]*
+date#[%Y年%-m月%-d日(%ja)]~
+
+以下のようなフォーマットの日付にマッチします。
+>
+	1970年12月31日(木)
+	2021年1月1日(金)
+	2021年2月13日(土)
+<
+フォーマットの違いを除いては|date#[%Y/%m/%d]|と同じです。
+日付と曜日の整合性が取れていない場合もマッチし、インクリメント・デクリメントの
+際に正しい曜日となるよう自動で修正されます。
+
+										*dial-augends-date#[%H:%M:%S]*
+date#[%H:%M:%S]~
+
+以下のようなフォーマットの時刻（時:分:秒）にマッチします。
+>
+	00:00:00
+	12:34:56
+<
+
+`12:34:56` の例の場合、
+
+* カーソルが `12` より左にある場合：秒
+* カーソルが `12` のいずれかの上にある場合：時
+* カーソルが `:34` のいずれかの上にある場合：分
+* カーソルが `:56` のいずれかの上にある場合：秒
+
+がインクリメントされます。
+`52:27:93` のように存在しない時刻でもマッチするものの、インクリメントの際に現
+実に存在する時刻へと強制的に修正されます。
+
+										*dial-augends-date#[%H:%M]*
+date#[%H:%M]~
+
+以下のようなフォーマットの時刻（時:分）にマッチします。
+>
+	00:00
+	12:34
+<
+
+`12:34` の例の場合、
+
+* カーソルが `12` より左にある場合：分
+* カーソルが `12` のいずれかの上にある場合：時
+* カーソルが `:34` のいずれかの上にある場合：分
+
+がインクリメントされます。
+存在しない時刻でもマッチするものの、インクリメントの際に現実に存在する時刻へと
+強制的に修正されます。
+
+										*dial-augends-date#[%ja]*
+date#[%ja]~
+
+日本語の曜日名にマッチします。
+>
+	月
+	火
+	水
+	木
+	金
+	土
+	日
+<
+
+それぞれ Vim の意味での単語になっているものに対してマッチするため、「日用品」
+など熟語の一部にはマッチしません。
+
+
+										*dial-augends-date#[%jA]*
+date#[%jA]~
+
+日本語の曜日名にマッチします。
+>
+	月曜日
+	火曜日
+	水曜日
+	木曜日
+	金曜日
+	土曜日
+	日曜日
+<
+
+こちらは|dial-augends-date#[%jA]|と異なり、単語ではなく文字列としてマッチする
+ため、「毎週火曜日」のように感じが連なっていてもマッチします。
+
+CHAR									*dial-augends-char*
+-----
+
+										*dial-augends-char#alph#small#word*
+char#alph#small#word~
+
+`a` や `z` など、1つの小文字アルファベットにマッチします。ノーマルモードの場合
+はそれ自身が Vim の意味で単語として独立していない限りマッチしません。例えば
+>
+	(a)
+	a.
+<
+の `a` にはマッチしますが
+>
+	cafe
+	2a
+<
+の `a` にはマッチしません。
+
+なお、インクリメント時に巡回は行われません。すなわち `z` をインクリメントして
+も`z` のまま変わらず、 `a` をデクリメントしても `a` のまま変わりません。
+
+										*dial-augends-char#alph#capital#word*
+char#alph#capital#word~
+
+`A` や `Z` など、1つの大文字アルファベットにマッチします。それ以外は
+|dial-augends-char#alph#small#word| と同じです。
+
+										*dial-augends-char#alph#small#str*
+char#alph#small#str~
+
+基本的には|dial-augends-char#alph#small#word| と同じですが、対象が単語として独
+立していなくてもマッチします。
+
+										*dial-augends-char#alph#capital#str*
+char#alph#capital#str~
+
+基本的には|dial-augends-char#alph#capital#word| と同じですが、対象が単語として
+独立していなくてもマッチします。
+
+COLOR									*dial-augends-color*
+-----
+
+										*dial-augends-color#hex*
+color#hex~
+
+以下のような16進数のカラーコード (# R G B) にマッチします。
+>
+	#1280af
+	#808080
+	#001351
+<
+
+`#1280af` の例の場合、
+
+* カーソルが `#1280af` より左、もしくは `#` 上にある場合： RGB 全て
+* カーソルが `12` のいずれかの上にある場合：R
+* カーソルが `80` のいずれかの上にある場合：G
+* カーソルが `af` のいずれかの上にある場合：B
+
+がインクリメントの対象となります。
+
+MARKUP									*dial-augends-markup*
+------
+
+										*dial-augends-markup#markdown#header*
+markup#markdown#header~
+
+行頭にある1〜6個の `#` にマッチし、Markdown 言語におけるヘッダのレベルを上下さ
+せることができます。
+
+------------------------------------------------------------------------------
+DEFAULT AUGENDS							*dial-default-augends*
+
+ノーマルモードのデフォルトの被加数は以下のとおりです。
+>
+	{
+		"number#decimal",
+		"number#hex",
+		"number#binary",
+		"date#[%Y/%m/%d]",
+		"date#[%m/%d]",
+		"date#[%Y-%m-%d]",
+		"date#[%H:%M]",
+		"date#[%jA]",
+		"color#hex",
+	}
+<
+ビジュアルモードのデフォルトの被加数は以下のとおりです。
+>
+	{
+		"number#decimal",
+		"number#hex",
+		"number#binary",
+		"date#[%Y/%m/%d]",
+		"date#[%m/%d]",
+		"date#[%Y-%m-%d]",
+		"date#[%H:%M]",
+		"date#[%jA]",
+		"color#hex",
+		"char#alph#small#word",
+		"char#alph#capital#word",
+	}
+<
+
+==============================================================================
+CUSTOMIZE								*dial-customize*
+
+Under Construction
+
+------------------------------------------------------------------------------
+DEFINE AUGENDS							*dial-define-augends*
+
+Under Construction
+
+------------------------------------------------------------------------------
+CONVENIENT FUNCTIONS					*dial-convenient-functions*
+
+Under Construction
+
+vim:tw=78:fo=tcq2mM:ts=4:ft=help:norl:noet:fdm=marker:fen:cole=0
