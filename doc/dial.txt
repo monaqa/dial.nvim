@@ -75,6 +75,7 @@ Visual Mode~
 
 {Visual}<Plug>(dial-increment)			*v_<Plug>(dial-increment)*
 
+	Increments the number of addends in the visually selected text by [count].
 	The behavior changes depending on which of the following modes you are in.
 	* normal VISUAL mode (|v|)
 	* linweise VISUAL mode (|V|)
@@ -92,75 +93,76 @@ Visual Mode~
 	it will be assumed to be just a decimal number and will result in
 	`13/3456`.
 
-	In linweise VISUAL mode (|V|),
-	this command increments the addends in the selected text by [count] per
-	line. For each line, it searches for the position of the addend and
-	targets only the one addend that is most left-hand.
+	In linweise VISUAL mode (|V|), this command increments the addends in the
+	selected text by [count] per line. For each line, it searches for the
+	position of the addend and targets only the one addend that is most
+	left-hand.
 
 	In linweise VISUAL mode (|V|), this command works similarly in linewise
-	VISUAL mode, but the target is narrowed down to the selection.
-	Unlike that in normal VISUAL mode, the selected text does not have to
-	match the predetermined pattern exactly.
+	VISUAL mode, but the target is narrowed down to the selection.  Unlike
+	that in normal VISUAL mode, the selected text does not have to match the
+	predetermined pattern exactly.
 
 {Visual}<Plug>(dial-decrement)			*v_<Plug>(dial-decrement)*
 
-	ビジュアル選択されたテキスト中の被加数を [count] だけデクリメントします。
-	既存の CTRL-X コマンドの代替です。
+	Decrements the number of addends in the visually selected text by [count].
 
 										*v_<Plug>(dial-increment-additional)*
 {Visual}<Plug>(dial-increment-additional)
 
-	通常のビジュアルモードの場合は |v_<Plug>(dial-increment)| と変わりません。
-	行選択及び矩形選択ビジュアルモードの場合、上から数えてn行目にある被加数はn
-	* [count]だけ増加します。既存の g CTRL-A コマンドの代替です。
-	箇条書きや予定表など、 一定の数値ずつ増加する等差数列を作成したい場合に便
-	利です。たとえば
+	In normal VISUAL mode, it is no different from the command
+	|v_<Plug>(dial-increment)|. In linewise and blockwise VISUAL mode, the
+	number of addends on line n, counting from the top, is increased by
+	n * [count]. This is an alternative to the existing g CTRL-A command.
+	It is useful when you want to create an equidistant sequence of numbers
+	that increases by a fixed number, such as a bullet list or calendar.
+	For example, consider you have the following list of dates:
 >
 		09/12
 		09/12
 		09/12
 		09/12
 <
-	という日付のリストがある時、2番目の `1/1` へと移動して下3行を行選択ビジュ
-	アルモードで選択し、 `7g<C-a>` と押すと
+	If you move the cursor to the second `09/12`, select the bottom three
+	lines in line selection visual mode, and press `7g<C-a>`, you get:
 >
 		09/12
 		09/19
 		09/26
 		10/03
 <
-	のように、1週間ごとの日付が得られます（日付の被加数 `date#[%m/%d]` が有効
-	のときに限ります）。
+	This is only available when the augend `date#[%m/%d]` is activated.
 
 										*v_<Plug>(dial-decrement-additional)*
 {Visual}<Plug>(dial-decrement-additional)
 
-	通常のビジュアルモードの場合は |v_<Plug>(dial-increment)| と変わりません。
-	行選択及び矩形選択ビジュアルモードの場合、上から数えてn行目にある被加数はn
-	* [count]だけ減少します。既存の g CTRL-X コマンドの代替です。
+	In normal VISUAL mode, it is no different from the command
+	|v_<Plug>(dial-increment)|. In linewise and blockwise VISUAL mode, the
+	number of addends on line n, counting from the top, is decreased by
+	n * [count]. This is an alternative to the existing g CTRL-X command.
 
 ==============================================================================
 COMMANDS								*dial-commands*
 
 :[range]DialIncrement {augend}			*:DialIncrement*
 
-	選択範囲に対して、{augend} で指定された被加数を1だけインクリメントします。
-	行選択ビジュアルモードにおける |v_<Plug>(dial-increment)| と似ていますが、
-	被加数を指定し、そのルールに制限することができます。
-	加数（いくつ増加させるか）を指定することはできないため、 |@:| などを用いて
-	繰り返すことが想定されています。
+	Increments the augend specified by {augend} by 1 for the selected range.
+	It is similar to |v_<Plug>(dial-increment)| in linewise visual mode, but
+	allows you to specify and limit the objective augend.  Since it is not
+	possible to specify the addend (i.e., how many to increment), it is
+	assumed to be repeated using |@:|.
 
 										*:DialIncrementAdditional*
 :[range]DialIncrementAdditional {augend}
 
-	選択範囲に対して、{augend} で指定された被加数を1だけデクリメントします。
+	Decrements the augend specified by {augend} by 1 for the selected range.
 
 ==============================================================================
 CONFIGURATIONS							*dial-configurations*
 
-dial.nvim では、Lua スクリプトを用いて被加数の種類を指定することができます。
-被加数には |number#decimal| などの名前が付いており、自身の設定ファイルにて以下
-のように被加数を指定することで好きな被加数が使えるようになります。
+|dial.nvim| allows you to specify the type of augend using a Lua script.
+Augends have names such as |number#decimal|, and you can use any addend you
+like by specifying the addend in your configuration file as follows:
 
 >
 	lua << EOF
@@ -187,7 +189,7 @@ dial.nvim では、Lua スクリプトを用いて被加数の種類を指定す
 	EOF
 <
 
-被加数の種類は以下の通りです。
+You can use the following augends.
 
 ------------------------------------------------------------------------------
 AUGENDS									*dial-augends*
@@ -198,119 +200,128 @@ NUMBER									*dial-augends-number*
 										*dial-augends-number#decimal*
 number#decimal~
 
-十進数の非負値をインクリメント・デクリメントします。
+Increments/decrements a non-negative decimal number. It matches such as
 >
 	0
 	123
 	3141592
 <
-といった文字列にマッチし、1つインクリメントするごとにその数値を1増加させます。
-標準の CTRL-A と異なり、数字の先頭に `-` が付いていても考慮しません。
+and each increment increases that number by one.  Unlike the standard CTRL-A
+command, it does not consider any `-` at the beginning oc the number.  If you
+perform |<Plug>(dial-increment)| with the cursor at `1` of the following
+string:
 >
 	file-1.jpg
 <
-という文字列の `1` にカーソルがある状態で |<Plug>(dial-increment)| を行うと
+then you will get the following result.
 >
 	file-2.jpg
 <
-となります。
 
 										*dial-augends-number#decimal#int*
 number#decimal#int~
 
-基本的には |dial-augends-number#decimal| と同じですが、こちらは負の整数にも
-マッチします。
+Basically the same as |dial-augends-number#decimal|, but this one also matches
+negative integers.  If you perform |<Plug>(dial-increment)| with the cursor at
+`1` of the following string:
 >
 	file-1.jpg
 <
-という文字列の `1` にカーソルがある状態で |<Plug>(dial-increment)| を行うと
+then you will get the following result.
 >
 	file0.jpg
 <
-となります。
 
 									*dial-augends-number#decimal#fixed#zero*
 number#decimal#fixed#zero~
 
-マッチする対象は|dial-augends-number#decimal|と同じですが、こちらは対象を固定
-長の整数とみなし、桁数が変わらない範囲でインクリメント/デクリメントします。た
-だし、桁埋めには `0` が使われていると仮定します。たとえば
+The target of the match is the same as in |dial-augends-number#decimal|, but
+this one assumes the target is an integer of fixed length, and increments or
+decrements it as long as the number of digits does not change, where `0` is
+used for digit filling.
+
+If you perform |100<Plug>(dial-increment)| with the cursor at `1` of the
+following string:
 >
 	file001.jpg
 <
-という文字列の `1` にカーソルがある状態で|100<Plug>(dial-increment)| を行うと
+then you will get the following result:
 >
 	file101.jpg
 <
-となり、その状態で更に|1000<Plug>(dial-increment)| を行うと
+and if you perform |1000<Plug>(dial-increment)| in that state, you will get:
 >
 	file999.jpg
 <
-となります（3桁の最大の数は999ですから、999でインクリメントが打ち止めになりま
-す）。さらにその状態から|995<Plug>(dial-decrement)| を行うと
+Increment stops at 999 because the maximum three-digit number is 999.
+Also, if you perform |995<Plug>(dial-increment)| in that state, you will get:
 >
 	file004.jpg
 <
-となります（桁を補うのに足りない部分はゼロ埋めされます）。
+Any missing digits will be filled in with zeroes to compensate.
 
 									*dial-augends-number#decimal#fixed#space*
 number#decimal#fixed#space~
 
-対象を固定長の整数とみなし、桁数が変わらない範囲でインクリメント/デクリメント
-します。ただし、桁埋めには半角空白が使われていると仮定します。たとえば
+This assumes the target integer has fixed length, and increments/decrements
+it as long as the number of digits does not change, where a half space is
+used for digit filling.
+
+If you perform |100<Plug>(dial-increment)| with the cursor at `1` of the
+following string:
 >
 	file  1.jpg
 <
-という文字列の `1` にカーソルがある状態で|100<Plug>(dial-increment)| を行うと
+then you will get the following result:
 >
 	file101.jpg
 <
-となり、その状態で更に|1000<Plug>(dial-increment)| を行うと
+and if you perform |1000<Plug>(dial-increment)| in that state, you will get:
 >
 	file999.jpg
 <
-となります（3桁の最大の数は999ですから、999でインクリメントが打ち止めになりま
-す）。さらにその状態から|995<Plug>(dial-decrement)| を行うと
+Increment stops at 999 because the maximum three-digit number is 999.
+Also, if you perform |995<Plug>(dial-increment)| in that state, you will get:
 >
 	file  4.jpg
 <
-となります（桁を補うのに足りない部分は半角空白で埋められます）。
+Any missing digits will be filled in with half spaces to compensate.
+
+NOTE: It is recommended that this command be enabled only in VISUAL mode.
 
 										*dial-augends-number#hex*
 number#hex~
 
-16進数の非負整数にマッチし、16進数の表記でインクリメント・デクリメントが行われ
-ます。
+Matches a hexadecimal non-negative integer and increments/decrements in
+hexadecimal notation. It matches strings such as:
 >
 	0x12
 	0xafbf
 	0xAFBF
 <
-などの文字列にマッチします。
 
 										*dial-augends-number#octal*
 number#octal~
 
-8進数の非負整数にマッチし、8進数の表記でインクリメント・デクリメントが行われま
-す。
+Matches a octal non-negative integer and increments/decrements in octal
+notation. It matches strings such as:
 >
 	037
 	0567
 	001212
 <
-などの文字列にマッチします。 |number#decimal| などとの衝突に注意。
+WARNING: It may conflict with |number#decimal| and others.
 
 										*dial-augends-number#binary*
 number#binary~
 
-2進数の非負整数にマッチし、2進数の表記でインクリメント・デクリメントが行われま
-す。
+Matches a binary non-negative integer and increments/decrements in binary
+notation. It matches strings such as:
 >
 	0b00
 	0b1010
 	0b10100101
 <
-などの文字列にマッチします。
 
 DATE									*dial-augends-date*
 -----
@@ -318,49 +329,48 @@ DATE									*dial-augends-date*
 										*dial-augends-date#[%Y/%m/%d]*
 date#[%Y/%m/%d]~
 
-以下のようなフォーマットの日付にマッチします。
+Matches dates with the following format (year/month/day):
 >
 	1970/12/31
 	2021/01/01
 	2021/02/13
 <
 
-カーソルが当該フォーマットより左にある場合は日付単位でのインクリメントが行われ
-ますが、カーソルがフォーマット上にある場合、具体的なカーソルの位置によってイン
-クリメントの対象が変化します。
+If the cursor is to the left of the format, the increment is always done in
+date units, but if the cursor is on the format, the increment depends on the
+specific position of the cursor.
 
-`1970/12/31` を例に取ってみます。
+Let's take `1970/12/31` as an example.
 
-`1970` の4文字のいずれかの上にカーソルがあるときにインクリメントを行うと
+When the cursor is over any of the four `1970` characters, the year will be
+incremented as shown below.
 >
 	1971/12/31
 <
-のように年がインクリメントされます。
 
-`/12` のいずれかの上にカーソルがあるときにインクリメントを行うと
+When the cursor is over any of the three `/12` characters, the month will be
+incremented as shown below.
 >
 	1971/01/31
 <
-のように月がインクリメントされます。
 
-`/31` のいずれかの上にカーソルがあるときにインクリメントを行うと
+When the cursor is over any of the three `/31` characters, the day will be
+incremented as shown below.
 >
 	1971/01/01
 <
-のように日付がインクリメントされます。
 
-当該フォーマットでは
+The format matches dates that do not exist in reality such as:
 >
 	2021/02/29
 	2021/14/59
 <
-のように現実には存在しない日付でもマッチするものの、インクリメントを行う際に現
-実に存在する日付へと強制的に修正されます。
+The date is corrected to a date that actually exists when incrementing.
 
 										*dial-augends-date#[%m/%d]*
 date#[%m/%d]~
 
-以下のような日付にマッチします。
+Matches dates with the following format (month/day):
 
 >
 	12/31
@@ -368,110 +378,110 @@ date#[%m/%d]~
 	02/13
 <
 
-`12/31` の例の場合、
+If we take `12/31` as an example, the following rules will determine the
+target of the increment.
 
-* カーソルが `12` より左にある場合：日付
-* カーソルが `12` のいずれかの上にある場合：月
-* カーソルが `/31` のいずれかの上にある場合：日付
+* If the cursor is to the left of `12`: day
+* If the cursor is over any of `12`: month
+* If the cursor is over any of `/31`: day
 
-がインクリメントされます。
-
-当該フォーマットでは現実に存在しない日付でもマッチするものの、インクリメントの
-際に現実に存在する日付へと強制的に修正されます。
+The format matches dates that do not exist in reality, and the date is
+corrected to a date that actually exists when incrementing.
 
 										*dial-augends-date#[%-m/%-d]*
 date#[%-m/%-d]~
 
-基本的に |date#[%m/%d]| と同様ですが、こちらは月日が2桁にパディングされていな
-くてもマッチします。すなわち、
+Basically it is same as |date#[%m/%d]|, but this one will match even if the
+month and date are not padded to two digits:
 >
 	12/31
 	1/1
 	2/13
 <
-などにマッチします。
 
-当該フォーマットでは現実に存在しない日付にはマッチしません（分数など、日付以外
-を表す文字列に誤ってマッチすることを極力避けるため）。
+Unlike |date#[%m/%d]| and others, this format does not match dates that do not
+exist in reality.  The reason for this is to avoid accidentally matching a
+string that represents something other than a date, such as a fraction.
 
 										*dial-augends-date#[%Y-%m-%d]*
 date#[%Y-%m-%d]~
 
-以下のようなフォーマットの日付にマッチします。
+Matches dates with the following format (year-month-day):
 >
 	1970-12-31
 	2021-01-01
 	2021-02-13
 <
-フォーマットの違いを除いては|date#[%Y/%m/%d]|と同じです。
+Same as |date#[%Y/%m/%d]| except the difference of the format.
 
 										*dial-augends-date#[%Y年%-m月%-d日]*
 date#[%Y年%-m月%-d日]~
 
-以下のようなフォーマットの日付にマッチします。
+Matches dates with the following format (commonly used in Japan):
 >
 	1970年12月31日
 	2021年1月1日
 	2021年2月13日
 <
-フォーマットの違いを除いては|date#[%Y/%m/%d]|と同じです。
+Same as |date#[%Y/%m/%d]| except the difference of the format.
 
 									*dial-augends-date#[%Y年%-m月%-d日(%ja)]*
 date#[%Y年%-m月%-d日(%ja)]~
 
-以下のようなフォーマットの日付にマッチします。
+Matches dates with the following format (commonly used in Japan):
 >
 	1970年12月31日(木)
 	2021年1月1日(金)
 	2021年2月13日(土)
 <
-フォーマットの違いを除いては|date#[%Y/%m/%d]|と同じです。
-日付と曜日の整合性が取れていない場合もマッチし、インクリメント・デクリメントの
-際に正しい曜日となるよう自動で修正されます。
+Same as |date#[%Y/%m/%d]| except the difference of the format.
+If the date and day of the week are inconsistent, it will be matched and
+automatically corrected to the correct day of the week when incrementing or
+decrementing.
 
 										*dial-augends-date#[%H:%M:%S]*
 date#[%H:%M:%S]~
 
-以下のようなフォーマットの時刻（時:分:秒）にマッチします。
+Matches times with the following format (hour:minute:second):
 >
 	00:00:00
 	12:34:56
 <
 
-`12:34:56` の例の場合、
+If we take `12:34:56` as an example, the following rules will determine the
+target of the increment.
 
-* カーソルが `12` より左にある場合：秒
-* カーソルが `12` のいずれかの上にある場合：時
-* カーソルが `:34` のいずれかの上にある場合：分
-* カーソルが `:56` のいずれかの上にある場合：秒
+* If the cursor is to the left of `12`: second
+* If the cursor is over any of `12`: hour
+* If the cursor is over any of `:34`: minute
+* If the cursor is over any of `:56`: second
 
-がインクリメントされます。
-`52:27:93` のように存在しない時刻でもマッチするものの、インクリメントの際に現
-実に存在する時刻へと強制的に修正されます。
+The format matches times that do not exist in reality such as `52:27:93`, and
+the time is corrected to a date that actually exists when incrementing.
 
 										*dial-augends-date#[%H:%M]*
 date#[%H:%M]~
 
-以下のようなフォーマットの時刻（時:分）にマッチします。
+Matches times with the following format (hour:minute):
 >
 	00:00
 	12:34
 <
 
-`12:34` の例の場合、
+If we take `12:34` as an example, the following rules will determine the
+target of the increment.
 
-* カーソルが `12` より左にある場合：分
-* カーソルが `12` のいずれかの上にある場合：時
-* カーソルが `:34` のいずれかの上にある場合：分
+* If the cursor is to the left of `12`: minute
+* If the cursor is over any of `12`: hour
+* If the cursor is over any of `:34`: minute
 
-がインクリメントされます。
-存在しない時刻でもマッチするものの、インクリメントの際に現実に存在する時刻へと
-強制的に修正されます。
+The format matches times that do not exist in reality such as `52:99`, and
+the time is corrected to a date that actually exists when incrementing.
 
 										*dial-augends-date#[%ja]*
 date#[%ja]~
 
-日本語の曜日名にマッチします。
+Matches Japanese day names:
 >
 	月
 	火
@@ -482,14 +492,14 @@ date#[%ja]~
 	日
 <
 
-それぞれ Vim の意味での単語になっているものに対してマッチするため、「日用品」
-など熟語の一部にはマッチしません。
+Each of these matches a |word| in the Vim sense, so some Japanese idioms such
+as `日用品` will not match.
 
 
 										*dial-augends-date#[%jA]*
 date#[%jA]~
 
-日本語の曜日名にマッチします。
+Matches Japanese day names:
 >
 	月曜日
 	火曜日
@@ -500,8 +510,9 @@ date#[%jA]~
 	日曜日
 <
 
-こちらは|dial-augends-date#[%jA]|と異なり、単語ではなく文字列としてマッチする
-ため、「毎週火曜日」のように感じが連なっていてもマッチします。
+Unlike |dial-augends-date#[%jA]|, this simply matches a string (not a |word|),
+so even if you have a series of kanji characters, such as `毎週火曜日`, it
+will match.
 
 CHAR									*dial-augends-char*
 -----
@@ -509,39 +520,40 @@ CHAR									*dial-augends-char*
 										*dial-augends-char#alph#small#word*
 char#alph#small#word~
 
-`a` や `z` など、1つの小文字アルファベットにマッチします。ノーマルモードの場合
-はそれ自身が Vim の意味で単語として独立していない限りマッチしません。例えば
+Matches a single lowercase alphabet, such as `a` or `z`. In NORMAL mode, it
+will not match unless it is a separate |word| in the Vim sense. For example,
+this will match the following `a`:
 >
 	(a)
 	a.
 <
-の `a` にはマッチしますが
+while this will not match the following `a`:
 >
 	cafe
 	2a
 <
-の `a` にはマッチしません。
 
-なお、インクリメント時に巡回は行われません。すなわち `z` をインクリメントして
-も`z` のまま変わらず、 `a` をデクリメントしても `a` のまま変わりません。
+Note that the incrementing/decrementing is performed in the non-cyclic way.
+That is, incrementing `z` will not change the value to `z`, and decrementing
+`a` will not change the value to `a`.
 
 										*dial-augends-char#alph#capital#word*
 char#alph#capital#word~
 
-`A` や `Z` など、1つの大文字アルファベットにマッチします。それ以外は
-|dial-augends-char#alph#small#word| と同じです。
+Matches a single lowercase alphabet, such as `a` or `z`.  Other than that, it
+is the same as |dial-augends-char#alph#small#word|.
 
 										*dial-augends-char#alph#small#str*
 char#alph#small#str~
 
-基本的には|dial-augends-char#alph#small#word| と同じですが、対象が単語として独
-立していなくてもマッチします。
+Basically it is same as |dial-augends-char#alph#small#word|, but this will
+match even if the target is not a separate word.
 
 										*dial-augends-char#alph#capital#str*
 char#alph#capital#str~
 
-基本的には|dial-augends-char#alph#capital#word| と同じですが、対象が単語として
-独立していなくてもマッチします。
+Basically it is same as |dial-augends-char#alph#capital#word|, but this will
+match even if the target is not a separate word.
 
 COLOR									*dial-augends-color*
 -----
@@ -549,21 +561,20 @@ COLOR									*dial-augends-color*
 										*dial-augends-color#hex*
 color#hex~
 
-以下のような16進数のカラーコード (# R G B) にマッチします。
+Matches hexadecimal color codes (#RRGGBB) such as the following:
 >
 	#1280af
 	#808080
 	#001351
 <
 
-`#1280af` の例の場合、
+If we take `#1280af` as an example, the following rules will determine the
+target of the increment.
 
-* カーソルが `#1280af` より左、もしくは `#` 上にある場合： RGB 全て
-* カーソルが `12` のいずれかの上にある場合：R
-* カーソルが `80` のいずれかの上にある場合：G
-* カーソルが `af` のいずれかの上にある場合：B
-
-がインクリメントの対象となります。
+* If the cursor is to the left of `#1280af` or over `#` : R, G and B
+* If the cursor is over any of `12`: R
+* If the cursor is over any of `80`: G
+* If the cursor is over any of `af`: B
 
 MARKUP									*dial-augends-markup*
 ------
@@ -571,13 +582,14 @@ MARKUP									*dial-augends-markup*
 										*dial-augends-markup#markdown#header*
 markup#markdown#header~
 
-行頭にある1〜6個の `#` にマッチし、Markdown 言語におけるヘッダのレベルを上下さ
-せることができます。
+It matches one to six `#` at the beginning of a line, and can be used to raise
+or lower the level of the header in the Markdown language.
 
 ------------------------------------------------------------------------------
 DEFAULT AUGENDS							*dial-default-augends*
 
 ノーマルモードのデフォルトの被加数は以下のとおりです。
+The default augends for NORMAL mode is shown below:
 >
 	{
 		"number#decimal",
@@ -591,7 +603,7 @@ DEFAULT AUGENDS							*dial-default-augends*
 		"color#hex",
 	}
 <
-ビジュアルモードのデフォルトの被加数は以下のとおりです。
+The default augends for VISUAL mode is shown below:
 >
 	{
 		"number#decimal",
