@@ -1,6 +1,6 @@
 # dial.nvim
 
-**NOTICE: This plugin is work-in-progress yet. User interface is subjeect to change without notice.**
+**NOTICE: This plugin is work-in-progress yet. User interface is subject to change without notice.**
 
 Extended increment/decrement plugin for [Neovim](https://github.com/neovim/neovim).
 Mainly written in Lua.
@@ -31,8 +31,8 @@ Plug 'monaqa/dial.nvim'
 
 ## Usage
 
-This plugin does not provide any default keymap.
-To use this plugin, assign the plugin keymap to the key you like, as shown below:
+This plugin does not provide any default key-mapping.
+To use this plugin, assign the plugin key-mapping to the key you like, as shown below:
 
 ```vim
 nmap <C-a> <Plug>(dial-increment)
