@@ -127,7 +127,7 @@ If you just want to add a few of augends into default `searchlist`, you can also
 lua << EOF
 local dial = require("dial")
 
-table.insert(dial.config.searchlist.normal, dial.augends.markup.markdown_header)
+table.insert(dial.config.searchlist.normal, "markup#markdown#header")
 EOF
 ```
 
