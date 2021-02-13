@@ -11,7 +11,7 @@ return {
     -- 以下はユーザが変更することを想定しているもの。
 
     -- 設定値を格納する。
-    cfg = require("dial/default"),
+    config = require("dial/default"),
     -- デフォルトで定義される augends を提供する。
     augends = require("dial/augends"),
 }

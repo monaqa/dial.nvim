@@ -26,10 +26,9 @@ M.searchlist.visual = {
     "date#[%m/%d]",
     "date#[%Y-%m-%d]",
     "date#[%H:%M]",
-    "date#[%jA]",
     "color#hex",
-    "char#alph#small",
-    "char#alph#capital",
+    "char#alph#small#word",
+    "char#alph#capital#word",
 }
 
 return M

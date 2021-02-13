@@ -57,6 +57,25 @@ M['number#decimal#fixed#zero'] = {
     end,
 }
 
+-- 固定された桁の十進非負整数。
+-- 桁は0埋めする。
+M['number#decimal#fixed#space'] = {
+    desc = "fixed-digit decimal natural number (e.g. ␣0, ␣1, ␣2, ..., 97, 98, 99)",
+
+    find = common.find_pattern(" *%d+"),
+
+    add = function(cusror, text, addend)
+        local n_digit = #text
+        local n = tonumber(text)
+        n = n + addend
+        if n < 0 then n = 0 end
+        if n > (10 ^ n_digit) - 1 then n = (10 ^ n_digit) - 1 end
+        text = ("%" .. n_digit .. "d"):format(n)
+        cursor = n_digit
+        return cursor, text
+    end,
+}
+
 -- 十六進の非負整数。
 -- 0x0, 0x01, 0x1f1f などにマッチする。
 M['number#hex'] = {
@@ -112,15 +131,6 @@ M['number#binary'] = {
         cursor = #text
         return cursor, text
     end,
-}
-
-M['date#[%ja]'] = common.enum_cyclic{
-    strlist = {"日", "月", "火", "水", "木", "金", "土"},
-}
-
-M['date#[%jA]'] = common.enum_cyclic{
-    strlist = { '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日', '日曜日', },
-    ptn_format = "\\C\\M\\(%s\\)",
 }
 
 M['date#[%Y/%m/%d]'] = {
@@ -394,17 +404,42 @@ M['date#[%H:%M]'] = {
     end
 }
 
-M['char#alph#small'] = common.enum_sequence{
+M['date#[%ja]'] = common.enum_cyclic{
+    strlist = {"日", "月", "火", "水", "木", "金", "土"},
+}
+
+M['date#[%jA]'] = common.enum_cyclic{
+    strlist = { '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日', '日曜日', },
+    ptn_format = "\\C\\M\\(%s\\)",
+}
+
+M['char#alph#small#word'] = common.enum_sequence{
     strlist = {
         "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
         "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
 }}
 
-M['char#alph#capital'] = common.enum_sequence{
+M['char#alph#capital#word'] = common.enum_sequence{
     strlist = {
         "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
         "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
 }}
+
+M['char#alph#small#str'] = common.enum_sequence{
+    strlist = {
+        "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
+        "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
+    },
+    ptn_format = "\\C\\M\\(%s\\)",
+}
+
+M['char#alph#capital#str'] = common.enum_sequence{
+    strlist = {
+        "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
+        "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
+    },
+    ptn_format = "\\C\\M\\(%s\\)",
+}
 
 local function cast_u8(n)
     if n <= 0 then
@@ -448,7 +483,7 @@ M['color#hex'] = {
     end,
 }
 
-M['markup#markdown_header'] = {
+M['markup#markdown#header'] = {
     desc = "Markdown Header (# Title)",
 
     find = function(cursor, line)
