@@ -1,4 +1,4 @@
-*dial.txt* help （Last updated: 2020/02/12）
+*dial.txt* help （Last updated: 2020/02/13）
 
 A package that extends the standard Vim commands CTRL-A / CTRL-X to allow
 increment/decrement of various strings, not limited to alphanumeric
@@ -161,8 +161,8 @@ COMMANDS								*dial-commands*
 CONFIGURATIONS							*dial-configurations*
 
 |dial.nvim| allows you to specify the type of augend using a Lua script.
-Augends have names such as |number#decimal|, and you can use any addend you
-like by specifying the addend in your configuration file as follows:
+Augends have names such as |dial-augends-number#decimal|, and you can use any
+addend you like by specifying the addend in your configuration file as follows:
 
 >
 	lua << EOF
@@ -240,7 +240,7 @@ this one assumes the target is an integer of fixed length, and increments or
 decrements it as long as the number of digits does not change, where `0` is
 used for digit filling.
 
-If you perform |100<Plug>(dial-increment)| with the cursor at `1` of the
+If you perform `100<Plug>(dial-increment)` with the cursor at `1` of the
 following string:
 >
 	file001.jpg
@@ -249,12 +249,12 @@ then you will get the following result:
 >
 	file101.jpg
 <
-and if you perform |1000<Plug>(dial-increment)| in that state, you will get:
+and if you perform `1000<Plug>(dial-increment)` in that state, you will get:
 >
 	file999.jpg
 <
 Increment stops at 999 because the maximum three-digit number is 999.
-Also, if you perform |995<Plug>(dial-increment)| in that state, you will get:
+Also, if you perform `995<Plug>(dial-decrement)` in that state, you will get:
 >
 	file004.jpg
 <
@@ -267,7 +267,7 @@ This assumes the target integer has fixed length, and increments/decrements
 it as long as the number of digits does not change, where a half space is
 used for digit filling.
 
-If you perform |100<Plug>(dial-increment)| with the cursor at `1` of the
+If you perform `100<Plug>(dial-increment)` with the cursor at `1` of the
 following string:
 >
 	file  1.jpg
@@ -276,12 +276,12 @@ then you will get the following result:
 >
 	file101.jpg
 <
-and if you perform |1000<Plug>(dial-increment)| in that state, you will get:
+and if you perform `1000<Plug>(dial-increment)` in that state, you will get:
 >
 	file999.jpg
 <
 Increment stops at 999 because the maximum three-digit number is 999.
-Also, if you perform |995<Plug>(dial-increment)| in that state, you will get:
+Also, if you perform `995<Plug>(dial-decrement)` in that state, you will get:
 >
 	file  4.jpg
 <
@@ -310,7 +310,7 @@ notation. It matches strings such as:
 	0567
 	001212
 <
-WARNING: It may conflict with |number#decimal| and others.
+WARNING: It may conflict with |dial-augends-number#decimal| and others.
 
 										*dial-augends-number#binary*
 number#binary~
@@ -391,17 +391,18 @@ corrected to a date that actually exists when incrementing.
 										*dial-augends-date#[%-m/%-d]*
 date#[%-m/%-d]~
 
-Basically it is same as |date#[%m/%d]|, but this one will match even if the
-month and date are not padded to two digits:
+Basically it is same as |dial-augends-date#[%m/%d]|, but this one will match
+even if the month and date are not padded to two digits:
 >
 	12/31
 	1/1
 	2/13
 <
 
-Unlike |date#[%m/%d]| and others, this format does not match dates that do not
-exist in reality.  The reason for this is to avoid accidentally matching a
-string that represents something other than a date, such as a fraction.
+Unlike |dial-augends-date#[%m/%d]| and others, this format does not match
+dates that do not exist in reality.  The reason for this is to avoid
+accidentally matching a string that represents something other than a date,
+such as a fraction.
 
 										*dial-augends-date#[%Y-%m-%d]*
 date#[%Y-%m-%d]~
@@ -412,7 +413,7 @@ Matches dates with the following format (year-month-day):
 	2021-01-01
 	2021-02-13
 <
-Same as |date#[%Y/%m/%d]| except the difference of the format.
+Same as |dial-augends-date#[%Y/%m/%d]| except the difference of the format.
 
 										*dial-augends-date#[%Y年%-m月%-d日]*
 date#[%Y年%-m月%-d日]~
@@ -423,7 +424,7 @@ Matches dates with the following format (commonly used in Japan):
 	2021年1月1日
 	2021年2月13日
 <
-Same as |date#[%Y/%m/%d]| except the difference of the format.
+Same as |dial-augends-date#[%Y/%m/%d]| except the difference of the format.
 
 									*dial-augends-date#[%Y年%-m月%-d日(%ja)]*
 date#[%Y年%-m月%-d日(%ja)]~
@@ -434,7 +435,7 @@ Matches dates with the following format (commonly used in Japan):
 	2021年1月1日(金)
 	2021年2月13日(土)
 <
-Same as |date#[%Y/%m/%d]| except the difference of the format.
+Same as |dial-augends-date#[%Y/%m/%d]| except the difference of the format.
 If the date and day of the week are inconsistent, it will be matched and
 automatically corrected to the correct day of the week when incrementing or
 decrementing.

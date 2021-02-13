@@ -1,4 +1,4 @@
-*dial.txt* 日本語ヘルプ （最終更新：2020/02/12）
+*dial.txt* 日本語ヘルプ （最終更新：2020/02/13）
 
 Vimの標準機能である CTRL-A / CTRL-X を拡張し、英数字に限らない様々な文字列を
 インクリメント/デクリメントできるようにするパッケージです。
@@ -151,7 +151,7 @@ COMMANDS								*dial-commands*
 CONFIGURATIONS							*dial-configurations*
 
 |dial.nvim| では、Lua スクリプトを用いて被加数の種類を指定することができます。
-被加数には |number#decimal| などの名前が付いており、自身の設定ファイルにて以下
+被加数には `number#decimal` などの名前が付いており、自身の設定ファイルにて以下
 のように被加数を指定することで好きな被加数が使えるようになります。
 
 >
@@ -230,16 +230,16 @@ number#decimal#fixed#zero~
 >
 	file001.jpg
 <
-という文字列の `1` にカーソルがある状態で|100<Plug>(dial-increment)| を行うと
+という文字列の `1` にカーソルがある状態で`100<Plug>(dial-increment)` を行うと
 >
 	file101.jpg
 <
-となり、その状態で更に|1000<Plug>(dial-increment)| を行うと
+となり、その状態で更に`1000<Plug>(dial-increment)` を行うと
 >
 	file999.jpg
 <
 となります（3桁の最大の数は999ですから、999でインクリメントが打ち止めになりま
-す）。さらにその状態から|995<Plug>(dial-decrement)| を行うと
+す）。さらにその状態から`995<Plug>(dial-decrement)` を行うと
 >
 	file004.jpg
 <
@@ -253,16 +253,16 @@ number#decimal#fixed#space~
 >
 	file  1.jpg
 <
-という文字列の `1` にカーソルがある状態で|100<Plug>(dial-increment)| を行うと
+という文字列の `1` にカーソルがある状態で`100<Plug>(dial-increment)` を行うと
 >
 	file101.jpg
 <
-となり、その状態で更に|1000<Plug>(dial-increment)| を行うと
+となり、その状態で更に`1000<Plug>(dial-increment)` を行うと
 >
 	file999.jpg
 <
 となります（3桁の最大の数は999ですから、999でインクリメントが打ち止めになりま
-す）。さらにその状態から|995<Plug>(dial-decrement)| を行うと
+す）。さらにその状態から`995<Plug>(dial-decrement)` を行うと
 >
 	file  4.jpg
 <
@@ -292,7 +292,7 @@ number#octal~
 	0567
 	001212
 <
-などの文字列にマッチします。 |number#decimal| などとの衝突に注意。
+などの文字列にマッチします。 |dial-augends-number#decimal| などとの衝突に注意。
 
 										*dial-augends-number#binary*
 number#binary~
@@ -376,8 +376,8 @@ date#[%m/%d]~
 										*dial-augends-date#[%-m/%-d]*
 date#[%-m/%-d]~
 
-基本的に |date#[%m/%d]| と同様ですが、こちらは月日が2桁にパディングされていな
-くてもマッチします。すなわち、
+基本的に |dial-augends-date#[%m/%d]| と同様ですが、こちらは月日が2桁にパディン
+グされていなくてもマッチします。すなわち、
 >
 	12/31
 	1/1
@@ -397,7 +397,7 @@ date#[%Y-%m-%d]~
 	2021-01-01
 	2021-02-13
 <
-フォーマットの違いを除いては|date#[%Y/%m/%d]|と同じです。
+フォーマットの違いを除いては|dial-augends-date#[%Y/%m/%d]|と同じです。
 
 										*dial-augends-date#[%Y年%-m月%-d日]*
 date#[%Y年%-m月%-d日]~
@@ -408,7 +408,7 @@ date#[%Y年%-m月%-d日]~
 	2021年1月1日
 	2021年2月13日
 <
-フォーマットの違いを除いては|date#[%Y/%m/%d]|と同じです。
+フォーマットの違いを除いては|dial-augends-date#[%Y/%m/%d]|と同じです。
 
 									*dial-augends-date#[%Y年%-m月%-d日(%ja)]*
 date#[%Y年%-m月%-d日(%ja)]~
@@ -419,7 +419,7 @@ date#[%Y年%-m月%-d日(%ja)]~
 	2021年1月1日(金)
 	2021年2月13日(土)
 <
-フォーマットの違いを除いては|date#[%Y/%m/%d]|と同じです。
+フォーマットの違いを除いては|dial-augends-date#[%Y/%m/%d]|と同じです。
 日付と曜日の整合性が取れていない場合もマッチし、インクリメント・デクリメントの
 際に正しい曜日となるよう自動で修正されます。
 
