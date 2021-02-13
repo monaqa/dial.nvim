@@ -81,11 +81,11 @@ lua << EOF
 local dial = require("dial")
 
 dial.config.searchlist.normal = {
-    dial.augends.number.decimal,
-    dial.augends.number.hex,
-    dial.augends.number.binary,
-    dial.augends.date[%Y/%m/%d],
-    dial.augends.markup.markdown_header,
+    "number#decimal",
+    "number#hex",
+    "number#binary",
+    "date#[%Y/%m/%d]",
+    "markup#markdown#header",
 }
 EOF
 ```
