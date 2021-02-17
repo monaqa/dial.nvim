@@ -1,4 +1,4 @@
-*dial.txt* help （Last updated: 2020/02/13）
+*dial.txt* help (Last updated: 2020/02/13)
 
 A package that extends the standard Vim commands CTRL-A / CTRL-X to allow
 increment/decrement of various strings, not limited to alphanumeric
