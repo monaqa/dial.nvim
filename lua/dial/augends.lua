@@ -4,7 +4,7 @@ local common = require("dial/common")
 local M = {}
 
 -- 十進整数。
--- -2, -1, 0, 1, 2, ..., 9, 10, 11, ...  にマッチする。
+-- 0, 1, 2, ..., 9, 10, 11, ...  にマッチする。
 M['number#decimal'] = {
     desc = "decimal natural number (0, 1, 2, ..., 9, 10, 11, ...)",
 
@@ -23,7 +23,7 @@ M['number#decimal'] = {
 }
 
 -- 十進の非負整数。
--- 0, 1, 2, ..., 9, 10, 11, ...  にマッチする。
+-- -2, -1, 0, 1, 2, ..., 9, 10, 11, ...  にマッチする。
 M['number#decimal#int'] = {
     desc = "decimal integer including negative (0, 192, -3, etc.)",
 
