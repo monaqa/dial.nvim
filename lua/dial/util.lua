@@ -35,7 +35,7 @@ function M.validate_list(name, list, arg1, arg2)
     if type(arg1) == "string" then
         typename, _ = arg1, arg2
 
-        local count_idx = 1
+        local count_idx = 0
         for idx, value in ipairs(list) do
             count_idx = idx
             -- 型名が一致しない場合
@@ -55,7 +55,7 @@ function M.validate_list(name, list, arg1, arg2)
     else
         checkf, errormsg = arg1, arg2
 
-        local count_idx = 1
+        local count_idx = 0
         for idx, value in ipairs(list) do
             count_idx = idx
             ok, err = checkf(value)
