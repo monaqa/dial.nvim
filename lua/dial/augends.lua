@@ -12,11 +12,19 @@ M['number#decimal'] = {
 
     add = function(cusror, text, addend)
         local n = tonumber(text)
+        local n_string_digit = text:len()
+        local n_actual_digit = tostring(n):len()
         n = n + addend
         if n < 0 then
             n = 0
         end
-        text = tostring(n)
+        if n_string_digit == n_actual_digit then
+            -- 増減前の数字が0か0始まりでない数字だったら
+            text = ("%d"):format(n)
+        else
+            -- 増減前の数字が0始まりの正の数だったら
+            text = ("%0" .. n_string_digit .. "d"):format(n)
+        end
         cursor = #text
         return cursor, text
     end,
