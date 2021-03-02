@@ -3,7 +3,7 @@ local common = require("dial/common")
 
 local M = {}
 
--- 十進整数。
+-- 十進の非負整数。
 -- 0, 1, 2, ..., 9, 10, 11, ...  にマッチする。
 M['number#decimal'] = {
     desc = "decimal natural number (0, 1, 2, ..., 9, 10, 11, ...)",
@@ -22,7 +22,7 @@ M['number#decimal'] = {
     end,
 }
 
--- 十進の非負整数。
+-- 十進整数。
 -- -2, -1, 0, 1, 2, ..., 9, 10, 11, ...  にマッチする。
 M['number#decimal#int'] = {
     desc = "decimal integer including negative (0, 192, -3, etc.)",
@@ -72,6 +72,68 @@ M['number#decimal#fixed#space'] = {
         if n > (10 ^ n_digit) - 1 then n = (10 ^ n_digit) - 1 end
         text = ("%" .. n_digit .. "d"):format(n)
         cursor = n_digit
+        return cursor, text
+    end,
+}
+
+-- 小数。
+M['number#decimal#multi#smart'] = {
+    desc = "smart multiply (same basic, but <C-a> becomes 10 times)",
+
+    find = common.find_pattern("%d+%.?%d*"),
+
+    add = function(cusror, text, addend)
+        local n = tonumber(text)
+        if addend == 0 then  -- ありえないけど
+            addend = 1
+        end
+        if addend == 1 then  -- 引数がないときは 10 として扱う
+            addend = 10
+        elseif addend == -1 then
+            addend = 0.1
+        end
+        if addend < 0 then
+            addend = -1 / addend
+        end
+        n = n * addend
+        text = ("%g"):format(n)
+        cursor = #text
+        return cursor, text
+    end,
+}
+
+-- 小数。
+M['number#decimal#multi#basic'] = {
+    desc = "basic multiply (multiply by 'addend')",
+
+    find = common.find_pattern("%d+%.?%d*"),
+
+    add = function(cusror, text, addend)
+        local n = tonumber(text)
+        if addend == 0 then  -- ありえないけど
+            addend = 1
+        end
+        if addend < 0 then
+            addend = -1 / addend
+        end
+        n = n * addend
+        text = ("%g"):format(n)
+        cursor = #text
+        return cursor, text
+    end,
+}
+
+-- 小数。
+M['number#decimal#multi#power10'] = {
+    desc = "multiply by 10",
+
+    find = common.find_pattern("%d+%.?%d*"),
+
+    add = function(cusror, text, addend)
+        local n = tonumber(text)
+        n = n * (10 ^ addend)
+        text = ("%g"):format(n)
+        cursor = #text
         return cursor, text
     end,
 }
