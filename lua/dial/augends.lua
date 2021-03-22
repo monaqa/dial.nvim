@@ -315,7 +315,7 @@ M['date#[%-m/%-d]'] = {
 M['date#[%Y-%m-%d]'] = {
     desc = "standard date %Y-%m-%d",
 
-    find = common.find_pattern("%d%d%d%d-%d%d-%d%d"),
+    find = common.find_pattern("%d%d%d%d%-%d%d%-%d%d"),
     add = function(cursor, text, addend)
         local year = tonumber(text:sub(1, 4))
         local month = tonumber(text:sub(6, 7))
