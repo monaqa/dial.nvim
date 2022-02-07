@@ -1,10 +1,18 @@
-local util = require("dial/util")
+-- augend で共通して用いられる関数。
+
+local util = require("dial.util")
 
 local M = {}
 
--- augend の find field を簡単に実装する。
+---augend の find field を簡単に実装する。
+---@param ptn string
+---@return fun(line: string, cursor: integer) -> textrange?
 function M.find_pattern(ptn)
-    function f(cursor, line)
+
+    ---@param line string
+    ---@param cursor integer
+    ---@return textrange?
+    local function f(line, cursor)
         local idx_start = 1
         while idx_start <= #line do
             local s, e = line:find(ptn, idx_start)
@@ -12,7 +20,6 @@ function M.find_pattern(ptn)
                 -- 検索結果があったら
                 if (cursor <= e) then
                     -- cursor が終了文字より後ろにあったら終了
-                    text = line:sub(s, e)
                     return {from = s, to = e}
                 else
                     -- 終了文字の後ろから探し始める
@@ -30,7 +37,7 @@ end
 
 -- augend の find field を簡単に実装する。
 function M.find_pattern_regex(ptn)
-    function f(cursor, line)
+    local function f(cursor, line)
         local idx_start = 1
         while idx_start <= #line do
 
@@ -44,7 +51,6 @@ function M.find_pattern_regex(ptn)
                 -- 検索結果があったら
                 if (cursor <= e) then
                     -- cursor が終了文字より後ろにあったら終了
-                    text = line:sub(s, e)
                     return {from = s, to = e}
                 else
                     -- 終了文字の後ろから探し始める
@@ -78,11 +84,11 @@ function M.enum_sequence(tbl)
         desc = vim_regex_ptn
     end
 
-    find = M.find_pattern_regex(vim_regex_ptn)
+    local find = M.find_pattern_regex(vim_regex_ptn)
 
     local function add(cursor, text, addend)
-        n_ptnlst = #strlist
-        n = 1
+        local n_ptnlst = #strlist
+        local n = 1
         for i, ptn in pairs(strlist) do
             if text:find(ptn) ~= nil then
                 n = i
@@ -122,11 +128,11 @@ function M.enum_cyclic(tbl)
         desc = vim_regex_ptn
     end
 
-    find = M.find_pattern_regex(vim_regex_ptn)
+    local find = M.find_pattern_regex(vim_regex_ptn)
 
     local function add(cursor, text, addend)
-        n_ptnlst = #strlist
-        n = 1
+        local n_ptnlst = #strlist
+        local n = 1
         for i, ptn in pairs(strlist) do
             if text:find(ptn) ~= nil then
                 n = i
@@ -139,7 +145,6 @@ function M.enum_cyclic(tbl)
     end
 
     return {
-        name = name,
         desc = desc,
         find = find,
         add = add,
