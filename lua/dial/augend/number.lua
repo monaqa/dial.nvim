@@ -36,6 +36,7 @@ end
 ---@param text string
 ---@param addend integer
 ---@param cursor? integer
+---@return { text?: string, cursor?: integer }
 function AugendNumber:add(text, addend, cursor)
     local n = tonumber(text)
     local n_string_digit = text:len()

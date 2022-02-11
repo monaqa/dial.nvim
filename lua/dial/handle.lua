@@ -156,17 +156,17 @@ function Handler:operate(line, cursor, direction)
         return {}
     end
 
-    local text = line:sub(self.range.from + 1, self.range.to)
+    local text = line:sub(self.range.from, self.range.to)
     local addend = self:get_addend(direction)
     local add_result = self.active_augend:add(text, addend, cursor)
     local new_line = nil
     local new_cursor = nil
 
     if add_result.text ~= nil then
-        new_line = line:sub(1, self.range.from) .. add_result.text .. line:sub(self.range.to + 1)
+        new_line = line:sub(1, self.range.from - 1) .. add_result.text .. line:sub(self.range.to + 1)
     end
     if add_result.cursor ~= nil then
-        new_cursor = self.range.from + add_result.cursor
+        new_cursor = self.range.from - 1 + add_result.cursor
     end
 
     return {line = new_line, cursor = new_cursor}

@@ -17,7 +17,7 @@ end
 
 function M.split(str, delim)
   local t = {}
-  i=1
+  local i = 1
   for s in str:gmatch("([^" .. delim .. "]+)") do
     t[i] = s
     i = i + 1
@@ -27,13 +27,18 @@ function M.split(str, delim)
 end
 
 -- Check if the argument is a valid list (which does not contain nil).
+---第2引数が特定の型を持つ（または特定の性質を満たす）ことを確かめる。
+---@param name string
+---@param list any[]
+---@param arg1 string | function
+---@param arg2? string
 function M.validate_list(name, list, arg1, arg2)
     if not vim.tbl_islist(list) then
         error(("%s is not list."):format(name))
     end
 
     if type(arg1) == "string" then
-        typename, _ = arg1, arg2
+        local typename, _ = arg1, arg2
 
         local count_idx = 0
         for idx, value in ipairs(list) do
@@ -53,12 +58,12 @@ function M.validate_list(name, list, arg1, arg2)
         end
 
     else
-        checkf, errormsg = arg1, arg2
+        local checkf, errormsg = arg1, arg2
 
         local count_idx = 0
         for idx, value in ipairs(list) do
             count_idx = idx
-            ok, err = checkf(value)
+            local ok, err = checkf(value)
             if not ok then
                 error(("List validation error: %s[%d] does not satisfy '%s' (%s)"):format(
                         name, idx, errormsg, err
@@ -143,13 +148,13 @@ function M.tostring_with_base(n, b, wid, pad)
         n = math.floor(n / b)
         table.insert(t, 1, digits:sub(d,d))
     until n == 0
-    text = table.concat(t,"")
+    local text = table.concat(t,"")
     if wid then
         if #text < wid then
             if pad == nil then
                 pad = " "
             end
-            padding = pad:rep(wid - #text)
+            local padding = pad:rep(wid - #text)
             return padding .. text
         end
     end
@@ -166,11 +171,11 @@ function M.try_get_keys(tbl, keylst)
     local values = {}
 
     for _, key in ipairs(keylst) do
-        val = tbl[key]
+        local val = tbl[key]
         if val ~= nil then
             table.insert(values, val)
         else
-            errmsg = ("The value corresponding to the key '%s' is not found in the table."):format(key)
+            local errmsg = ("The value corresponding to the key '%s' is not found in the table."):format(key)
             return nil, errmsg
         end
     end

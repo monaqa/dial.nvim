@@ -36,8 +36,15 @@ function M.find_pattern(ptn)
 end
 
 -- augend の find field を簡単に実装する。
+---comment
+---@param ptn string
+---@return fun(line: string, cursor: integer) -> textrange?
 function M.find_pattern_regex(ptn)
-    local function f(cursor, line)
+
+    ---@param line string
+    ---@param cursor integer
+    ---@return textrange?
+    local function f(line, cursor)
         local idx_start = 1
         while idx_start <= #line do
 
