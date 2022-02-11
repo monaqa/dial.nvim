@@ -1,5 +1,6 @@
 ---Neovim とのインターフェースを司る。
 ---Neovim のバッファの中身を弄ったり、変数を読み込んだりする。
+local config = require("dial.config")
 local handler = require("dial.handle").new()
 local util = require("dial.util")
 
@@ -23,18 +24,12 @@ end
 ---comment
 ---@return Augend[]
 local function choose_default_augends()
-    -- local buflocal_augends = vim.b.dial_augends
-    -- if buflocal_augends ~= nil then
-    --     util.validate_list("b:dial_augends", buflocal_augends, is_augend, "require augend list.")
-    --     return buflocal_augends
-    -- end
-    -- 
-    -- local global_augends = vim.g.dial_augends
-    -- if global_augends ~= nil then
-    --     util.validate_list("g:dial_augends", global_augends, is_augend, "require augend list.")
-    --     return buflocal_augends
-    -- end
-    return require("dial.config").augends
+    local bufnr = vim.fn.bufnr("%")
+    if config._augends_buflocal[bufnr] ~= nil then
+        return config._augends_buflocal[bufnr]
+    end
+
+    return config._augends
 end
 
 ---comment
