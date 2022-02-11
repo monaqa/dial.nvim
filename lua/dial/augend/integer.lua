@@ -1,12 +1,12 @@
 local common = require"dial.augend.common"
 
--- ---@alias AugendNumberConfig { radix: integer, prefix: string, natural: boolean }
----@alias AugendNumberConfig {}
+-- ---@alias AugendIntegerConfig { radix: integer, prefix: string, natural: boolean }
+---@alias AugendIntegerConfig {}
 
----@class AugendNumber
+---@class AugendInteger
 ---@implement Augend
----@field config AugendNumberConfig
-local AugendNumber = {}
+---@field config AugendIntegerConfig
+local AugendInteger = {}
 
 local M = {}
 
@@ -23,13 +23,13 @@ function M.new(config)
     -- config.prefix = config.prefix or ""
     -- config.natural = config.natural or true
 
-    return setmetatable({config = config}, {__index = AugendNumber})
+    return setmetatable({config = config}, {__index = AugendInteger})
 end
 
 ---@param line string
 ---@param cursor? integer
 ---@return textrange?
-function AugendNumber:find(line, cursor)
+function AugendInteger:find(line, cursor)
     return common.find_pattern("%d+")(line, cursor)
 end
 
@@ -37,7 +37,7 @@ end
 ---@param addend integer
 ---@param cursor? integer
 ---@return { text?: string, cursor?: integer }
-function AugendNumber:add(text, addend, cursor)
+function AugendInteger:add(text, addend, cursor)
     local n = tonumber(text)
     local n_string_digit = text:len()
     local n_actual_digit = tostring(n):len()

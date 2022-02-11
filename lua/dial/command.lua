@@ -41,11 +41,12 @@ end
 ---@param count integer
 ---@param augends? Augend[]
 function M.select_augend_normal(count, augends)
-
     augends = augends or choose_default_augends()
 
     if count ~= 0 then
         handler:set_count(count)
+    else
+        handler:set_count(1)
     end
     local col = vim.fn.col(".")
     local line = vim.fn.getline(".")

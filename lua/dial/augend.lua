@@ -1,9 +1,9 @@
-local number = require("dial.augend.number").new
+local integer = require("dial.augend.integer").new
 local constant = require("dial.augend.constant").new
 
--- local decimal = number{}
+-- local decimal = integer{}
 
 return {
-    number = number,
+    integer = integer,
     constant = constant,
 }
