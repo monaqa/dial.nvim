@@ -5,6 +5,9 @@
 ---@alias textrange {from: integer, to: integer}
 ---@alias addresult {text?: string, cursor?: integer}
 
+---@alias findf fun(line: string, cursor?: integer) -> textrange?
+---@alias addf fun(text: string, addend: integer, cursor?: integer) -> addresult?
+
 ---@alias findmethod fun(self: Augend, line: string, cursor?: integer) -> textrange?
 ---@alias addmethod fun(self: Augend, text: string, addend: integer, cursor?: integer) -> addresult?
 

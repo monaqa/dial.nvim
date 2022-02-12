@@ -28,7 +28,7 @@ function M.new(config)
         end
     end
     if config.cyclic == nil then
-        config.cyclic = false
+        config.cyclic = true
     end
     return setmetatable({config = config}, {__index = AugendConstant})
 end
@@ -60,7 +60,13 @@ function AugendConstant:add(text, addend, cursor)
             n = i
         end
     end
-    n = (n + addend - 1) % n_patterns + 1
+    if self.config.cyclic then
+        n = (n + addend - 1) % n_patterns + 1
+    else
+        n = n + addend
+        if n < 1 then n = 1 end
+        if n > n_patterns then n = n_patterns end
+    end
     text = elements[n]
     cursor = #text
     return { text = text, cursor = cursor }
