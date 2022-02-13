@@ -1,6 +1,29 @@
 -- utils
 local M = {}
 
+---@generic T
+---@param cond boolean
+---@param branch_true T
+---@param branch_false T
+---@return T
+function M.if_expr(cond, branch_true, branch_false)
+    if cond then
+        return branch_true
+    end
+    return branch_false
+end
+
+---@generic T
+---@param x T | nil
+---@param default T
+---@return T
+function M.unwrap_or(x, default)
+    if x == nil then
+        return default
+    end
+    return x
+end
+
 function M.dbg(obj, text)
     if text ~= nil then
         print("[" .. text .. "]: " .. vim.inspect(obj))
