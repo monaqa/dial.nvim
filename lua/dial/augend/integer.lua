@@ -56,7 +56,7 @@ local function radix_to_query_character(radix)
     return "0-9a-" .. string.char(86 + radix) .. "A-" .. string.char(54 + radix)
 end
 
----@param config AugendIntegerConfig
+---@param config { radix?: integer, prefix?: string, natural?: boolean, case?: '"upper"' | '"lower"' }
 ---@return Augend
 function M.new(config)
     vim.validate{

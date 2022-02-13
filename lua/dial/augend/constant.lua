@@ -21,10 +21,11 @@ function M.new(config)
         pattern_regexp = {config.pattern_regexp, "string", true}
     }
     if config.pattern_regexp == nil then
-        if config.word == false then
-            config.pattern_regexp = [[\C\V\(%s\)]]
-        else
+        local word = util.unwrap_or(config.word, true)
+        if word then
             config.pattern_regexp = [[\C\V\<\(%s\)\>]]
+        else
+            config.pattern_regexp = [[\C\V\(%s\)]]
         end
     end
     if config.cyclic == nil then
