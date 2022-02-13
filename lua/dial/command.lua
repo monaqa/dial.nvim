@@ -22,22 +22,15 @@ local function is_augend(obj)
 end
 
 ---comment
----@return Augend[]
-local function choose_default_augends()
-    local bufnr = vim.fn.bufnr("%")
-    if config._augends_buflocal[bufnr] ~= nil then
-        return config._augends_buflocal[bufnr]
+---@param group_name? string
+function M.select_augend_normal(group_name)
+    group_name = group_name or "default"
+    local augends = config.augends.group[group_name]
+    if augends == nil then
+        error(("undefined augend group name: %s"):format(group_name))
     end
 
-    return config._augends
-end
-
----comment
----@param count integer
----@param augends? Augend[]
-function M.select_augend_normal(count, augends)
-    augends = augends or choose_default_augends()
-
+    local count = vim.v.count
     if count ~= 0 then
         handler:set_count(count)
     else
@@ -68,8 +61,8 @@ end
 --- text object が指定されたときに走る処理。
 --- 現在の行の情報を元に範囲を選択する handler.findTextRange() を呼び出す。
 --- また、ドットリピートの際は指定されたカウンタの値を受け取って加数を更新する。
----@param count integer
-function M.textobj(count)
+function M.textobj()
+    local count = vim.v.count
     if count ~= 0 then
         handler:set_count(count)
     end

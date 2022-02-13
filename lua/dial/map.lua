@@ -5,32 +5,46 @@ local command = require"dial.command"
 ---入力文字列を <Cmd> 及び <CR> で挟む。
 ---@param body string
 local function cmd(body)
-    local cmd_sequences = string.char(128, 253, 104)
-    return cmd_sequences .. body .. "\n"
+    -- local cmd_sequences = string.char(128, 253, 104)
+    -- local cr_sequences = string.char(13)
+    local cmd_sequences = '<Cmd>'
+    local cr_sequences = '<CR>'
+    return cmd_sequences .. body .. cr_sequences
+    -- return cmd_sequences .. body .. "\n"
 end
 
 ---dial 操作を提供するコマンド列を出力する。
 ---@param direction direction
 ---@param mode mode
----@param augends? Augend[]
-local function _cmd_sequence(direction, mode, augends)
-    -- local select = cmd([[lua require"dial.command".select_augend_]] .. mode .. "()")
-    command.select_augend_normal(vim.v.count, augends)
+---@param group_name? string
+local function _cmd_sequence(direction, mode, group_name)
+    local select
+    if group_name == nil then
+        select = cmd(
+        [[lua require"dial.command".select_augend_]] .. mode .. "()"
+        )
+    else
+        select = cmd(
+        [[lua require"dial.command".select_augend_]] .. mode
+        .. [[("]] .. group_name .. [[")]]
+        )
+    end
+    -- command.select_augend_normal(vim.v.count, group_name)
     local setopfunc = cmd([[let &opfunc="dial#operator#]] .. direction .. "_" .. mode .. [["]])
-    local textobj = cmd[[lua require("dial.command").textobj(vim.v.count)]]
-    return setopfunc .. "g@" .. textobj
+    local textobj = cmd[[lua require("dial.command").textobj()]]
+    return select .. setopfunc .. "g@" .. textobj
 end
 
----@param augends? Augend[]
+---@param group_name? string
 ---@return string
-function M.inc_normal(augends)
-    return _cmd_sequence("increment", "normal", augends)
+function M.inc_normal(group_name)
+    return _cmd_sequence("increment", "normal", group_name)
 end
 
----@param augends? Augend[]
+---@param group_name? string
 ---@return string
-function M.dec_normal(augends)
-    return _cmd_sequence("decrement", "normal", augends)
+function M.dec_normal(group_name)
+    return _cmd_sequence("decrement", "normal", group_name)
 end
 
 return M

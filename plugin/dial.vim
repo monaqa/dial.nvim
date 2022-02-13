@@ -11,8 +11,14 @@ set cpo&vim " reset them to defaults
 " xnoremap g<Plug>(dial-increment) <Cmd>lua require"dial".select()<Cmd>let &opfunc="dial#operator#increment_gvisual"<CR>g@<Cmd>lua require"dial".textobj()<CR>
 " xnoremap g<Plug>(dial-decrement) <Cmd>lua require"dial".select()<Cmd>let &opfunc="dial#operator#decrement_gvisual"<CR>g@<Cmd>lua require"dial".textobj()<CR>
 
-nnoremap <expr> <Plug>(dial-increment) luaeval('require"dial.map".inc_normal()')
-nnoremap <expr> <Plug>(dial-decrement) luaeval('require"dial.map".dec_normal()')
+" nnoremap <expr> <Plug>(dial-increment) luaeval('require"dial.map".inc_normal()')
+" nnoremap <expr> <Plug>(dial-decrement) luaeval('require"dial.map".dec_normal()')
+
+lua << EOF
+vim.api.nvim_set_keymap("n", "<Plug>(dial-increment)", require("dial.map").inc_normal(), {noremap = true})
+vim.api.nvim_set_keymap("n", "<Plug>(dial-decrement)", require("dial.map").dec_normal(), {noremap = true})
+EOF
+
 " xnoremap <expr> <Plug>(dial-increment) luaeval('require"dial.map".inc_visual(vim.g.dial_augends)')
 " xnoremap <expr> <Plug>(dial-decrement) luaeval('require"dial.map".dec_visual(vim.g.dial_augends)')
 " xnoremap <expr> g<Plug>(dial-increment) luaeval('require"dial".map.inc_gvisual(vim.g.dial_augends)')
