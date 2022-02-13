@@ -24,7 +24,11 @@ end
 ---comment
 ---@param group_name? string
 function M.select_augend_normal(group_name)
-    group_name = group_name or "default"
+    if group_name == nil and vim.v.register == "=" then
+        group_name = vim.fn.getreg("=", 1)
+    else
+        group_name = util.unwrap_or(group_name, "default")
+    end
     local augends = config.augends.group[group_name]
     if augends == nil then
         error(("undefined augend group name: %s"):format(group_name))
