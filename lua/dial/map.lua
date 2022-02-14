@@ -1,6 +1,7 @@
 local M = {}
 
 local command = require"dial.command"
+local util    = require "dial.util"
 
 ---入力文字列を <Cmd> 及び <CR> で挟む。
 ---@param body string
@@ -31,7 +32,7 @@ local function _cmd_sequence(direction, mode, group_name)
     end
     -- command.select_augend_normal(vim.v.count, group_name)
     local setopfunc = cmd([[let &opfunc="dial#operator#]] .. direction .. "_" .. mode .. [["]])
-    local textobj = cmd[[lua require("dial.command").textobj()]]
+    local textobj = util.if_expr(mode == "normal", cmd[[lua require("dial.command").textobj()]], "")
     return select .. setopfunc .. "g@" .. textobj
 end
 
@@ -46,5 +47,30 @@ end
 function M.dec_normal(group_name)
     return _cmd_sequence("decrement", "normal", group_name)
 end
+
+---@param group_name? string
+---@return string
+function M.inc_visual(group_name)
+    return _cmd_sequence("increment", "visual", group_name)
+end
+
+---@param group_name? string
+---@return string
+function M.dec_visual(group_name)
+    return _cmd_sequence("decrement", "visual", group_name)
+end
+
+---@param group_name? string
+---@return string
+function M.inc_gvisual(group_name)
+    return _cmd_sequence("increment", "gvisual", group_name)
+end
+
+---@param group_name? string
+---@return string
+function M.dec_gvisual(group_name)
+    return _cmd_sequence("decrement", "gvisual", group_name)
+end
+
 
 return M

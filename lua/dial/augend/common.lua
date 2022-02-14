@@ -6,11 +6,11 @@ local M = {}
 
 ---augend の find field を簡単に実装する。
 ---@param ptn string
----@return fun(line: string, cursor: integer) -> textrange?
+---@return findf
 function M.find_pattern(ptn)
 
     ---@param line string
-    ---@param cursor integer
+    ---@param cursor? integer
     ---@return textrange?
     local function f(line, cursor)
         local idx_start = 1
@@ -18,7 +18,7 @@ function M.find_pattern(ptn)
             local s, e = line:find(ptn, idx_start)
             if s then
                 -- 検索結果があったら
-                if (cursor <= e) then
+                if cursor == nil or cursor <= e then
                     -- cursor が終了文字より後ろにあったら終了
                     return {from = s, to = e}
                 else
@@ -36,13 +36,12 @@ function M.find_pattern(ptn)
 end
 
 -- augend の find field を簡単に実装する。
----comment
 ---@param ptn string
----@return fun(line: string, cursor: integer) -> textrange?
+---@return findf
 function M.find_pattern_regex(ptn)
 
     ---@param line string
-    ---@param cursor integer
+    ---@param cursor? integer
     ---@return textrange?
     local function f(line, cursor)
         local idx_start = 1
@@ -56,7 +55,7 @@ function M.find_pattern_regex(ptn)
                 e = e + idx_start - 1  -- 上で得られた s は相対位置なので
 
                 -- 検索結果があったら
-                if (cursor <= e) then
+                if cursor == nil or cursor <= e then
                     -- cursor が終了文字より後ろにあったら終了
                     return {from = s, to = e}
                 else

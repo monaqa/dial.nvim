@@ -177,7 +177,6 @@ DICT_FORMAT["%Y年%-m月%-d日"] = {
         local idx_nen = text:find("年")
         local idx_tsuki = text:find("月")
         local idx_day = text:find("日")
-        util.dbg{text = text, idx_nen = idx_nen, idx_tsuki = idx_tsuki, kind = kind}
         if kind == "year" then
             return idx_nen - 1
         elseif kind == "month" then
@@ -382,8 +381,11 @@ function AugendDate:find_stateful(line, cursor)
         return
     end
     local text = line:sub(range.from, range.to)
-    util.dbg{text = text, cursor = cursor}
-    self.kind = self.datefmt.judge_datekind(text, cursor - range.from + 1)
+    if cursor == nil then
+        self.kind = self.datefmt.judge_datekind(text, nil)
+    else
+        self.kind = self.datefmt.judge_datekind(text, cursor - range.from + 1)
+    end
     return range
 end
 

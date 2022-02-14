@@ -93,7 +93,6 @@ function AugendInteger:add(text, addend, cursor)
     -- local n_actual_digit = tostring(n):len()
     local n_actual_digit = tostring_with_radix(n, self.radix, self.case):len()
     n = n + addend
-    util.dbg{text = text, n = n, query = self.query}
     if self.natural and n < 0 then
         n = 0
     end

@@ -147,6 +147,42 @@ function Handler:select_augend(line, cursor, augends)
 end
 
 ---comment
+---@param lines string[]
+---@param cursor? integer
+---@param augends Augend[]
+function Handler:select_augend_visual(lines, cursor, augends)
+    local interim_augend = nil;
+    local interim_score = Score.new(3, 0, 0)  -- 最も優先度の低いスコア
+
+    for _, line in ipairs(lines) do
+        for _, augend in ipairs(augends) do
+            (function()
+                ---@type textrange?
+                local range = nil;
+                if (augend.find_stateful == nil) then
+                    range = augend:find(line, cursor)
+                else
+                    range = augend:find_stateful(line, cursor)
+                end
+                if range == nil then
+                    return;  -- equivalent to break (of nested for block)
+                end
+                local score = Score.from_cursor(range.from, range.to, cursor)
+                if score:cmp(interim_score) then
+                    interim_augend = augend
+                    interim_score = score
+                end
+            end)()
+        end
+        if interim_augend ~= nil then
+            self.active_augend = interim_augend
+            return
+        end
+    end
+
+end
+
+---comment
 ---@param line string
 ---@param cursor integer
 ---@param direction direction
@@ -170,6 +206,34 @@ function Handler:operate(line, cursor, direction)
     end
 
     return {line = new_line, cursor = new_cursor}
+end
+
+---comment
+---@param line string
+---@param selected_range {from: integer, to?: integer}
+---@param direction direction
+---@param tier integer
+---@return {result?: string}
+function Handler:operate_visual(line, selected_range, direction, tier)
+    if self.active_augend == nil then
+        return {}
+    end
+    tier = util.unwrap_or(tier, 1)
+    local line_partial = line:sub(selected_range.from, selected_range.to)
+    local range = self.active_augend:find(line_partial, 0)
+    if range == nil then
+        return {}
+    end
+    local addend = self:get_addend(direction)
+    local from = selected_range.from + range.from - 1
+    local to = selected_range.from + range.to - 1
+    local text = line:sub(from, to)
+    local add_result = self.active_augend:add(text, addend * tier)
+    local newline = nil
+    if add_result.text ~= nil then
+        newline = line:sub(1, from - 1) .. add_result.text .. line:sub(to + 1)
+    end
+    return {line = newline}
 end
 
 ---text object が call されたとき、（副作用を伴わずに）現在 active な augend の対象範囲を range に設定する。
