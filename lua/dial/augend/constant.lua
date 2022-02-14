@@ -73,4 +73,26 @@ function AugendConstant:add(text, addend, cursor)
     return { text = text, cursor = cursor }
 end
 
+M.alias = {
+    bool = M.new{ elements = {"true", "false"} },
+    alpha = M.new{ elements = {
+        "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
+        "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
+    }, cyclic = false},
+    Alpha = M.new{ elements = {
+        "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
+        "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
+    }, cyclic = false},
+    ja_weekday = M.new{
+        elements = { "日", "月", "火", "水", "木", "金", "土" },
+        word = true,
+        cyclic = true,
+    },
+    ja_weekday_full = M.new{
+        elements = { "日曜日", "月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日" },
+        word = false,
+        cyclic = true,
+    },
+}
+
 return M

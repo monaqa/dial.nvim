@@ -113,4 +113,12 @@ function AugendInteger:add(text, addend, cursor)
     return {text = text, cursor = cursor}
 end
 
+M.alias = {
+    decimal = M.new{},
+    decimal_int = M.new{ natural = false },
+    binary = M.new{ radix = 2, prefix = "0b", natural = true },
+    octal = M.new{ radix = 8, prefix = "0o", natural = true },
+    hex = M.new{ radix = 16, prefix = "0x", natural = true },
+}
+
 return M

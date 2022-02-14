@@ -6,7 +6,7 @@ local M = {}
 M.augends = {
     group = {
         default = {
-            augend.integer{},
+            augend.integer.alias.decimal,
         },
     },
 }
