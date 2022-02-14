@@ -108,6 +108,10 @@ function M.select_augend_visual(group_name)
     end
 end
 
+function M.select_augend_gvisual(group_name)
+    M.select_augend_visual(group_name)
+end
+
 ---operator が呼ばれたときに走る処理。
 ---@param direction direction
 function M.operator_normal(direction)
