@@ -194,4 +194,39 @@ function M.textobj()
     handler:find_text_range(line, col)
 end
 
+function M.command(direction, line_range, groups)
+    local group_name = groups[1]
+    if group_name == nil and vim.v.register == "=" then
+        group_name = vim.fn.getreg("=", 1)
+    else
+        group_name = util.unwrap_or(group_name, "default")
+    end
+    local augends = config.augends.group[group_name]
+    if augends == nil then
+        error(("undefined augend group name: %s"):format(group_name))
+    end
+
+    local line_min = line_range.from
+    local line_max = line_range.to
+    local lines = {}
+    for line_num = line_min, line_max, 1 do
+        table.insert(lines, vim.fn.getline(line_num))
+    end
+    handler:select_augend_visual(lines, nil, augends)
+
+    ---@param lnum integer
+    ---@param range {from: integer, to?: integer}
+    local function operate_line(lnum, range)
+        local line = vim.fn.getline(lnum)
+        local result = handler:operate_visual(line, range, direction, 1)
+        if (result.line ~= nil) then
+            vim.fn.setline(lnum, result.line)
+        end
+    end
+
+    for lnum = line_min, line_max, 1 do
+        operate_line(lnum, {from = 1})
+    end
+end
+
 return M
