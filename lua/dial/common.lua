@@ -66,13 +66,20 @@ function M.enum_sequence(tbl)
         desc = {tbl.desc, "string", true},
         ptn_format = {tbl.ptn_format, "string", true},
     }
+    util.validate_list("enum_cyclic", tbl.strlist, "string", false)
     local desc, strlist, ptn_format = tbl.desc, tbl.strlist, tbl.ptn_format
 
     -- option 引数
     if ptn_format == nil then
-        ptn_format = "\\C\\M\\<\\(%s\\)\\>"
+        ptn_format = [[\C\V\<\(%s\)\>]]
     end
-    local vim_regex_ptn = ptn_format:format(table.concat(strlist, "\\|"))
+    local escapedlist = vim.tbl_map(
+        function (e)
+            return vim.fn.escape(e, [[/\]])
+        end,
+        strlist
+    )
+    local vim_regex_ptn = ptn_format:format(table.concat(escapedlist, [[\|]]))
 
     if desc == nil then
         desc = vim_regex_ptn
@@ -84,7 +91,7 @@ function M.enum_sequence(tbl)
         n_ptnlst = #strlist
         n = 1
         for i, ptn in pairs(strlist) do
-            if text:find(ptn) ~= nil then
+            if text:find(ptn, 1, true) ~= nil then
                 n = i
             end
         end
@@ -114,9 +121,15 @@ function M.enum_cyclic(tbl)
 
     -- option 引数
     if ptn_format == nil then
-        ptn_format = "\\C\\M\\<\\(%s\\)\\>"
+        ptn_format = [[\C\V\<\(%s\)\>]]
     end
-    local vim_regex_ptn = ptn_format:format(table.concat(strlist, "\\|"))
+    local escapedlist = vim.tbl_map(
+        function (e)
+            return vim.fn.escape(e, [[/\]])
+        end,
+        strlist
+    )
+    local vim_regex_ptn = ptn_format:format(table.concat(escapedlist, [[\|]]))
 
     if desc == nil then
         desc = vim_regex_ptn
@@ -128,7 +141,7 @@ function M.enum_cyclic(tbl)
         n_ptnlst = #strlist
         n = 1
         for i, ptn in pairs(strlist) do
-            if text:find(ptn) ~= nil then
+            if text:find(ptn, 1, true) ~= nil then
                 n = i
             end
         end
