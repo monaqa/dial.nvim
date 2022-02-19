@@ -20,9 +20,11 @@ end
 ---@field kind colorkind
 local AugendHexColor = {}
 
+local M = {}
+
 ---@param config { case: colorcase }
 ---@return Augend
-function AugendHexColor.new(config)
+function M.new(config)
     vim.validate{
         case = {config.case, "string", true},
     }
@@ -67,19 +69,19 @@ function AugendHexColor:add(text, addend, cursor)
     local g = tonumber(text:sub(4, 5), 16)
     local b = tonumber(text:sub(6, 7), 16)
     if cursor == nil then cursor = 1 end  -- default: all
-    if cursor <= 1 then
+    if self.kind == "all" then
         -- increment all
         r = cast_u8(r + addend)
         g = cast_u8(g + addend)
         b = cast_u8(b + addend)
         cursor = 1
-    elseif cursor == 2 or cursor == 3 then
+    elseif self.kind == "r" then
         r = cast_u8(r + addend)
         cursor = 3
-    elseif cursor == 4 or cursor == 5 then
+    elseif self.kind == "g" then
         g = cast_u8(g + addend)
         cursor = 5
-    else  -- (if cursor == 6 or cursor == 7 then)
+    else
         b = cast_u8(b + addend)
         cursor = 7
     end
@@ -87,4 +89,4 @@ function AugendHexColor:add(text, addend, cursor)
     return {text = text, cursor = cursor}
 end
 
-return AugendHexColor
+return M
