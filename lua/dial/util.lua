@@ -103,28 +103,27 @@ function M.validate_list(name, list, arg1, arg2)
 end
 
 
-function M.has_augend_field(tbl)
-    if type(tbl) ~= "table" then
-        return false, "not table"
-    end
+---配列のうち、nil 値をもつインデックス列を返す。
+---@param tbl array
+---@return integer[]
+function M.index_with_nil_value(tbl)
+    -- local maxn, k = 0, nil
+    -- repeat
+    --     k = next( table, k )
+    --     if type( k ) == 'number' and k > maxn then
+    --         maxn = k
+    --     end
+    -- until not k
+    -- M.dbg(maxn)
 
-    if vim.tbl_islist(tbl) then
-        return false, "augend have to be a map, not list"
+    local maxn = table.maxn(tbl)
+    local nil_keys = {}
+    for i = 1, maxn, 1 do
+        if tbl[i] == nil then
+            table.insert(nil_keys, i)
+        end
     end
-
-    if type(tbl.find) ~= "function" then
-        return false, "augend should have a method (function field) 'find'"
-    end
-
-    if type(tbl.add) ~= "function" then
-        return false, "augend should have a method (function field) 'add'"
-    end
-
-    if type(tbl.desc) ~= "string" then
-        return false, "augend should have a string field 'desc'"
-    end
-
-    return true
+    return nil_keys
 end
 
 function M.filter(fn, ary)

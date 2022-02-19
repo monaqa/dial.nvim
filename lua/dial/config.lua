@@ -1,4 +1,5 @@
 local augend = require("dial.augend")
+local util   = require("dial.util")
 local M = {}
 
 ---@class augends
@@ -15,12 +16,15 @@ M.augends = {
 ---@param tbl table<string, Augend[]>
 function M.augends:register_group(tbl)
     -- TODO: validate augends
+
     for name, augends in pairs(tbl) do
-        -- if self.group[name] == nil then
-        --     self.group[name] = augends
-        -- else
-        --     error(([[group "%s" already exists.]]):format(name))
-        -- end
+
+        local nil_keys = util.index_with_nil_value(augends)
+
+        if #nil_keys ~= 0 then
+            local str_nil_keys = table.concat(nil_keys, ", ")
+            error(("tried to register augend group '%s', but it contains nil augend at index %s."):format(name, str_nil_keys))
+        end
 
         self.group[name] = augends
     end
