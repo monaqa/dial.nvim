@@ -1,0 +1,304 @@
+# dial.nvim
+
+**NOTICE: 本プラグインはまだ開発段階であり、事前告知なくインターフェースが変更となることがあります。**
+
+## 旧バージョン (v0.2.0) を使っていた人へ
+
+2022/xx/xx に v0.3.0 がリリースされ、既存のインターフェースとの互換性がなくなりました。
+以前のバージョン向けの設定を行っていた方は、[TROUBLESHOOTING.md](./TROUBLESHOOTING_ja.md) を参考に再設定を行ってください。
+
+## 概要
+
+[Neovim](https://github.com/neovim/neovim) の数値増減機能を拡張する Lua 製プラグイン。
+既存の `<C-a>` や `<C-x>` コマンドを拡張し、数値以外も増減・トグルできるようにします。
+
+![demo.gif](https://github.com/monaqa/dial.nvim/wiki/fig/dial-demo.gif)
+
+## 特徴
+
+* 数値をはじめとする様々なものの増減
+  * n 進数 (`2 <= n <= 36`) の整数
+  * 日付
+  * キーワードや演算子など、所定文字列のトグル
+    * `true` ⇄ `false`
+    * `&&` ⇄ `||`
+    * `a` ⇄ `b` ⇄ ... ⇄ `z`
+    * `日` ⇄ `月` ⇄ ... ⇄ `土` ⇄ `日` ⇄ ...
+  * Hex color
+  * SemVer
+* 増減対象の柔軟な設定
+  * 特定のファイルタイプでのみ有効なルールの設定
+  * VISUAL モードでのみ有効なルールの設定
+* VISUAL mode での `<C-a>` / `<C-x>` / `g<C-a>` / `g<C-x>` に対応
+* カウンタに対応
+* ドットリピートに対応
+
+## 類似プラグイン
+
+* [tpope/vim-speeddating](https://github.com/tpope/vim-speeddating)
+* [Cycle.vim](https://github.com/zef/vim-cycle)
+* [AndrewRadev/switch.vim](https://github.com/AndrewRadev/switch.vim)
+
+## インストール
+
+本プラグインには Neovim 0.5.0 以上が必要です（Neovim 0.6.1 以降推奨）。
+
+`dial.nvim` は好きなパッケージマネージャの指示に従うことでインストールできます。
+
+## 使用方法
+
+本プラグインはデフォルトではキーマッピングを設定/上書きしません。
+本プラグインを有効にするには、いずれかのキーに以下のような割り当てを行う必要があります。
+
+```vim
+nmap <C-a> <Plug>(dial-increment)
+nmap <C-x> <Plug>(dial-decrement)
+vmap <C-a> <Plug>(dial-increment)
+vmap <C-x> <Plug>(dial-decrement)
+vmap g<C-a> g<Plug>(dial-increment)
+vmap g<C-x> g<Plug>(dial-decrement)
+```
+
+または Lua 上で以下のように設定することもできます。
+
+```lua
+vim.api.nvim_set_keymap("n", "<C-a>", require("dial.map").inc_normal(), {noremap = true})
+vim.api.nvim_set_keymap("n", "<C-x>", require("dial.map").dec_normal(), {noremap = true})
+vim.api.nvim_set_keymap("v", "<C-a>", require("dial.map").inc_visual(), {noremap = true})
+vim.api.nvim_set_keymap("v", "<C-x>", require("dial.map").dec_visual(), {noremap = true})
+vim.api.nvim_set_keymap("v", "g<C-a>", require("dial.map").inc_gvisual(), {noremap = true})
+vim.api.nvim_set_keymap("v", "g<C-x>", require("dial.map").dec_gvisual(), {noremap = true})
+```
+
+## 設定方法
+
+dial.nvim では操作対象を表す**被加数** (augend) と、複数の被加数をまとめた**グループ**を用いることで、増減させるルールを自由に設定することができます。
+
+```lua
+local augend = require("dial.augend")
+require("dial.config").augends:register_group{
+  -- グループ名を指定しない場合に用いられる被加数
+  default = {
+    augend.integer.alias.decimal,     -- nonnegative decimal number (0, 1, 2, 3, ...)
+    augend.integer.alias.hex,         -- nonnegative hex number  (0x01, 0x1a1f, etc.)
+    augend.date.alias["%Y/%m/%d"],  -- date (2022/02/19)
+  },
+
+  -- `mygroup` というグループ名を使用した際に用いられる被加数
+  mygroup = {
+    augend.integer.alias.decimal,
+    augend.constant.alias.bool,    -- boolean value (true <-> false)
+    augend.date.alias["%m/%d/%Y"],  -- boolean value (true <-> false)
+  }
+}
+```
+
+* `"dial.config"` モジュールに存在する `augends:register_group` 関数を用いてグループを定義することができます。
+  関数の引数には、グループ名をキー、被加数のリストを値とする辞書を指定します。
+
+* 上の例で `augend` という名前のローカル変数に代入されている `"dial.augend"` モジュールでは、さまざまな被加数が定義されています。
+  * `augend.integer.alias.decimal` は十進数の
+
+指定したグループは、以下のように **expression register** ([`:h @=`](https://neovim.io/doc/user/change.html#quote_=)) を用いて指定することで使用できます。
+
+```
+"=mygroup<CR><C-a>
+```
+
+増減のたびに expression register を指定するのが面倒であれば、以下のようにマッピングすることも可能です。
+
+```vim
+nmap <Leader>a "=mygroup<CR><Plug>(dial-increment)
+```
+
+また、 Lua 上で以下のように記述すれば expression register を使わずにマッピングを設定できます。
+
+```lua
+vim.api.nvim_set_keymap("n", "<Leader>a", require("dial.map").inc_normal("mygroup"), {noremap = true})
+```
+
+expression register などでグループ名を指定しなかった場合、`default` グループにある被加数がかわりに用いられます。
+
+### 設定例
+
+```vim
+lua << EOF
+local augend = require("dial.augend")
+require("dial.config").augends:register_group{
+  default = {
+    augend.integer.alias.decimal,
+    augend.integer.alias.hex,
+    augend.date.alias["%Y/%m/%d"],
+  },
+  typescript = {
+    augend.integer.alias.decimal,
+    augend.integer.alias.hex,
+    augend.constant.new{ elements = {"let", "const"} },
+  },
+  visual = {
+    augend.integer.alias.decimal,
+    augend.integer.alias.hex,
+    augend.date.alias["%Y/%m/%d"],
+    augend.constant.alias.alpha,
+    augend.constant.alias.Alpha,
+  },
+}
+
+-- VISUAL モードでの被加数を変更する
+vim.api.nvim_set_keymap("v", "<C-a>", require("dial.map").inc_normal("visual"), {noremap = true})
+vim.api.nvim_set_keymap("v", "<C-x>", require("dial.map").dec_normal("visual"), {noremap = true})
+EOF
+
+" 特定のファイルタイプでのみ有効にする
+autocmd FileType typescript lua vim.api.nvim_buf_set_keymap(0, "n", "<C-a>", require("dial.map").inc_normal("typescript"), {noremap = true})
+```
+
+## 被加数の種類と一覧
+
+以下簡単のため、 `augend` という変数は以下のように定義されているものとします。
+
+```lua
+local augend = require("dial.augend")
+```
+
+### 整数
+
+n 進数の整数 (`2 <= n <= 36`) を表します。 `augend.integer.new{ ...opts }` で使用できます。
+
+```lua
+require("dial.config").augends:register_group{
+  default = {
+    -- uppercase hex number (0x1A1A, 0xEEFE, etc.)
+    augend.integer.new{
+      radix = 16,
+      prefix = "0x",
+      natural = true,
+      case = "upper",
+    },
+  },
+}
+```
+
+### 日付
+
+日付を表します。後述のエイリアスから選択します。
+
+### 定数
+
+キーワードをトグルします。 `augend.constant.new{ ...opts }` で使用できます。
+
+```lua
+require("dial.config").augends:register_group{
+  default = {
+    -- uppercase hex number (0x1A1A, 0xEEFE, etc.)
+    augend.constant.new{
+      elements = {"and", "or"},
+      word = true, -- if false, "sand" is incremented into "sor", "doctor" into "doctand", etc.
+      cyclic = true,  -- "or" is incremented into "and".
+    },
+    augend.constant.new{
+      elements = {"&&", "||"},
+      word = false,
+      cyclic = true,
+    },
+  },
+}
+```
+
+### hex color
+
+`#000000` や `#ffffff` といった形式の RGB カラーコードを増減します。 `augend.hexcolor.new{ ...opts }` で使用できます。
+
+```lua
+require("dial.config").augends:register_group{
+  default = {
+    -- uppercase hex number (0x1A1A, 0xEEFE, etc.)
+    augend.hexcolor.new{
+      case = "lower",
+    },
+  },
+}
+```
+
+### SemVer
+
+Semantic version を増減します。後述のエイリアスを用います。
+単なる非負整数のインクリメントとは以下の点で異なります。
+
+- semver 文字列よりもカーソルが手前にあるときは、パッチバージョンが優先してインクリメントされます。
+- マイナーバージョンの値が増加したとき、パッチバージョンの値は0にリセットされます。
+- メジャーバージョンの値が増加したとき、マイナー・パッチバージョンの値は0にリセットされます。
+
+### カスタム
+
+ユーザ自身が増減ルールを定義したい場合には `augend.user.new{ ...opts }` を使用できます。
+
+```lua
+require("dial.config").augends:register_group{
+  default = {
+    -- uppercase hex number (0x1A1A, 0xEEFE, etc.)
+    augend.user.new{
+      find = require("dial.augend.common").find_pattern("%d+"),
+      add = function(text, addend, cursor)
+          local n = tonumber(text)
+          n = math.floor(n * (2 ^ addend))
+          text = tostring(n)
+          cursor = #text
+          return {text = text, cursor = cursor}
+      end
+    },
+  },
+}
+```
+
+### エイリアス
+
+エイリアスはライブラリで予め定義された被加数です。 `new` 関数を用いることなく、そのまま使用できます。
+
+```lua
+require("dial.config").augends:register_group{
+  default = {
+    augend.integer.alias.decimal,
+    augend.integer.alias.hex,
+    augend.date.alias["%Y/%m/%d"],
+  },
+}
+```
+
+エイリアスとして提供されている被加数は以下の通りです。
+
+|Alias Name                                |Explanation                                      |Examples                           |
+|------------------------------------------|-------------------------------------------------|-----------------------------------|
+|`augend.integer.alias.decimal`            |decimal natural number                           |`0`, `1`, ..., `9`, `10`, `11`, ...|
+|`augend.integer.alias.decimal_int`        |decimal integer (including negative number)      |`0`, `314`, `-1592`, ...           |
+|`augend.integer.alias.hex`                |hex natural number                               |`0x00`, `0x3f3f`, ...              |
+|`augend.integer.alias.octal`              |octal natural number                             |`0o00`, `0o11`, `0o24`, ...        |
+|`augend.integer.alias.binary`             |binary natural number                            |`0b0101`, `0b11001111`, ...        |
+|`augend.date.alias["%Y/%m/%d"]`           |Date in the format `%Y/%m/%d` (`0` padding)      |`2021/01/23`, ...                  |
+|`augend.date.alias["%m/%d/%Y"]`           |Date in the format `%m/%d/%Y` (`0` padding)      |`23/01/2021`, ...                  |
+|`augend.date.alias["%d/%m/%Y"]`           |Date in the format `%d/%m/%Y` (`0` padding)      |`01/23/2021`, ...                  |
+|`augend.date.alias["%m/%d/%y"]`           |Date in the format `%m/%d/%y` (`0` padding)      |`01/23/21`, ...                    |
+|`augend.date.alias["%d/%m/%y"]`           |Date in the format `%d/%m/%y` (`0` padding)      |`23/01/21`, ...                    |
+|`augend.date.alias["%m/%d"]`              |Date in the format `%m/%d` (`0` padding)         |`01/04`, `02/28`, `12/25`, ...     |
+|`augend.date.alias["%-m/%-d"]`            |Date in the format `%-m/%-d` (no paddings)       |`1/4`, `2/28`, `12/25`, ...        |
+|`augend.date.alias["%Y-%m-%d"]`           |Date in the format `%Y-%m-%d` (`0` padding)      |`2021-01-04`, ...                  |
+|`augend.date.alias["%Y年%-m月%-d日"]`     |Date in the format `%Y年%-m月%-d日` (no paddings)|`2021年1月4日`, ...                |
+|`augend.date.alias["%Y年%-m月%-d日(%ja)"]`|Date in the format `%Y年%-m月%-d日(%ja)`         |`2021年1月4日(月)`, ...            |
+|`augend.date.alias["%H:%M:%S"]`           |Time in the format `%H:%M:%S`                    |`14:30:00`, ...                    |
+|`augend.date.alias["%H:%M"]`              |Time in the format `%H:%M`                       |`14:30`, ...                       |
+|`augend.constant.alias.ja_weekday`        |Japanese weekday                                 |`月`, `火`, ..., `土`, `日`        |
+|`augend.constant.alias.ja_weekday_full`   |Japanese full weekday                            |`月曜日`, `火曜日`, ..., `日曜日`  |
+|`augend.constant.alias.bool`              |elements in boolean algebra (`true` and `false`) |`true`, `false`                    |
+|`augend.constant.alias.alpha`             |Lowercase alphabet letter (word)                 |`a`, `b`, `c`, ..., `z`            |
+|`augend.constant.alias.Alpha`             |Uppercase alphabet letter (word)                 |`A`, `B`, `C`, ..., `Z`            |
+|`augend.semver.alias.semver`              |Semantic version                                 |`0.3.0`, `1.22.1`, `3.9.1`, ...    |
+
+なお、何も設定しなかった場合は以下の被加数がデフォルトで用いられます。
+
+- `augend.integer.alias.decimal`
+- `augend.integer.alias.hex`
+- `augend.date.alias["%Y/%m/%d"]`
+- `augend.date.alias["%Y-%m-%d"]`
+- `augend.date.alias["%m/%d"]`
+- `augend.date.alias["%H:%M"]`
+- `augend.constant.alias.ja_weekday_full`
