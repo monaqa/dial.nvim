@@ -26,10 +26,10 @@
     * `日` ⇄ `月` ⇄ ... ⇄ `土` ⇄ `日` ⇄ ...
   * Hex color
   * SemVer
+* VISUAL mode での `<C-a>` / `<C-x>` / `g<C-a>` / `g<C-x>` に対応
 * 増減対象の柔軟な設定
   * 特定のファイルタイプでのみ有効なルールの設定
   * VISUAL モードでのみ有効なルールの設定
-* VISUAL mode での `<C-a>` / `<C-x>` / `g<C-a>` / `g<C-x>` に対応
 * カウンタに対応
 * ドットリピートに対応
 
@@ -43,7 +43,7 @@
 
 本プラグインには Neovim 0.5.0 以上が必要です（Neovim 0.6.1 以降推奨）。
 
-`dial.nvim` は好きなパッケージマネージャの指示に従うことでインストールできます。
+好きなパッケージマネージャの指示に従うことでインストールできます。
 
 ## 使用方法
 
@@ -97,9 +97,8 @@ require("dial.config").augends:register_group{
   関数の引数には、グループ名をキー、被加数のリストを値とする辞書を指定します。
 
 * 上の例で `augend` という名前のローカル変数に代入されている `"dial.augend"` モジュールでは、さまざまな被加数が定義されています。
-  * `augend.integer.alias.decimal` は十進数の
 
-指定したグループは、以下のように **expression register** ([`:h @=`](https://neovim.io/doc/user/change.html#quote_=)) を用いて指定することで使用できます。
+以下のように **expression register** ([`:h @=`](https://neovim.io/doc/user/change.html#quote_=)) を用いると、増減対象のグループを指定できます。
 
 ```
 "=mygroup<CR><C-a>
@@ -181,11 +180,11 @@ require("dial.config").augends:register_group{
 
 ### 日付
 
-日付を表します。後述のエイリアスから選択します。
+日付や時刻を表します。後述のエイリアスから選択します。
 
 ### 定数
 
-キーワードをトグルします。 `augend.constant.new{ ...opts }` で使用できます。
+キーワードなどの決められた文字列をトグルします。 `augend.constant.new{ ...opts }` で使用できます。
 
 ```lua
 require("dial.config").augends:register_group{
@@ -293,7 +292,7 @@ require("dial.config").augends:register_group{
 |`augend.constant.alias.Alpha`             |Uppercase alphabet letter (word)                 |`A`, `B`, `C`, ..., `Z`            |
 |`augend.semver.alias.semver`              |Semantic version                                 |`0.3.0`, `1.22.1`, `3.9.1`, ...    |
 
-なお、何も設定しなかった場合は以下の被加数がデフォルトで用いられます。
+何も設定しなかった場合は以下の被加数が `default` グループの値としてセットされます。
 
 - `augend.integer.alias.decimal`
 - `augend.integer.alias.hex`
