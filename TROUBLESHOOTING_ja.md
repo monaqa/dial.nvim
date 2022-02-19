@@ -4,7 +4,6 @@
 
 `0.2.0` から `0.3.0` へのアップデートにあたり、新機能や新たな augend が実装されたと同時に設定方法の互換性がなくなりました。
 
-
 以下のように設定を書き換える必要があります。
 
 * 設定例（旧）
@@ -20,7 +19,7 @@
 
 * 設定例（新）
   ```lua
-  local dial = require("dial")
+  local augend = require("dial.augend")
 
   require("dial.config").augends:register_group{
     default = {
