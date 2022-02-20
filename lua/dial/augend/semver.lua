@@ -26,10 +26,6 @@ function M.new(config)
     return setmetatable({ kind = "patch" }, {__index = AugendSemver})
 end
 
-M.alias = {
-    semver = M.new{}
-}
-
 ---@param line string
 ---@param cursor? integer
 ---@return textrange?
@@ -95,5 +91,9 @@ function AugendSemver:add(text, addend, cursor)
     text = ("%d.%d.%d"):format(major, minor, patch)
     return {text = text, cursor = cursor}
 end
+
+M.alias = {
+    semver = M.new{}
+}
 
 return M

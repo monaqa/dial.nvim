@@ -3,6 +3,7 @@ local date = require("dial.augend.date")
 local hexcolor = require("dial.augend.hexcolor")
 local integer = require("dial.augend.integer")
 local semver = require("dial.augend.semver")
+local user = require("dial.augend.user")
 
 return {
     constant = constant,
@@ -10,4 +11,5 @@ return {
     hexcolor = hexcolor,
     integer = integer,
     semver = semver,
+    user = user,
 }

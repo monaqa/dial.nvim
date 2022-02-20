@@ -8,6 +8,12 @@ M.augends = {
     group = {
         default = {
             augend.integer.alias.decimal,
+            augend.integer.alias.hex,
+            augend.date.alias["%Y/%m/%d"],
+            augend.date.alias["%Y-%m-%d"],
+            augend.date.alias["%m/%d"],
+            augend.date.alias["%H:%M"],
+            augend.constant.alias.ja_weekday_full,
         },
     },
 }
@@ -23,7 +29,7 @@ function M.augends:register_group(tbl)
 
         if #nil_keys ~= 0 then
             local str_nil_keys = table.concat(nil_keys, ", ")
-            error(("tried to register augend group '%s', but it contains nil augend at index %s."):format(name, str_nil_keys))
+            error(("Failed to register augend group '%s'. it contains nil at index %s."):format(name, str_nil_keys))
         end
 
         self.group[name] = augends
