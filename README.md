@@ -4,8 +4,8 @@
 
 ## FOR USERS OF THE PREVIOUS VERSION (v0.2.0)
 
-This plugin was released v0.3.0 on 2022/xx/xx and is no longer compatible with the old interface.
-If you have configured the settings for previous versions, please refer to [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) and reconfigure your settings.
+This plugin was released v0.3.0 on 2022/02/20 and is no longer compatible with the old interface.
+If you have configured the settings for previous versions, please refer to [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) and reconfigure them.
 
 ## Abstract
 
@@ -15,10 +15,10 @@ Extended increment/decrement plugin for [Neovim](https://github.com/neovim/neovi
 
 ## Features
 
-* Increment/decrement various number and other things
+* Increment/decrement based on various type of rules
   * n-ary (`2 <= n <= 36`) integers
-  * date
-  * constant (toggle a specific string, such as a keyword or operator)
+  * date and time
+  * constants (an ordered set of specific strings, such as a keyword or operator)
     * `true` ⇄ `false`
     * `&&` ⇄ `||`
     * `a` ⇄ `b` ⇄ ... ⇄ `z`
@@ -26,10 +26,10 @@ Extended increment/decrement plugin for [Neovim](https://github.com/neovim/neovi
   * semantic version
 * Support `<C-a>` / `<C-x>` / `g<C-a>` / `g<C-x>` in VISUAL mode
 * Flexible configuration of increment/decrement targets
-  * rules that are valid only for specific FileType
-  * rules that are valid only in VISUAL mode
+  * Rules that are valid only in specific FileType
+  * Rules that are valid only in VISUAL mode
 * Support counter
-* Support dot repeating (without overriding the behavior of `.`)
+* Support dot repeat (without overriding the behavior of `.`)
 
 ## Similar plugins
 
@@ -39,19 +39,19 @@ Extended increment/decrement plugin for [Neovim](https://github.com/neovim/neovi
 
 ## Installation
 
-This plugin requires Neovim `>=0.5.0` (`>=0.6.1` is recommended).
-You can install it by following the instructions of your favorite package manager.
+`dial.nvim` requires Neovim `>=0.5.0` (`>=0.6.1` is recommended).
+You can install `dial.nvim` by following the instructions of your favorite package manager.
 
 ## Usage
 
 This plugin does not provide or override any default key-mappings.
-To use this plugin, assign the plugin key-mapping to the key you like, as shown below:
+To use this plugin, you need to assign the plugin key-mapping to the key you like, as shown below:
 
 ```vim
-nmap <C-a> <Plug>(dial-increment)
-nmap <C-x> <Plug>(dial-decrement)
-vmap <C-a> <Plug>(dial-increment)
-vmap <C-x> <Plug>(dial-decrement)
+nmap  <C-a>  <Plug>(dial-increment)
+nmap  <C-x>  <Plug>(dial-decrement)
+vmap  <C-a>  <Plug>(dial-increment)
+vmap  <C-x>  <Plug>(dial-decrement)
 vmap g<C-a> g<Plug>(dial-increment)
 vmap g<C-x> g<Plug>(dial-decrement)
 ```
@@ -78,16 +78,16 @@ local augend = require("dial.augend")
 require("dial.config").augends:register_group{
   -- default augends used when no group name is specified
   default = {
-    augend.integer.alias.decimal,     -- nonnegative decimal number (0, 1, 2, 3, ...)
-    augend.integer.alias.hex,         -- nonnegative hex number  (0x01, 0x1a1f, etc.)
-    augend.date.alias["%Y/%m/%d"],  -- date (2022/02/19)
+    augend.integer.alias.decimal,   -- nonnegative decimal number (0, 1, 2, 3, ...)
+    augend.integer.alias.hex,       -- nonnegative hex number  (0x01, 0x1a1f, etc.)
+    augend.date.alias["%Y/%m/%d"],  -- date (2022/02/19, etc.)
   },
 
   -- augends used when group with name `mygroup` is specified
   mygroup = {
     augend.integer.alias.decimal,
     augend.constant.alias.bool,    -- boolean value (true <-> false)
-    augend.date.alias["%m/%d/%Y"],  -- boolean value (true <-> false)
+    augend.date.alias["%m/%d/%Y"], -- date (02/19/2022, etc.)
   }
 }
 ```
@@ -102,7 +102,7 @@ To specify the group of augends, you can use **expression register** ([`:h @=`](
 "=mygroup<CR><C-a>
 ```
 
-If it is tedious to specify the expression register for each increase or decrease, you can "map" it:
+If it is tedious to specify the expression register for each operation, you can "map" it:
 
 ```vim
 nmap <Leader>a "=mygroup<CR><Plug>(dial-increment)

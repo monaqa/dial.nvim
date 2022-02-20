@@ -4,7 +4,7 @@
 
 ## 旧バージョン (v0.2.0) を使っていた人へ
 
-2022/xx/xx に v0.3.0 がリリースされ、既存のインターフェースとの互換性がなくなりました。
+2022/02/20 に v0.3.0 がリリースされ、既存のインターフェースとの互換性がなくなりました。
 以前のバージョン向けの設定を行っていた方は、[TROUBLESHOOTING.md](./TROUBLESHOOTING_ja.md) を参考に再設定を行ってください。
 
 ## 概要
@@ -18,7 +18,7 @@
 
 * 数値をはじめとする様々なものの増減
   * n 進数 (`2 <= n <= 36`) の整数
-  * 日付
+  * 日付・時刻
   * キーワードや演算子など、所定文字列のトグル
     * `true` ⇄ `false`
     * `&&` ⇄ `||`
@@ -41,7 +41,7 @@
 
 ## インストール
 
-本プラグインには Neovim 0.5.0 以上が必要です（Neovim 0.6.1 以降推奨）。
+本プラグインには Neovim 0.5.0 以上が必要です（Neovim 0.6.1 以降を推奨）。
 
 好きなパッケージマネージャの指示に従うことでインストールできます。
 
@@ -51,10 +51,10 @@
 本プラグインを有効にするには、いずれかのキーに以下のような割り当てを行う必要があります。
 
 ```vim
-nmap <C-a> <Plug>(dial-increment)
-nmap <C-x> <Plug>(dial-decrement)
-vmap <C-a> <Plug>(dial-increment)
-vmap <C-x> <Plug>(dial-decrement)
+nmap  <C-a>  <Plug>(dial-increment)
+nmap  <C-x>  <Plug>(dial-decrement)
+vmap  <C-a>  <Plug>(dial-increment)
+vmap  <C-x>  <Plug>(dial-decrement)
 vmap g<C-a> g<Plug>(dial-increment)
 vmap g<C-x> g<Plug>(dial-decrement)
 ```
@@ -302,3 +302,11 @@ require("dial.config").augends:register_group{
 - `augend.date.alias["%m/%d"]`
 - `augend.date.alias["%H:%M"]`
 - `augend.constant.alias.ja_weekday_full`
+
+## 更新履歴
+
+[HISTORY](./HISTORY.md) を参照。
+
+## Testing
+
+[`plenary.nvim`](https://github.com/nvim-lua/plenary.nvim) の `PlenaryBustedDirectory` を用いています。
