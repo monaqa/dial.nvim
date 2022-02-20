@@ -76,14 +76,14 @@ and **group** represents a group of multiple augends.
 ```lua
 local augend = require("dial.augend")
 require("dial.config").augends:register_group{
-  -- グループ名を指定しない場合に用いられる被加数
+  -- default augends used when no group name is specified
   default = {
     augend.integer.alias.decimal,     -- nonnegative decimal number (0, 1, 2, 3, ...)
     augend.integer.alias.hex,         -- nonnegative hex number  (0x01, 0x1a1f, etc.)
     augend.date.alias["%Y/%m/%d"],  -- date (2022/02/19)
   },
 
-  -- `mygroup` というグループ名を使用した際に用いられる被加数
+  -- augends used when group with name `mygroup` is specified
   mygroup = {
     augend.integer.alias.decimal,
     augend.constant.alias.bool,    -- boolean value (true <-> false)

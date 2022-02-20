@@ -8,8 +8,6 @@ Version: 0.3.0
 License: MIT license
 		<https://github.com/monaqa/dial.nvim/blob/master/LICENSE>
 
-}}}
-
 ==============================================================================
 CONTENTS								*dial-contents*
 
@@ -55,7 +53,7 @@ FEATURES								*dial-features*
 	* Hex color
 	* SemVer
 
-	ユーザが設定を拡張して好きな増減ルールを指定することもできます。
+	カスタムルールに基づく増減ルールを設定することも可能です。
 
 増減対象の (augend) の柔軟な設定~
 	|dial.nvim| が提供する増減ルールは多岐にわたりますが、ユーザは本当に必要な
@@ -152,14 +150,12 @@ dial.nvim では操作対象を表す被加数 (augend) と、複数の被加数
 
 |dial.nvim| では以下のように **expression register** |@=| を用いることで増減対
 象のグループを指定します。
-
 >
 	"=mygroup<CR><C-a>
 <
 
 増減のたびに expression register を指定するのが面倒であれば、以下のようにマッ
 ピングすることも可能です。
-
 >
 	nmap <Leader>a "=mygroup<CR><Plug>(dial-increment)
 <
@@ -568,7 +564,6 @@ CONSTANT								*dial-augends-constant*
 
 キーワードなどの決められた文字列をトグルします。
 `augend.constant.new{ ...opts }` で使用できます。
-
 >
 	require("dial.config").augends:register_group{
 	  default = {
@@ -658,7 +653,6 @@ HEXCOLOR								*dial-augends-hexcolor*
 >
 	require("dial.config").augends:register_group{
 	  default = {
-		-- uppercase hex number (0x1A1A, 0xEEFE, etc.)
 		augend.hexcolor.new{
 		  case = "lower",
 		},
@@ -724,7 +718,6 @@ USER									*dial-augends-user*
 
 ユーザ自身が増減ルールを定義したい場合には `augend.user.new{ ...opts }` を使用
 できます。
-
 >
 	require("dial.config").augends:register_group{
 	  default = {
@@ -818,7 +811,7 @@ INTERFACE								*dial-interface*
 MAPPING									*dial-mapping*
 
 ["x]<Plug>(dial-increment)				*<Plug>(dial-increment)*
-	NORMAL モードと VISUAL モードにおける CTRL-A に相当する機能を提供します。
+	NORMAL モードにおける CTRL-A に相当する機能を提供します。
 	すなわち、カーソル下または後の被加数を [count] だけインクリメントします。
 	カーソルと同じ行にある被加数のみが対象です。カーソルより手前にある被加数に
 	は基本的に反応しないものの、被加数によっては例外的にカーソルの手前にあって
@@ -829,9 +822,8 @@ MAPPING									*dial-mapping*
 	のグループに記述された被加数が用いられます(|dial-config-augends-default|)。
 	それ以外のレジスタを指定しても効果はありません。
 
-
-["x]<Plug>(dial-decrement)				*<Plug>(dial-decrement)*
-	NORMAL モードと VISUAL モードにおける CTRL-X に相当する機能を提供します。
+{VISUAL}["x]<Plug>(dial-increment)		*v_<Plug>(dial-increment)*
+	NORMAL モードにおける CTRL-A に相当する機能を提供します。
 	以下のどのモードに入っているかによって挙動が変化します。
 	* 通常の VISUAL モード (|v|)
 	* 行 VISUAL モード (|V|)
@@ -848,14 +840,16 @@ MAPPING									*dial-mapping*
 	矩形選択ビジュアルモード (|CTRL-V|) の場合は行選択ビジュアルモードの場合と
 	似ているものの、マッチする対象が矩形選択された範囲に絞られます。
 
-	直前に expression register |@=| を指定することができます。その場合は記述し
-	たグループ名に基づく被加数が用いられます。それ以外のレジスタを指定しても効
-	果はありません。
+["x]<Plug>(dial-decrement)				*<Plug>(dial-decrement)*
+	NORMAL モードにおける CTRL-X に相当する機能を提供します。
 
-["x]g<Plug>(dial-increment)				*g<Plug>(dial-increment)*
+{VISUAL}["x]<Plug>(dial-decrement)		*v_<Plug>(dial-decrement)*
+	VISUAL モードにおける CTRL-X に相当する機能を提供します。
+
+{VISUAL}["x]g<Plug>(dial-increment)		*v_g<Plug>(dial-increment)*
 	VISUAL モードにおける |v_g_CTRL-A| に相当する機能を提供します。
 
-	使用方法は|g<Plug>(dial-increment)| と似ているものの、上から数えてn行目に
+	使用方法は|v_<Plug>(dial-increment)| と似ているものの、上から数えてn行目に
 	ある被加数がn * [count] だけ増加します。箇条書きや予定表など、 一定の数値
 	ずつ増加する等差数列を作成したい場合に便利です。たとえば
 >
@@ -874,16 +868,8 @@ MAPPING									*dial-mapping*
 <
 	のように、1週間ごとの日付が得られます（日付の被加数が有効のときに限る）。
 
-	直前に expression register |@=| を指定することができます。その場合は記述し
-	たグループ名に基づく被加数が用いられます。それ以外のレジスタを指定しても効
-	果はありません。
-
-["x]g<Plug>(dial-decrement)				*g<Plug>(dial-decrement)*
+{VISUAL}["x]g<Plug>(dial-decrement)		*v_g<Plug>(dial-decrement)*
 	VISUAL モードにおける |v_g_CTRL-X| に相当する機能を提供します。
-
-	直前に expression register |@=| を指定することができます。その場合は記述し
-	たグループ名に基づく被加数が用いられます。それ以外のレジスタを指定しても効
-	果はありません。
 
 ------------------------------------------------------------------------------
 COMMAND									*dial-command*
