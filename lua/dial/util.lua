@@ -1,6 +1,29 @@
 -- utils
 local M = {}
 
+---@generic T
+---@param cond boolean
+---@param branch_true T
+---@param branch_false T
+---@return T
+function M.if_expr(cond, branch_true, branch_false)
+    if cond then
+        return branch_true
+    end
+    return branch_false
+end
+
+---@generic T
+---@param x T | nil
+---@param default T
+---@return T
+function M.unwrap_or(x, default)
+    if x == nil then
+        return default
+    end
+    return x
+end
+
 function M.dbg(obj, text)
     if text ~= nil then
         print("[" .. text .. "]: " .. vim.inspect(obj))
@@ -17,7 +40,7 @@ end
 
 function M.split(str, delim)
   local t = {}
-  i=1
+  local i = 1
   for s in str:gmatch("([^" .. delim .. "]+)") do
     t[i] = s
     i = i + 1
@@ -27,13 +50,18 @@ function M.split(str, delim)
 end
 
 -- Check if the argument is a valid list (which does not contain nil).
+---第2引数が特定の型を持つ（または特定の性質を満たす）ことを確かめる。
+---@param name string
+---@param list any[]
+---@param arg1 string | function
+---@param arg2? string
 function M.validate_list(name, list, arg1, arg2)
     if not vim.tbl_islist(list) then
         error(("%s is not list."):format(name))
     end
 
     if type(arg1) == "string" then
-        typename, _ = arg1, arg2
+        local typename, _ = arg1, arg2
 
         local count_idx = 0
         for idx, value in ipairs(list) do
@@ -53,12 +81,12 @@ function M.validate_list(name, list, arg1, arg2)
         end
 
     else
-        checkf, errormsg = arg1, arg2
+        local checkf, errormsg = arg1, arg2
 
         local count_idx = 0
         for idx, value in ipairs(list) do
             count_idx = idx
-            ok, err = checkf(value)
+            local ok, err = checkf(value)
             if not ok then
                 error(("List validation error: %s[%d] does not satisfy '%s' (%s)"):format(
                         name, idx, errormsg, err
@@ -75,28 +103,27 @@ function M.validate_list(name, list, arg1, arg2)
 end
 
 
-function M.has_augend_field(tbl)
-    if type(tbl) ~= "table" then
-        return false, "not table"
-    end
+---配列のうち、nil 値をもつインデックス列を返す。
+---@param tbl array
+---@return integer[]
+function M.index_with_nil_value(tbl)
+    -- local maxn, k = 0, nil
+    -- repeat
+    --     k = next( table, k )
+    --     if type( k ) == 'number' and k > maxn then
+    --         maxn = k
+    --     end
+    -- until not k
+    -- M.dbg(maxn)
 
-    if vim.tbl_islist(tbl) then
-        return false, "augend have to be a map, not list"
+    local maxn = table.maxn(tbl)
+    local nil_keys = {}
+    for i = 1, maxn, 1 do
+        if tbl[i] == nil then
+            table.insert(nil_keys, i)
+        end
     end
-
-    if type(tbl.find) ~= "function" then
-        return false, "augend should have a method (function field) 'find'"
-    end
-
-    if type(tbl.add) ~= "function" then
-        return false, "augend should have a method (function field) 'add'"
-    end
-
-    if type(tbl.desc) ~= "string" then
-        return false, "augend should have a string field 'desc'"
-    end
-
-    return true
+    return nil_keys
 end
 
 function M.filter(fn, ary)
@@ -143,13 +170,13 @@ function M.tostring_with_base(n, b, wid, pad)
         n = math.floor(n / b)
         table.insert(t, 1, digits:sub(d,d))
     until n == 0
-    text = table.concat(t,"")
+    local text = table.concat(t,"")
     if wid then
         if #text < wid then
             if pad == nil then
                 pad = " "
             end
-            padding = pad:rep(wid - #text)
+            local padding = pad:rep(wid - #text)
             return padding .. text
         end
     end
@@ -166,11 +193,11 @@ function M.try_get_keys(tbl, keylst)
     local values = {}
 
     for _, key in ipairs(keylst) do
-        val = tbl[key]
+        local val = tbl[key]
         if val ~= nil then
             table.insert(values, val)
         else
-            errmsg = ("The value corresponding to the key '%s' is not found in the table."):format(key)
+            local errmsg = ("The value corresponding to the key '%s' is not found in the table."):format(key)
             return nil, errmsg
         end
     end

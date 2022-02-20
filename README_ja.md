@@ -1,51 +1,54 @@
 # dial.nvim
 
-**NOTICE: This plugin is work-in-progress yet. User interface is subject to change without notice.**
+**NOTICE: 本プラグインはまだ開発段階であり、事前告知なくインターフェースが変更となることがあります。**
 
-## FOR USERS OF THE PREVIOUS VERSION (v0.2.0)
+## 旧バージョン (v0.2.0) を使っていた人へ
 
-This plugin was released v0.3.0 on 2022/02/20 and is no longer compatible with the old interface.
-If you have configured the settings for previous versions, please refer to [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) and reconfigure them.
+2022/02/20 に v0.3.0 がリリースされ、既存のインターフェースとの互換性がなくなりました。
+以前のバージョン向けの設定を行っていた方は、[TROUBLESHOOTING.md](./TROUBLESHOOTING_ja.md) を参考に再設定を行ってください。
 
-## Abstract
+## 概要
 
-Extended increment/decrement plugin for [Neovim](https://github.com/neovim/neovim). Written in Lua.
+[Neovim](https://github.com/neovim/neovim) の数値増減機能を拡張する Lua 製プラグイン。
+既存の `<C-a>` や `<C-x>` コマンドを拡張し、数値以外も増減・トグルできるようにします。
 
 ![demo.gif](https://github.com/monaqa/dial.nvim/wiki/fig/dial-demo.gif)
 
-## Features
+## 特徴
 
-* Increment/decrement based on various type of rules
-  * n-ary (`2 <= n <= 36`) integers
-  * date and time
-  * constants (an ordered set of specific strings, such as a keyword or operator)
+* 数値をはじめとする様々なものの増減
+  * n 進数 (`2 <= n <= 36`) の整数
+  * 日付・時刻
+  * キーワードや演算子など、所定文字列のトグル
     * `true` ⇄ `false`
     * `&&` ⇄ `||`
     * `a` ⇄ `b` ⇄ ... ⇄ `z`
-  * hex colors
-  * semantic version
-* Support `<C-a>` / `<C-x>` / `g<C-a>` / `g<C-x>` in VISUAL mode
-* Flexible configuration of increment/decrement targets
-  * Rules that are valid only in specific FileType
-  * Rules that are valid only in VISUAL mode
-* Support counter
-* Support dot repeat (without overriding the behavior of `.`)
+    * `日` ⇄ `月` ⇄ ... ⇄ `土` ⇄ `日` ⇄ ...
+  * Hex color
+  * SemVer
+* VISUAL mode での `<C-a>` / `<C-x>` / `g<C-a>` / `g<C-x>` に対応
+* 増減対象の柔軟な設定
+  * 特定のファイルタイプでのみ有効なルールの設定
+  * VISUAL モードでのみ有効なルールの設定
+* カウンタに対応
+* ドットリピートに対応
 
-## Similar plugins
+## 類似プラグイン
 
 * [tpope/vim-speeddating](https://github.com/tpope/vim-speeddating)
 * [Cycle.vim](https://github.com/zef/vim-cycle)
 * [AndrewRadev/switch.vim](https://github.com/AndrewRadev/switch.vim)
 
-## Installation
+## インストール
 
-`dial.nvim` requires Neovim `>=0.5.0` (`>=0.6.1` is recommended).
-You can install `dial.nvim` by following the instructions of your favorite package manager.
+本プラグインには Neovim 0.5.0 以上が必要です（Neovim 0.6.1 以降を推奨）。
 
-## Usage
+好きなパッケージマネージャの指示に従うことでインストールできます。
 
-This plugin does not provide or override any default key-mappings.
-To use this plugin, you need to assign the plugin key-mapping to the key you like, as shown below:
+## 使用方法
+
+本プラグインはデフォルトではキーマッピングを設定/上書きしません。
+本プラグインを有効にするには、いずれかのキーに以下のような割り当てを行う必要があります。
 
 ```vim
 nmap  <C-a>  <Plug>(dial-increment)
@@ -56,7 +59,7 @@ vmap g<C-a> g<Plug>(dial-increment)
 vmap g<C-x> g<Plug>(dial-decrement)
 ```
 
-Or you can configure it with Lua as follows:
+または Lua 上で以下のように設定することもできます。
 
 ```lua
 vim.api.nvim_set_keymap("n", "<C-a>", require("dial.map").inc_normal(), {noremap = true})
@@ -67,23 +70,21 @@ vim.api.nvim_set_keymap("v", "g<C-a>", require("dial.map").inc_gvisual(), {norem
 vim.api.nvim_set_keymap("v", "g<C-x>", require("dial.map").dec_gvisual(), {noremap = true})
 ```
 
-## Configuration
+## 設定方法
 
-In this plugin, flexible increment/decrement rules can be set by using **augend** and **group**,
-where **augend** represents the target of the increment/decrement operation,
-and **group** represents a group of multiple augends.
+dial.nvim では操作対象を表す**被加数** (augend) と、複数の被加数をまとめた**グループ**を用いることで、増減させるルールを自由に設定することができます。
 
 ```lua
 local augend = require("dial.augend")
 require("dial.config").augends:register_group{
-  -- default augends used when no group name is specified
+  -- グループ名を指定しない場合に用いられる被加数
   default = {
     augend.integer.alias.decimal,   -- nonnegative decimal number (0, 1, 2, 3, ...)
     augend.integer.alias.hex,       -- nonnegative hex number  (0x01, 0x1a1f, etc.)
     augend.date.alias["%Y/%m/%d"],  -- date (2022/02/19, etc.)
   },
 
-  -- augends used when group with name `mygroup` is specified
+  -- `mygroup` というグループ名を使用した際に用いられる被加数
   mygroup = {
     augend.integer.alias.decimal,
     augend.constant.alias.bool,    -- boolean value (true <-> false)
@@ -92,31 +93,32 @@ require("dial.config").augends:register_group{
 }
 ```
 
-* To define a group, use the `augends:register_group` function in the `"dial.config"` module.
-  The arguments is a dictionary whose keys are the group names and whose values are the list of augends.
-* Various augends are defined `"dial.augend"` by default.
+* `"dial.config"` モジュールに存在する `augends:register_group` 関数を用いてグループを定義することができます。
+  関数の引数には、グループ名をキー、被加数のリストを値とする辞書を指定します。
 
-To specify the group of augends, you can use **expression register** ([`:h @=`](https://neovim.io/doc/user/change.html#quote_=)) as follows:
+* 上の例で `augend` という名前のローカル変数に代入されている `"dial.augend"` モジュールでは、さまざまな被加数が定義されています。
+
+以下のように **expression register** ([`:h @=`](https://neovim.io/doc/user/change.html#quote_=)) を用いると、増減対象のグループを指定できます。
 
 ```
 "=mygroup<CR><C-a>
 ```
 
-If it is tedious to specify the expression register for each operation, you can "map" it:
+増減のたびに expression register を指定するのが面倒であれば、以下のようにマッピングすることも可能です。
 
 ```vim
 nmap <Leader>a "=mygroup<CR><Plug>(dial-increment)
 ```
 
-Alternatively, you can set the same mapping without expression register:
+また、 Lua 上で以下のように記述すれば expression register を使わずにマッピングを設定できます。
 
 ```lua
 vim.api.nvim_set_keymap("n", "<Leader>a", require("dial.map").inc_normal("mygroup"), {noremap = true})
 ```
 
-When you don't specify any group name in the way described above, the addends in the `default` group is used instead.
+expression register などでグループ名を指定しなかった場合、`default` グループにある被加数がかわりに用いられます。
 
-### Example Configuration
+### 設定例
 
 ```vim
 lua << EOF
@@ -141,26 +143,27 @@ require("dial.config").augends:register_group{
   },
 }
 
--- change augends in VISUAL mode
+-- VISUAL モードでの被加数を変更する
 vim.api.nvim_set_keymap("v", "<C-a>", require("dial.map").inc_normal("visual"), {noremap = true})
 vim.api.nvim_set_keymap("v", "<C-x>", require("dial.map").dec_normal("visual"), {noremap = true})
 EOF
 
-" enable only for specific FileType
+" 特定のファイルタイプでのみ有効にする
 autocmd FileType typescript lua vim.api.nvim_buf_set_keymap(0, "n", "<C-a>", require("dial.map").inc_normal("typescript"), {noremap = true})
+autocmd FileType typescript lua vim.api.nvim_buf_set_keymap(0, "n", "<C-x>", require("dial.map").dec_normal("typescript"), {noremap = true})
 ```
 
-## List of Augends
+## 被加数の種類と一覧
 
-For simplicity, we define the variable `augend` as follows.
+以下簡単のため、 `augend` という変数は以下のように定義されているものとします。
 
 ```lua
 local augend = require("dial.augend")
 ```
 
-### `integer`
+### 整数
 
-`n`-based integer (`2 <= n <= 36`). You can use this rule with `augend.integer.new{ ...opts }`.
+n 進数の整数 (`2 <= n <= 36`) を表します。 `augend.integer.new{ ...opts }` で使用できます。
 
 ```lua
 require("dial.config").augends:register_group{
@@ -176,13 +179,13 @@ require("dial.config").augends:register_group{
 }
 ```
 
-## `date`
+### 日付
 
-Date and time. You can use this rule with augend alias described below.
+日付や時刻を表します。後述のエイリアスから選択します。
 
-## `constant`
+### 定数
 
-Predefined sequence of strings. You can use this rule with `augend.constant.new{ ...opts }`.
+キーワードなどの決められた文字列をトグルします。 `augend.constant.new{ ...opts }` で使用できます。
 
 ```lua
 require("dial.config").augends:register_group{
@@ -202,9 +205,9 @@ require("dial.config").augends:register_group{
 }
 ```
 
-### `hexcolor`
+### hex color
 
-RGB color code such as `#000000` and `#ffffff`.
+`#000000` や `#ffffff` といった形式の RGB カラーコードを増減します。 `augend.hexcolor.new{ ...opts }` で使用できます。
 
 ```lua
 require("dial.config").augends:register_group{
@@ -217,19 +220,18 @@ require("dial.config").augends:register_group{
 }
 ```
 
-### `semver`
+### SemVer
 
-Semantic versions. You can use this rule by augend alias described below.
+Semantic version を増減します。後述のエイリアスを用います。
+単なる非負整数のインクリメントとは以下の点で異なります。
 
-It differs from a simple nonnegative integer increment/decrement in these ways:
+- semver 文字列よりもカーソルが手前にあるときは、パッチバージョンが優先してインクリメントされます。
+- マイナーバージョンの値が増加したとき、パッチバージョンの値は0にリセットされます。
+- メジャーバージョンの値が増加したとき、マイナー・パッチバージョンの値は0にリセットされます。
 
-* When the cursor is before the semver string, the patch version is incremented.
-* When the minor version is incremented, the patch version is reset to zero.
-* When the major version is incremented, the minor and patch versions are reset to zero.
+### カスタム
 
-### `user`
-
-Custom augends.
+ユーザ自身が増減ルールを定義したい場合には `augend.user.new{ ...opts }` を使用できます。
 
 ```lua
 require("dial.config").augends:register_group{
@@ -249,9 +251,9 @@ require("dial.config").augends:register_group{
 }
 ```
 
-## Augend Alias
+### エイリアス
 
-Some augend rules are defined as alias. It can be used directly without using `new` function.
+エイリアスはライブラリで予め定義された被加数です。 `new` 関数を用いることなく、そのまま使用できます。
 
 ```lua
 require("dial.config").augends:register_group{
@@ -262,6 +264,8 @@ require("dial.config").augends:register_group{
   },
 }
 ```
+
+エイリアスとして提供されている被加数は以下の通りです。
 
 |Alias Name                                |Explanation                                      |Examples                           |
 |------------------------------------------|-------------------------------------------------|-----------------------------------|
@@ -289,21 +293,20 @@ require("dial.config").augends:register_group{
 |`augend.constant.alias.Alpha`             |Uppercase alphabet letter (word)                 |`A`, `B`, `C`, ..., `Z`            |
 |`augend.semver.alias.semver`              |Semantic version                                 |`0.3.0`, `1.22.1`, `3.9.1`, ...    |
 
+何も設定しなかった場合は以下の被加数が `default` グループの値としてセットされます。
 
-If you don't specify any settings, the following augends is set as the value of the `default` group.
+- `augend.integer.alias.decimal`
+- `augend.integer.alias.hex`
+- `augend.date.alias["%Y/%m/%d"]`
+- `augend.date.alias["%Y-%m-%d"]`
+- `augend.date.alias["%m/%d"]`
+- `augend.date.alias["%H:%M"]`
+- `augend.constant.alias.ja_weekday_full`
 
-* `augend.integer.alias.decimal`
-* `augend.integer.alias.hex`
-* `augend.date.alias["%Y/%m/%d"]`
-* `augend.date.alias["%Y-%m-%d"]`
-* `augend.date.alias["%m/%d"]`
-* `augend.date.alias["%H:%M"]`
-* `augend.constant.alias.ja_weekday_full`
+## 更新履歴
 
-## Changelog
-
-See [HISTORY](./HISTORY.md).
+[HISTORY](./HISTORY.md) を参照。
 
 ## Testing
 
-This plugin uses `PlenaryBustedDirectory` in [`plenary.nvim`](https://github.com/nvim-lua/plenary.nvim).
+[`plenary.nvim`](https://github.com/nvim-lua/plenary.nvim) の `PlenaryBustedDirectory` を用いています。
