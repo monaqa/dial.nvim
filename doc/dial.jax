@@ -1,10 +1,10 @@
-*dial.txt* 日本語ヘルプ （最終更新：2020/02/13）
+*dial.txt* CTRL-A / CTRL-X を拡張するLua製プラグイン
 
 Vimの標準機能である CTRL-A / CTRL-X を拡張し、英数字に限らない様々な文字列を
 インクリメント/デクリメントできるようにするパッケージです。
 
-Author: Mogami Shinichi (@monaqa) <mogassy{at}yahoo.co.jp>
-Version: 0.2.0
+Author: Mogami Shinichi (@monaqa) <cmonaqa{at}google.com>
+Version: 0.3.0
 License: MIT license
 		<https://github.com/monaqa/dial.nvim/blob/master/LICENSE>
 
@@ -15,182 +15,307 @@ CONTENTS								*dial-contents*
 
 Requirements					|dial-requirements|
 Introduction					|dial-introduction|
-Keymappings						|dial-keymappings|
-Commands						|dial-commands|
-Configurations					|dial-configurations|
+  Features						|dial-features|
+Usage							|dial-usage|
+Configurations					|dial-config|
+  Aliases						|dial-aliases|
   Augends						|dial-augends|
     Number						|dial-augends-number|
     Date						|dial-augends-date|
     Char						|dial-augends-char|
-  Default Augends				|dial-default-augends|
-Customize						|dial-customize|
-  Define Augends				|dial-define-augends|
+Interface						|dial-interface|
+  Mapping						|dial-mapping|
+  Command						|dial-command|
+  Lua API						|dial-lua-api|
 
 ==============================================================================
 REQUIREMENTS							*dial-requirements*
 
-* Neovim 0.5.0 or later (2020/01/16 現在、Nightly 版のみ提供)
+* Neovim 0.6.1 or later（0.5.0 以降なら動くと考えられますが保証はしません）
 
 ==============================================================================
 INTRODUCTION							*dial-introduction*
 
 *dial.nvim* は、様々な形式の文字列をインクリメント/デクリメントするパッケージ
-です。標準の CTRL-A や CTRL-X、 g CTRL-A といったコマンドの動きを拡張します。
-例えば以下のような文字列が対象となります。
+です。標準の CTRL-A や CTRL-X、 g CTRL-A といったコマンドの動作を拡張します。
 
-標準ではキーマップの置き換えまでは行わないため、プラグインをインストールした上
-で、以下のような記述を設定ファイルに追加する必要があります。
+------------------------------------------------------------------------------
+FEATURES								*dial-features*
+
+多岐にわたる文字列の増減~
+	以下のように、さまざまな文字列を増減できます。
+
+	* n 進数 (`2 <= n <= 36`) の整数
+	* 日付
+	* キーワードや演算子など、所定文字列のトグル
+	  * `true` ⇄ `false`
+	  * `&&` ⇄ `||`
+	  * `a` ⇄ `b` ⇄ ... ⇄ `z`
+	  * `日` ⇄ `月` ⇄ ... ⇄ `土` ⇄ `日` ⇄ ...
+	* Hex color
+	* SemVer
+
+	ユーザが設定を拡張して好きな増減ルールを指定することもできます。
+
+増減対象の (augend) の柔軟な設定~
+	|dial.nvim| が提供する増減ルールは多岐にわたりますが、ユーザは本当に必要な
+	ものだけを選択して有効化することができます。
+	競合するルール（例: `mm/dd/yyyy`形式の日付と`dd/mm/yyyy`形式の日付）がある
+	場合も、片方だけを有効化することによって取り違えることなく増減操作を行うこ
+	とができます。
+	特定のバッファやファイルタイプでのみ増減対象を変更することも可能です。
+
+カウンタへの対応~
+	通常の CTRL-A / CTRL-X と同様に、 `10<C-a>` のように打つことで加数を変更で
+	きます。
+
+ドットリピートへの対応~
+	通常の CTRL-A / CTRL-X と同様に、|.| を用いて直前の操作を繰り返せます。
+	|dial.nvim| では直前の増減対象を記憶しており、たとえば直前に「`yyyy/mm/dd`
+	形式の月」をインクリメントしていた場合は、たとえより手前に他の増減対象文字
+	列があったとしても「`yyyy/mm/dd`形式の月」を探してインクリメントします。
+
+VISUAL mode での操作に対応~
+	標準の CTRL-A や CTRL-X は VISUAL モードでも用いることができますが、同様
+	の機能を dial.nvim も備えています。 |v_g_CTRL-A| や |v_g_CTRL-X| にも対応
+	しています。NORMAL モードとVISUAL モードで増減対象を変えることもできます。
+
+==============================================================================
+USAGE									*dial-usage*
+
+|dial.nvim|自信はキーマップの設定および上書きを行わないため、プラグインを動作
+させるために以下の設定を追加する必要があります。
 >
-	nmap <C-a> <Plug>(dial-increment)
-	nmap <C-x> <Plug>(dial-decrement)
-	vmap <C-a> <Plug>(dial-increment)
-	vmap <C-x> <Plug>(dial-decrement)
-	vmap g<C-a> <Plug>(dial-increment-additional)
-	vmap g<C-x> <Plug>(dial-decrement-additional)
+	nmap  <C-a>  <Plug>(dial-increment)
+	nmap  <C-x>  <Plug>(dial-decrement)
+	vmap  <C-a>  <Plug>(dial-increment)
+	vmap  <C-x>  <Plug>(dial-decrement)
+	vmap g<C-a> g<Plug>(dial-increment)
+	vmap g<C-x> g<Plug>(dial-decrement)
+<
+
+もしくは Lua 上で以下のように設定することもできます。
+
+>
+	vim.api.nvim_set_keymap(
+		"n", "<C-a>", require("dial.map").inc_normal(), {noremap = true}
+	)
+	vim.api.nvim_set_keymap(
+		"n", "<C-x>", require("dial.map").dec_normal(), {noremap = true}
+	)
+	vim.api.nvim_set_keymap(
+		"v", "<C-a>", require("dial.map").inc_visual(), {noremap = true}
+	)
+	vim.api.nvim_set_keymap(
+		"v", "<C-x>", require("dial.map").dec_visual(), {noremap = true}
+	)
+	vim.api.nvim_set_keymap(
+		"v", "g<C-a>", require("dial.map").inc_gvisual(), {noremap = true}
+	)
+	vim.api.nvim_set_keymap(
+		"v", "g<C-x>", require("dial.map").dec_gvisual(), {noremap = true}
+	)
 <
 
 ==============================================================================
-KEYMAPPINGS								*dial-keymappings*
+CONFIGURATIONS							*dial-config*
 
-Normal Mode~
+dial.nvim では操作対象を表す被加数 (augend) と、複数の被加数をまとめたグループ
+を用いることで、増減ルールを自由に設定することができます。
 
-<Plug>(dial-increment)					*<Plug>(dial-increment)*
-
-	カーソル下または後の被加数を [count] だけインクリメントします。既存の
-	CTRL-A コマンドの代替です。
-	カーソルと同じ行にある被加数にのみ反応します。基本的にはカーソルより手前に
-	ある被加数には反応しないものの、被加数の種類によっては例外的にカーソルの手
-	前にあってもインクリメントを許すものがあります。(cf.
-	|dial-augends-markup#markdown#header|)
-
-<Plug>(dial-decrement)					*<Plug>(dial-decrement)*
-
-	カーソル下または後の被加数を [count] だけデクリメントします。既存の
-	CTRL-X コマンドの代替です。
-
-Visual Mode~
-
-{Visual}<Plug>(dial-increment)			*v_<Plug>(dial-increment)*
-
-	以下のどのモードに入っているかによって挙動が変化します。
-	* 通常の VISUAL モード (|v|)
-	* 行 VISUAL モード (|V|)
-	* 矩形 VISUAL モード (|CTRL-V|)
-
-	通常のビジュアルモード (|v|) の場合、ビジュアル選択されたテキスト中の被加
-	数を [count] だけインクリメントします。既存の CTRL-A コマンドの代替です。
-	選択したテキストが完全一致である必要があります。たとえば十進数のインクリメ
-	ント(||)及び日付のインクリメント (||) が有効になっている場合、`12/3456`の
-	うち `12/3` が選択されていれば12月3日を表す文字列とみなされ `12/4456` とな
-	りますが、`12` のみが選択されている場合は単なる数値列とみなされ `13/3456`
-	となります。
-
-	行選択ビジュアルモード (|V|) の場合、
-	ビジュアル行選択されたテキスト中の被加数を、行ごとに [count] だけインクリ
-	メントします。各行ごとに被加数の位置を探索し、マッチしたもののうち最も手前
-	の被加数を一つだけ対象とします。
-
-	矩形選択ビジュアルモード (|CTRL-V|) の場合は行選択ビジュアルモードの場合と
-	似ているものの、マッチする対象が矩形選択された範囲に絞られます。通常のビジ
-	ュアルモードとことなり、選択範囲が完全一致している必要はありません。
-
-{Visual}<Plug>(dial-decrement)			*v_<Plug>(dial-decrement)*
-
-	ビジュアル選択されたテキスト中の被加数を [count] だけデクリメントします。
-	既存の CTRL-X コマンドの代替です。
-
-										*v_<Plug>(dial-increment-additional)*
-{Visual}<Plug>(dial-increment-additional)
-
-	通常のビジュアルモードの場合は |v_<Plug>(dial-increment)| と変わりません。
-	行選択及び矩形選択ビジュアルモードの場合、上から数えてn行目にある被加数はn
-	* [count]だけ増加します。既存の g CTRL-A コマンドの代替です。
-	箇条書きや予定表など、 一定の数値ずつ増加する等差数列を作成したい場合に便
-	利です。たとえば
 >
-		09/12
-		09/12
-		09/12
-		09/12
+	local augend = require("dial.augend")
+	require("dial.config").augends:register_group{
+	  -- グループ名を指定しない場合に用いられる被加数
+	  default = {
+		augend.integer.alias.decimal,   -- nonnegative decimal number
+		augend.integer.alias.hex,       -- nonnegative hex number
+		augend.date.alias["%Y/%m/%d"],  -- date (2022/02/19, etc.)
+	  },
+
+	  -- `mygroup` というグループ名を使用した際に用いられる被加数
+	  mygroup = {
+		augend.integer.alias.decimal,
+		augend.constant.alias.bool,    -- boolean value (true <-> false)
+		augend.date.alias["%m/%d/%Y"], -- date (02/19/2022, etc.)
+	  }
+	}
 <
-	という日付のリストがある時、2番目の `1/1` へと移動して下3行を行選択ビジュ
-	アルモードで選択し、 `7g<C-a>` と押すと
+
+`"dial.config"` モジュールに存在する `augends:register_group` 関数を用いてグル
+ープを定義することができます。関数の引数には、グループ名をキー、被加数のリスト
+を値とする辞書を指定します。
+
+上の例で `augend` という名前のローカル変数に代入されている `"dial.augend"`
+モジュールにはさまざまな被加数が定義されています。具体的に定義されている被加数
+とエイリアスについては |dial-augends| および |dial-aliases| を参照。
+
+|dial.nvim| では以下のように **expression register** |@=| を用いることで増減対
+象のグループを指定します。
+
 >
-		09/12
-		09/19
-		09/26
-		10/03
+	"=mygroup<CR><C-a>
 <
-	のように、1週間ごとの日付が得られます（日付の被加数 `date#[%m/%d]` が有効
-	のときに限ります）。
 
-										*v_<Plug>(dial-decrement-additional)*
-{Visual}<Plug>(dial-decrement-additional)
+増減のたびに expression register を指定するのが面倒であれば、以下のようにマッ
+ピングすることも可能です。
 
-	通常のビジュアルモードの場合は |v_<Plug>(dial-increment)| と変わりません。
-	行選択及び矩形選択ビジュアルモードの場合、上から数えてn行目にある被加数はn
-	* [count]だけ減少します。既存の g CTRL-X コマンドの代替です。
+>
+	nmap <Leader>a "=mygroup<CR><Plug>(dial-increment)
+<
 
-==============================================================================
-COMMANDS								*dial-commands*
+Lua 上で以下のように記述すれば expression register を使わずマッピングを設定で
+きます。
 
-:[range]DialIncrement {augend}			*:DialIncrement*
+>
+	vim.api.nvim_set_keymap(
+		"n",
+		"<Leader>a",
+		require("dial.map").inc_normal("mygroup"),
+		{noremap = true}
+	)
+<
 
-	選択範囲に対して、{augend} で指定された被加数を1だけインクリメントします。
-	行選択ビジュアルモードにおける |v_<Plug>(dial-increment)| と似ていますが、
-	被加数を指定し、そのルールに制限することができます。
-	加数（いくつ増加させるか）を指定することはできないため、 |@:| などを用いて
-	繰り返すことが想定されています。
+										*dial-config-augends-default*
+デフォルトグループ~
 
-										*:DialIncrementAdditional*
-:[range]DialIncrementAdditional {augend}
+`default` は特殊なグループであり、標準で定義されています。expression register
+などでグループ名を指定しなかった場合は `default` グループにある被加数がかわり
+に用いられます。
 
-	選択範囲に対して、{augend} で指定された被加数を1だけデクリメントします。
+何も設定しなかった場合は以下の設定を行っているのと等価となります。
 
-==============================================================================
-CONFIGURATIONS							*dial-configurations*
+>
+	local augend = require("dial.augend")
+	require("dial.config").augends:register_group{
+	  default = {
+		augend.integer.alias.decimal,
+		augend.integer.alias.hex,
+		augend.date.alias["%Y/%m/%d"],
+		augend.date.alias["%Y-%m-%d"],
+		augend.date.alias["%m/%d"],
+		augend.date.alias["%H:%M"],
+		augend.constant.alias.ja_weekday_full,
+	  },
+	}
+<
 
-|dial.nvim| では、Lua スクリプトを用いて被加数の種類を指定することができます。
-被加数には `number#decimal` などの名前が付いており、自身の設定ファイルにて以下
-のように被加数を指定することで好きな被加数が使えるようになります。
+VISUAL mode 限定のマッピング~
+
+VISUAL モード用のグループを作成することで可能です。
+
+>
+	local augend = require("dial.augend")
+	require("dial.config").augends:register_group{
+	  visual = {
+		augend.integer.alias.decimal,
+		augend.integer.alias.hex,
+		augend.date.alias["%Y/%m/%d"],
+		augend.constant.alias.alpha,
+		augend.constant.alias.Alpha,
+	  },
+	}
+
+	-- VISUAL モードでの被加数を変更する
+	vim.api.nvim_set_keymap(
+		"v", "<C-a>", require("dial.map").inc_normal("visual"), {noremap = true}
+	)
+	vim.api.nvim_set_keymap(
+		"v", "<C-x>", require("dial.map").dec_normal("visual"), {noremap = true}
+	)
+<
+
+特定のファイルタイプ限定のマッピング~
+
+特定のファイルタイプ用のグループを作成し、 |autocmd| でバッファごとにキーマッ
+ピングを設定することで実現できます。
 
 >
 	lua << EOF
-	local dial = require"dial"
-	dial.config.searchlist = {
-	  normal = {
-		% add some augend names here
-		"number#decimal",
-		"date#[%Y/%m/%d]",
-		"date#[%m/%d]",
-		"date#[%H:%M]",
+	local augend = require("dial.augend")
+	require("dial.config").augends:register_group{
+	  typescript = {
+		augend.integer.alias.decimal,
+		augend.integer.alias.hex,
+		augend.constant.new{ elements = {"let", "const"} },
 	  },
-	  visual = {
-		% add some augend names here
-		"number#decimal",
-		"date#[%Y/%m/%d]",
-		"date#[%m/%d]",
-		"date#[%H:%M]",
-		"color#hex",
-		"char#alph#small#word",
-		"char#alph#capital#word",
-	  }
 	}
 	EOF
+
+	" 特定のファイルタイプでのみ有効にする
+	autocmd FileType typescript nmap <C-a> "=typescript<CR><Plug>(dial-increment)
+	autocmd FileType typescript nmap <C-x> "=typescript<CR><Plug>(dial-decrement)
 <
 
-被加数の種類は以下の通りです。
+------------------------------------------------------------------------------
+ALIASES									*dial-aliases*
+
+被加数のエイリアスとして、デフォルトで以下が提供されています。
+詳しくは |dial-augends| の対応する節を参照。
+
+	|dial-augend-integer-alias|:
+		`augend.integer.alias.decimal`
+		`augend.integer.alias.decimal_int`
+		`augend.integer.alias.hex`
+		`augend.integer.alias.octal`
+		`augend.integer.alias.binary`
+
+	|dial-augend-date-alias|:
+		`augend.date.alias["%Y/%m/%d"]`
+		`augend.date.alias["%m/%d/%Y"]`
+		`augend.date.alias["%d/%m/%Y"]`
+		`augend.date.alias["%m/%d/%y"]`
+		`augend.date.alias["%d/%m/%y"]`
+		`augend.date.alias["%m/%d"]`
+		`augend.date.alias["%-m/%-d"]`
+		`augend.date.alias["%Y-%m-%d"]`
+		`augend.date.alias["%Y年%-m月%-d日"]`
+		`augend.date.alias["%Y年%-m月%-d日(%ja)"]`
+		`augend.date.alias["%H:%M:%S"]`
+		`augend.date.alias["%H:%M"]`
+
+	|dial-augend-constant-alias|:
+		`augend.constant.alias.ja_weekday`
+		`augend.constant.alias.ja_weekday_full`
+		`augend.constant.alias.bool`
+		`augend.constant.alias.alpha`
+		`augend.constant.alias.Alpha`
+
+	|dial-augend-semver-alias|:
+		`augend.semver.alias.semver`
 
 ------------------------------------------------------------------------------
 AUGENDS									*dial-augends*
 
+以下簡単のため、 `augend` という変数は以下のように定義されているものとします。
+
+>
+	local augend = require("dial.augend")
+<
+
 NUMBER									*dial-augends-number*
 ------
 
-										*dial-augends-number#decimal*
-number#decimal~
+n 進数の整数 (`2 <= n <= 36`) を表します。 `augend.integer.new{ ...opts }` で
+使用できます。
 
-十進数の非負値をインクリメント・デクリメントします。
+>
+	require("dial.config").augends:register_group{
+	  default = {
+		-- uppercase hex number (0x1A1A, 0xEEFE, etc.)
+		augend.integer.new{
+		  radix = 16,
+		  prefix = "0x",
+		  natural = true,
+		  case = "upper",
+		},
+	  },
+	}
+<
+
+augend.integer.alias.decimal~
+
+十進数の整数。
 >
 	0
 	123
@@ -207,10 +332,9 @@ number#decimal~
 <
 となります。
 
-										*dial-augends-number#decimal#int*
-number#decimal#int~
+augend.integer.alias.decimal_int~
 
-基本的には |dial-augends-number#decimal| と同じですが、こちらは負の整数にも
+基本的には `augend.integer.alias.decimal` と同じですが、こちらは負の整数にも
 マッチします。
 >
 	file-1.jpg
@@ -221,57 +345,7 @@ number#decimal#int~
 <
 となります。
 
-									*dial-augends-number#decimal#fixed#zero*
-number#decimal#fixed#zero~
-
-マッチする対象は|dial-augends-number#decimal|と同じですが、こちらは対象を固定
-長の整数とみなし、桁数が変わらない範囲でインクリメント/デクリメントします。た
-だし、桁埋めには `0` が使われていると仮定します。たとえば
->
-	file001.jpg
-<
-という文字列の `1` にカーソルがある状態で`100<Plug>(dial-increment)` を行うと
->
-	file101.jpg
-<
-となり、その状態で更に`1000<Plug>(dial-increment)` を行うと
->
-	file999.jpg
-<
-となります（3桁の最大の数は999ですから、999でインクリメントが打ち止めになりま
-す）。さらにその状態から`995<Plug>(dial-decrement)` を行うと
->
-	file004.jpg
-<
-となります（桁を補うのに足りない部分はゼロ埋めされます）。
-
-									*dial-augends-number#decimal#fixed#space*
-number#decimal#fixed#space~
-
-対象を固定長の整数とみなし、桁数が変わらない範囲でインクリメント/デクリメント
-します。ただし、桁埋めには半角空白が使われていると仮定します。たとえば
->
-	file  1.jpg
-<
-という文字列の `1` にカーソルがある状態で`100<Plug>(dial-increment)` を行うと
->
-	file101.jpg
-<
-となり、その状態で更に`1000<Plug>(dial-increment)` を行うと
->
-	file999.jpg
-<
-となります（3桁の最大の数は999ですから、999でインクリメントが打ち止めになりま
-す）。さらにその状態から`995<Plug>(dial-decrement)` を行うと
->
-	file  4.jpg
-<
-となります（桁を補うのに足りない部分は半角空白で埋められます）。
-
-NOTE: このコマンドはビジュアルモードでのみ有効にすることを推奨します。
-
-										*dial-augends-number#hex*
-number#hex~
+augend.integer.alias.hex~
 
 16進数の非負整数にマッチし、16進数の表記でインクリメント・デクリメントが行われ
 ます。
@@ -282,20 +356,18 @@ number#hex~
 <
 などの文字列にマッチします。
 
-										*dial-augends-number#octal*
-number#octal~
+augend.integer.alias.octal~
 
 8進数の非負整数にマッチし、8進数の表記でインクリメント・デクリメントが行われま
 す。
 >
-	037
-	0567
-	001212
+	0o37
+	0o567
+	0o01212
 <
-などの文字列にマッチします。 |dial-augends-number#decimal| などとの衝突に注意。
+などの文字列にマッチします。
 
-										*dial-augends-number#binary*
-number#binary~
+augend.integer.alias.binary~
 
 2進数の非負整数にマッチし、2進数の表記でインクリメント・デクリメントが行われま
 す。
@@ -309,8 +381,9 @@ number#binary~
 DATE									*dial-augends-date*
 -----
 
-										*dial-augends-date#[%Y/%m/%d]*
-date#[%Y/%m/%d]~
+日付や時刻を表します。以下のエイリアスから選択します。
+
+augend.date.alias["%Y/%m/%d"]~
 
 以下のようなフォーマットの日付にマッチします。
 >
@@ -351,8 +424,47 @@ date#[%Y/%m/%d]~
 のように現実には存在しない日付でもマッチするものの、インクリメントを行う際に現
 実に存在する日付へと強制的に修正されます。
 
-										*dial-augends-date#[%m/%d]*
-date#[%m/%d]~
+augend.date.alias["%m/%d/%Y"]~
+
+以下のようなフォーマットの日付にマッチします。
+>
+	12/31/1970
+	01/01/2021
+	02/13/2021
+<
+意図しないマッチを避けるため、存在しない日付にはマッチしません。
+
+augend.date.alias["%d/%m/%Y"]~
+
+以下のようなフォーマットの日付にマッチします。
+>
+	31/12/1970
+	01/01/2021
+	13/02/2021
+<
+意図しないマッチを避けるため、存在しない日付にはマッチしません。
+
+augend.date.alias["%m/%d/%y"]~
+
+以下のようなフォーマットの日付にマッチします。
+>
+	12/31/70
+	01/01/21
+	02/13/21
+<
+意図しないマッチを避けるため、存在しない日付にはマッチしません。
+
+augend.date.alias["%d/%m/%y"]~
+
+以下のようなフォーマットの日付にマッチします。
+>
+	31/12/19
+	01/01/20
+	13/02/20
+<
+意図しないマッチを避けるため、存在しない日付にはマッチしません。
+
+augend.date.alias["%m/%d"]~
 
 以下のような日付にマッチします。
 
@@ -370,11 +482,10 @@ date#[%m/%d]~
 
 がインクリメントされます。
 
-当該フォーマットでは現実に存在しない日付でもマッチするものの、インクリメントの
-際に現実に存在する日付へと強制的に修正されます。
+現実に存在しない日付でもマッチし、操作の際に現実に存在する日付へと強制的に修正
+されます。
 
-										*dial-augends-date#[%-m/%-d]*
-date#[%-m/%-d]~
+augend.date.alias["%-m/%-d"]~
 
 基本的に |dial-augends-date#[%m/%d]| と同様ですが、こちらは月日が2桁にパディン
 グされていなくてもマッチします。すなわち、
@@ -384,12 +495,9 @@ date#[%-m/%-d]~
 	2/13
 <
 などにマッチします。
+意図しないマッチを避けるため、存在しない日付にはマッチしません。
 
-当該フォーマットでは現実に存在しない日付にはマッチしません（分数など、日付以外
-を表す文字列に誤ってマッチすることを極力避けるため）。
-
-										*dial-augends-date#[%Y-%m-%d]*
-date#[%Y-%m-%d]~
+augend.date.alias["%Y-%m-%d"]~
 
 以下のようなフォーマットの日付にマッチします。
 >
@@ -397,10 +505,10 @@ date#[%Y-%m-%d]~
 	2021-01-01
 	2021-02-13
 <
-フォーマットの違いを除いては|dial-augends-date#[%Y/%m/%d]|と同じです。
+現実に存在しない日付でもマッチし、操作の際に現実に存在する日付へと強制的に修正
+されます。
 
-										*dial-augends-date#[%Y年%-m月%-d日]*
-date#[%Y年%-m月%-d日]~
+augend.date.alias["%Y年%-m月%-d日"]~
 
 以下のようなフォーマットの日付にマッチします。
 >
@@ -408,10 +516,8 @@ date#[%Y年%-m月%-d日]~
 	2021年1月1日
 	2021年2月13日
 <
-フォーマットの違いを除いては|dial-augends-date#[%Y/%m/%d]|と同じです。
 
-									*dial-augends-date#[%Y年%-m月%-d日(%ja)]*
-date#[%Y年%-m月%-d日(%ja)]~
+augend.date.alias["%Y年%-m月%-d日(%ja)"]~
 
 以下のようなフォーマットの日付にマッチします。
 >
@@ -419,12 +525,10 @@ date#[%Y年%-m月%-d日(%ja)]~
 	2021年1月1日(金)
 	2021年2月13日(土)
 <
-フォーマットの違いを除いては|dial-augends-date#[%Y/%m/%d]|と同じです。
 日付と曜日の整合性が取れていない場合もマッチし、インクリメント・デクリメントの
 際に正しい曜日となるよう自動で修正されます。
 
-										*dial-augends-date#[%H:%M:%S]*
-date#[%H:%M:%S]~
+augend.date.alias["%H:%M:%S"]~
 
 以下のようなフォーマットの時刻（時:分:秒）にマッチします。
 >
@@ -440,11 +544,9 @@ date#[%H:%M:%S]~
 * カーソルが `:56` のいずれかの上にある場合：秒
 
 がインクリメントされます。
-`52:27:93` のように存在しない時刻でもマッチするものの、インクリメントの際に現
-実に存在する時刻へと強制的に修正されます。
+意図しないマッチを避けるため、存在しない時刻にはマッチしません。
 
-										*dial-augends-date#[%H:%M]*
-date#[%H:%M]~
+augend.date.alias["%H:%M"]~
 
 以下のようなフォーマットの時刻（時:分）にマッチします。
 >
@@ -459,11 +561,33 @@ date#[%H:%M]~
 * カーソルが `:34` のいずれかの上にある場合：分
 
 がインクリメントされます。
-存在しない時刻でもマッチするものの、インクリメントの際に現実に存在する時刻へと
-強制的に修正されます。
+意図しないマッチを避けるため、存在しない時刻にはマッチしません。
 
-										*dial-augends-date#[%ja]*
-date#[%ja]~
+CONSTANT								*dial-augends-constant*
+--------
+
+キーワードなどの決められた文字列をトグルします。
+`augend.constant.new{ ...opts }` で使用できます。
+
+>
+	require("dial.config").augends:register_group{
+	  default = {
+		-- uppercase hex number (0x1A1A, 0xEEFE, etc.)
+		augend.constant.new{
+		  elements = {"and", "or"},
+		  word = true, -- if false, "sand" is incremented into "sor", "doctor" into "doctand", etc.
+		  cyclic = true,  -- "or" is incremented into "and".
+		},
+		augend.constant.new{
+		  elements = {"&&", "||"},
+		  word = false,
+		  cyclic = true,
+		},
+	  },
+	}
+<
+
+augend.constant.alias.ja_weekday~
 
 日本語の曜日名にマッチします。
 >
@@ -479,9 +603,7 @@ date#[%ja]~
 それぞれ Vim の意味での単語になっているものに対してマッチするため、「日用品」
 など熟語の一部にはマッチしません。
 
-
-										*dial-augends-date#[%jA]*
-date#[%jA]~
+augend.constant.alias.ja_weekday_full~
 
 日本語の曜日名にマッチします。
 >
@@ -494,14 +616,18 @@ date#[%jA]~
 	日曜日
 <
 
-こちらは|dial-augends-date#[%jA]|と異なり、単語ではなく文字列としてマッチする
-ため、「毎週火曜日」のように漢字が連なっていてもマッチします。
+こちらは augend.constant.alias.ja_weekday と異なり、単語ではなく文字列としてマ
+ッチするため、「毎週火曜日」のように漢字が連なっていてもマッチします。
 
-CHAR									*dial-augends-char*
------
+augend.constant.alias.bool~
 
-										*dial-augends-char#alph#small#word*
-char#alph#small#word~
+`true` または `false` という単語にマッチします。
+>
+	true
+	false
+<
+
+augend.constant.alias.alpha~
 
 `a` や `z` など、1つの小文字アルファベットにマッチします。ノーマルモードの場合
 はそれ自身が Vim の意味で単語として独立していない限りマッチしません。例えば
@@ -509,41 +635,38 @@ char#alph#small#word~
 	(a)
 	a.
 <
-の `a` にはマッチしますが
+などのように単語として独立した `a` にはマッチしますが、
 >
 	cafe
 	2a
 <
-の `a` にはマッチしません。
+のように単語として独立していない `a` にはマッチしません。
 
 なお、インクリメント時に巡回は行われません。すなわち `z` をインクリメントして
 も`z` のまま変わらず、 `a` をデクリメントしても `a` のまま変わりません。
 
-										*dial-augends-char#alph#capital#word*
-char#alph#capital#word~
+augend.constant.alias.Alpha~
 
-`A` や `Z` など、1つの大文字アルファベットにマッチします。それ以外は
-|dial-augends-char#alph#small#word| と同じです。
+`A` や `Z` など、1つの大文字アルファベットにマッチします。
 
-										*dial-augends-char#alph#small#str*
-char#alph#small#str~
+HEXCOLOR								*dial-augends-hexcolor*
+--------
 
-基本的には|dial-augends-char#alph#small#word| と同じですが、対象が単語として独
-立していなくてもマッチします。
+`#000000` や `#ffffff` といった形式の RGB カラーコードを増減します。
+`augend.hexcolor.new{ ...opts }` で使用できます。
 
-										*dial-augends-char#alph#capital#str*
-char#alph#capital#str~
+>
+	require("dial.config").augends:register_group{
+	  default = {
+		-- uppercase hex number (0x1A1A, 0xEEFE, etc.)
+		augend.hexcolor.new{
+		  case = "lower",
+		},
+	  },
+	}
+<
 
-基本的には|dial-augends-char#alph#capital#word| と同じですが、対象が単語として
-独立していなくてもマッチします。
-
-COLOR									*dial-augends-color*
------
-
-										*dial-augends-color#hex*
-color#hex~
-
-以下のような16進数のカラーコード (# R G B) にマッチします。
+得られる被加数は以下のような16進数のカラーコード (#rrggbb) にマッチします。
 >
 	#1280af
 	#808080
@@ -559,62 +682,291 @@ color#hex~
 
 がインクリメントの対象となります。
 
-MARKUP									*dial-augends-markup*
+SEMVER									*dial-augends-semver*
 ------
 
-										*dial-augends-markup#markdown#header*
-markup#markdown#header~
+Semantic version を増減します。後述のエイリアスを用います。単なる非負整数のイ
+ンクリメントとは以下の点で異なります。
 
-行頭にある1〜6個の `#` にマッチし、Markdown 言語におけるヘッダのレベルを上下さ
-せることができます。
+- semver 文字列よりもカーソルが手前にあるときは、パッチバージョンが優先してイ
+  ンクリメントされます。
+- マイナーバージョンの値が増加したとき、パッチバージョンの値は0にリセットされ
+  ます。
+- メジャーバージョンの値が増加したとき、マイナー・パッチバージョンの値は0にリ
+  セットされます。
 
-------------------------------------------------------------------------------
-DEFAULT AUGENDS							*dial-default-augends*
+augend.semver.alias.semver~
 
-ノーマルモードのデフォルトの被加数は以下のとおりです。
+以下のようなバージョンを表す数字の三つ組にマッチします。
 >
-	{
-		"number#decimal",
-		"number#hex",
-		"number#binary",
-		"date#[%Y/%m/%d]",
-		"date#[%m/%d]",
-		"date#[%Y-%m-%d]",
-		"date#[%H:%M]",
-		"date#[%jA]",
-		"color#hex",
-	}
+	0.3.0
+	3.9.14
+	1.2.3
 <
-ビジュアルモードのデフォルトの被加数は以下のとおりです。
+
+`1.2.3` の例でインクリメントする場合を考えます。
+
+* カーソルが `1` より手前にある場合
+  パッチバージョンがインクリメントされ、 `1.2.4` となります。
+* カーソルが `1` の上にある場合
+  メジャーバージョンがインクリメントされ、 `1.3.0` となります。
+* カーソルが `.2` の上にある場合
+  マイナーバージョンがインクリメントされ、 `2.0.0` となります。
+* カーソルが `.3` の上にある場合
+  パッチバージョンがインクリメントされ、 `1.2.4` となります。
+
+なお、デクリメントする場合はメジャー・マイナー・パッチどのバージョンにおいても
+下位の数値は変化しません。 `1.2.3` でメジャーバージョンを1デクリメントすると
+`0.2.3` となります。
+
+USER									*dial-augends-user*
+-----
+
+ユーザ自身が増減ルールを定義したい場合には `augend.user.new{ ...opts }` を使用
+できます。
+
 >
-	{
-		"number#decimal",
-		"number#hex",
-		"number#binary",
-		"date#[%Y/%m/%d]",
-		"date#[%m/%d]",
-		"date#[%Y-%m-%d]",
-		"date#[%H:%M]",
-		"date#[%jA]",
-		"color#hex",
-		"char#alph#small#word",
-		"char#alph#capital#word",
+	require("dial.config").augends:register_group{
+	  default = {
+		-- uppercase hex number (0x1A1A, 0xEEFE, etc.)
+		augend.user.new{
+		  find = require("dial.augend.common").find_pattern("%d+"),
+		  add = function(text, addend, cursor)
+			  local n = tonumber(text)
+			  n = math.floor(n * (2 ^ addend))
+			  text = tostring(n)
+			  cursor = #text
+			  return {text = text, cursor = cursor}
+		  end
+		},
+	  },
 	}
 <
 
 ==============================================================================
-CUSTOMIZE								*dial-customize*
+ADVANCED USAGE							*dial-advanced-usage*
 
-Under Construction
-
-------------------------------------------------------------------------------
-DEFINE AUGENDS							*dial-define-augends*
-
-Under Construction
+|dial.nvim| のうち、発展的ではあるものの便利な機能を紹介します。
 
 ------------------------------------------------------------------------------
-CONVENIENT FUNCTIONS					*dial-convenient-functions*
+DOT REPEATING							*dial-dot-repeating*
 
-Under Construction
+|dial.nvim| が提供するすべてのキーコマンドはドットリピートに対応しています。
+すなわち、"." を押すことによって直前の増減操作を繰り返すことができます。
+ただし標準の <C-a> や <C-x> とは若干挙動が異なり、増減ルールが固定されます。
+
+具体的な例として、以下のような設定を考えます。
+>
+	local augend = require("dial.augend")
+	require("dial.config").augends:register_group{
+	  default = {
+		augend.integer.alias.decimal,
+		augend.date.alias["%Y/%m/%d"],
+	  },
+	}
+<
+これはすなわち、十進数の数値と `yyyy/MM/dd` 形式の日付が <C-a> によって増減可
+能であることを意味します。
+
+さて、以下のような記述が書かれたバッファをイメージしてください。
+>
+	date: 2020/11/08
+	...
+	due date of 1st report: 2020/11/23
+	...
+	due date of 2nd report: 2020/12/21
+	...
+	date of exam: 2021/01/14
+<
+
+このバッファにある全ての期日をちょうど1ヶ月延長しなければならなくなったとしま
+す。日付が大量にある場合この操作はきわめて退屈で面倒ですが、 |dial.nvim| を用
+いればとても Vim らしいアプローチで楽にこの操作を実現することができます。
+
+まずはいつもどおり1行目の `2020/11/08` の `11` のところにジャンプし、 <C-a> を
+タイプして日付を1ヶ月伸ばします。`2020/12/08` となったはずです。
+
+次に "/" コマンドを用いて `date` で検索し、3行目にジャンプします。
+検索文字列はなんでもよいのですが、変更したい日付の前にはいずれも `date` がある
+ことから、`date` にジャンプするのが今回は最も楽だと期待できます。
+ジャンプしたら、その直後で "." コマンドを実行してください。なんの問題もなく、
+`2020/11/23` が1ヶ月延期されるはずです。
+>
+	date: 2020/12/08
+	...
+	Due date (1st lecture): 2020/12/23
+	...
+	Due date (2nd lecture): 2020/12/21
+	...
+	Due date (3rd lecture): 2021/01/14
+<
+ここで重要なのは、もしここで "." ではなく <C-a> を押していた場合、 `1st` と書
+かれた数字が増減の対象となってしまい、 `2st` になってしまっていたという点です。
+仮に `1st` という文字列がなかったとしても、（カーソル位置が `11` にないため）
+日付が1日延長されるだけだったでしょう。
+<C-a> はコマンドが実行されるたびにその行について適切なルールを探すものの、ドッ
+トリピートを行った場合は以前に行ったルールを保持します。ここでは「日付を1ヶ月
+延ばす」という操作を保持していたため、カーソルを適切な位置に移動させずとも、自
+動的に近くにある日付の「月」のところまで移動してから増減操作を実行します。
+したがって上の例では、ひとたび検索を行った後であれば `.n.n.` とするだけですべ
+ての期限を1ヶ月延ばすことができるのです。
+
+==============================================================================
+INTERFACE								*dial-interface*
+
+------------------------------------------------------------------------------
+MAPPING									*dial-mapping*
+
+["x]<Plug>(dial-increment)				*<Plug>(dial-increment)*
+	NORMAL モードと VISUAL モードにおける CTRL-A に相当する機能を提供します。
+	すなわち、カーソル下または後の被加数を [count] だけインクリメントします。
+	カーソルと同じ行にある被加数のみが対象です。カーソルより手前にある被加数に
+	は基本的に反応しないものの、被加数によっては例外的にカーソルの手前にあって
+	もインクリメントを行う場合があります。
+
+	expression register |@=| を指定することができ、その場合は記述したグループ
+	名に基づく被加数が用いられます。指定しなかった場合は `default` という名前
+	のグループに記述された被加数が用いられます(|dial-config-augends-default|)。
+	それ以外のレジスタを指定しても効果はありません。
+
+
+["x]<Plug>(dial-decrement)				*<Plug>(dial-decrement)*
+	NORMAL モードと VISUAL モードにおける CTRL-X に相当する機能を提供します。
+	以下のどのモードに入っているかによって挙動が変化します。
+	* 通常の VISUAL モード (|v|)
+	* 行 VISUAL モード (|V|)
+	* 矩形 VISUAL モード (|CTRL-V|)
+
+	通常のビジュアルモード (|v|) の場合、ビジュアル選択されたテキストの中に含
+	まれる被加数を [count] だけインクリメントします。既存の CTRL-A コマンドの
+	代替です。
+
+	行選択ビジュアルモード (|V|) の場合、ビジュアル行選択されたテキスト中の被
+	加数を、行ごとに [count] だけインクリメントします。各行ごとに被加数の位置
+	を探索し、マッチしたもののうち最も手前の被加数を一つだけ対象とします。
+
+	矩形選択ビジュアルモード (|CTRL-V|) の場合は行選択ビジュアルモードの場合と
+	似ているものの、マッチする対象が矩形選択された範囲に絞られます。
+
+	直前に expression register |@=| を指定することができます。その場合は記述し
+	たグループ名に基づく被加数が用いられます。それ以外のレジスタを指定しても効
+	果はありません。
+
+["x]g<Plug>(dial-increment)				*g<Plug>(dial-increment)*
+	VISUAL モードにおける |v_g_CTRL-A| に相当する機能を提供します。
+
+	使用方法は|g<Plug>(dial-increment)| と似ているものの、上から数えてn行目に
+	ある被加数がn * [count] だけ増加します。箇条書きや予定表など、 一定の数値
+	ずつ増加する等差数列を作成したい場合に便利です。たとえば
+>
+		09/12
+		09/12
+		09/12
+		09/12
+<
+	という日付のリストがある時、2番目の `1/1` へと移動して下3行を行選択ビジュ
+	アルモードで選択し、 `7g<C-a>` と押すと
+>
+		09/12
+		09/19
+		09/26
+		10/03
+<
+	のように、1週間ごとの日付が得られます（日付の被加数が有効のときに限る）。
+
+	直前に expression register |@=| を指定することができます。その場合は記述し
+	たグループ名に基づく被加数が用いられます。それ以外のレジスタを指定しても効
+	果はありません。
+
+["x]g<Plug>(dial-decrement)				*g<Plug>(dial-decrement)*
+	VISUAL モードにおける |v_g_CTRL-X| に相当する機能を提供します。
+
+	直前に expression register |@=| を指定することができます。その場合は記述し
+	たグループ名に基づく被加数が用いられます。それ以外のレジスタを指定しても効
+	果はありません。
+
+------------------------------------------------------------------------------
+COMMAND									*dial-command*
+
+:[range]DialIncrement {augend}			*:DialIncrement*
+
+	選択範囲に対して、{augend} で指定された被加数を1だけインクリメントします。
+	行選択ビジュアルモードにおける |v_<Plug>(dial-increment)| と似ていますが、
+	被加数を指定し、そのルールに制限することができます。
+	加数（いくつ増加させるか）を指定することはできないため、 |@:| などを用いて
+	繰り返すことが想定されています。
+
+:[range]DialDecrement {augend}			*:DialDecrement*
+
+	選択範囲に対して、{augend} で指定された被加数を1だけデクリメントします。
+
+------------------------------------------------------------------------------
+LUA API									*dial-lua-api*
+
+										*dial-lua-api-map*
+"dial.map" module~
+
+|dial.nvim| 固有のマッピングを提供するモジュールです。
+
+										*dial.map.inc_normal()*
+require("dial.map").inc_normal([group_name])
+
+	NORMAL モードにおいて与えられたグループ名をもとにインクリメントを行うため
+	のキーシーケンスを出力します。group_name は省略すると `default` と等価にな
+	ります。|vim.api| と|nvim_set_keymap| や |nvim_buf_set_keymap| を組み合わ
+	せて以下のような形で使用することが想定されています。
+>
+	vim.api.nvim_set_keymap(
+		"n", "<C-a>", require("dial.map").inc_normal(), {noremap = true}
+	)
+<
+
+										*dial.map.dec_normal()*
+require("dial.map").dec_normal([group_name])
+
+	NORMAL モードにおいて与えられたグループ名をもとにデクリメントを行うための
+	キーシーケンスを出力します。
+
+										*dial.map.inc_visual()*
+require("dial.map").inc_visual([group_name])
+
+	VISUAL モードにおいて与えられたグループ名をもとにインクリメントを行うための
+	キーシーケンスを出力します。
+
+										*dial.map.dec_visual()*
+require("dial.map").dec_visual([group_name])
+
+	VISUAL モードにおいて与えられたグループ名をもとにデクリメントを行うための
+	キーシーケンスを出力します。
+
+										*dial.map.inc_gvisual()*
+require("dial.map").inc_gvisual([group_name])
+
+	VISUAL モードにおいて与えられたグループ名をもとにイデクリメントを行うため
+	のキーシーケンスを出力します。被加数は上から順に [count] ずつ増加します。
+
+										*dial.map.dec_gvisual()*
+require("dial.map").dec_gvisual([group_name])
+
+	VISUAL モードにおいて与えられたグループ名をもとにデクリメントを行うための
+	キーシーケンスを出力します。被加数は上から順に [count] ずつ増加します。
+
+"dial.augend" module~
+
+被加数を定義するモジュールです。 |dial-augends| 参照。
+
+"dial.config" module~
+
+									*dial.config.augends:register_group()*
+require("dial.config").augends:register_group(tbl)
+
+	与えられた辞書形式のテーブルに基づいてグループを定義または上書きします。
+	関数の引数には、グループ名をキー、被加数のリストを値とする辞書を指定します。
+
+									*dial.config.augends:get()*
+require("dial.config").augends:get(group_name)
+
+	登録されているグループのうち、 `group_name` をグループ名にもつものを取得し
+	ます。
 
 vim:tw=78:fo=tcq2mM:ts=4:ft=help:norl:noet:fdm=marker:fen:cole=0
