@@ -79,16 +79,16 @@ local augend = require("dial.augend")
 require("dial.config").augends:register_group{
   -- グループ名を指定しない場合に用いられる被加数
   default = {
-    augend.integer.alias.decimal,     -- nonnegative decimal number (0, 1, 2, 3, ...)
-    augend.integer.alias.hex,         -- nonnegative hex number  (0x01, 0x1a1f, etc.)
-    augend.date.alias["%Y/%m/%d"],  -- date (2022/02/19)
+    augend.integer.alias.decimal,   -- nonnegative decimal number (0, 1, 2, 3, ...)
+    augend.integer.alias.hex,       -- nonnegative hex number  (0x01, 0x1a1f, etc.)
+    augend.date.alias["%Y/%m/%d"],  -- date (2022/02/19, etc.)
   },
 
   -- `mygroup` というグループ名を使用した際に用いられる被加数
   mygroup = {
     augend.integer.alias.decimal,
     augend.constant.alias.bool,    -- boolean value (true <-> false)
-    augend.date.alias["%m/%d/%Y"],  -- boolean value (true <-> false)
+    augend.date.alias["%m/%d/%Y"], -- date (02/19/2022, etc.)
   }
 }
 ```
@@ -150,6 +150,7 @@ EOF
 
 " 特定のファイルタイプでのみ有効にする
 autocmd FileType typescript lua vim.api.nvim_buf_set_keymap(0, "n", "<C-a>", require("dial.map").inc_normal("typescript"), {noremap = true})
+autocmd FileType typescript lua vim.api.nvim_buf_set_keymap(0, "n", "<C-x>", require("dial.map").dec_normal("typescript"), {noremap = true})
 ```
 
 ## 被加数の種類と一覧
