@@ -65,9 +65,10 @@ local function find_nested_paren(line, open, close, nested, cursor_idx, escape_c
                 -- 括弧が閉じきっていないときに close が見つかったら stack を pop
                 -- util.dbg"close char detected!"
                 idx = idx + #close
+                local close_end_idx = idx - 1
 
                 -- idx が cursor_idx を超えた瞬間に paren_nested_level_at_cursor を記録
-                if depth_at_cursor == nil and idx >= cursor_idx then
+                if depth_at_cursor == nil and close_end_idx >= cursor_idx then
                     -- util.dbg"cursor detected!"
                     depth_at_cursor = #start_idx_stack
                 end
