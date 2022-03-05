@@ -133,18 +133,31 @@ end
 ---@return textrange?
 function AugendParen:find(line, cursor)
     ---@type textrange?
-    local final_range = nil
+    local tmp_range = nil
 
     for _, ptn in ipairs(self.config.patterns) do
         local open = ptn[1]
         local close = ptn[2]
         local range = find_nested_paren(line, open, close, self.config.nested, cursor, self.config.escape_char)
-        if range ~= nil and (final_range == nil or range.from < final_range.from) then
-            final_range = range
+        if range ~= nil then
+            if tmp_range == nil then
+                tmp_range = range
+            else
+                local rel = range.from > cursor
+                local tmp_rel = tmp_range.from > cursor
+                if tmp_rel and rel then
+                    tmp_range = util.if_expr(tmp_range.from < range.from, tmp_range, range)
+                elseif tmp_rel and not rel then
+                    tmp_range = range
+                elseif not tmp_rel and rel then
+                else
+                    tmp_range = util.if_expr(tmp_range.from > range.from, tmp_range, range)
+                end
+            end
         end
     end
 
-    return final_range
+    return tmp_range
 end
 
 ---@param text string
