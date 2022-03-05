@@ -21,6 +21,8 @@ Configurations					|dial-config|
     Number						|dial-augends-number|
     Date						|dial-augends-date|
     Char						|dial-augends-char|
+Advanced Usage					|dial-advanced-usage|
+  Dot Repeating					|dial-dot-repeating|
 Interface						|dial-interface|
   Mapping						|dial-mapping|
   Command						|dial-command|
@@ -712,6 +714,86 @@ augend.semver.alias.semver~
 なお、デクリメントする場合はメジャー・マイナー・パッチどのバージョンにおいても
 下位の数値は変化しません。 `1.2.3` でメジャーバージョンを1デクリメントすると
 `0.2.3` となります。
+
+PAREN									*dial-augends-paren*
+-----
+
+括弧やクオーテーションで囲まれた文字列を対象とし、括弧の種類を変更します。
+`augend.paren.new{ ...opts }` で使用できます。
+
+>
+	require("dial.config").augends:register_group{
+	  default = {
+		augend.paren.new{
+		  patterns = {
+			{'"', '"'},
+			{"[[", "]]"},
+			{"[=[", "]=]"},
+			{"[==[", "]==]"},
+			{"[===[", "]===]"},
+		  },
+		  nested = false,
+		  cyclic = false,
+		},
+		augend.paren.new{
+		  patterns = { {"'", "'"}, {'"', '"'} },
+		  nested = false,
+		  escape_char = [[\]],
+		  cyclic = true,
+		},
+	  },
+	}
+<
+
+以下のパラメータを有します。
+		patterns (string[][], 必須)
+				相互変換したい括弧のペア。
+				各要素は string の2つ組であり、開き括弧と閉じ括弧を表します。
+		nested (boolean, default: true)
+				true のとき、ネストを検出します。
+				開き括弧と閉じ括弧の文字列が一致する場合は意味を成しません。
+		cyclic (boolean, default: true)
+				true のとき、増減操作を行う際に巡回します。
+		escape_char (string, default: nil)
+				定義されていれば、その文字列を escape char と見做します。
+				escape char の直後では、開き括弧や閉じ括弧の字句が無視されます。
+				ただし、 escape char が2つ連続で並んだ場合はescape char 自体が
+				escape されたものと見做します。
+
+NOTE: 複数行に渡る括弧を検出・操作することはできません。dial.nvim 全体の方針と
+して、CTRL-A や CTRL-X による増減操作は1行で完結するものに制限しています。複数
+行に渡る括弧の操作は、より括弧操作に特化したプラグインの使用をお勧めします。
+
+augend.paren.alias.quote~
+
+single-quoted literal と double-quoted literal を相互変換します。
+`\` はエスケープ文字として扱われます。
+>
+	"foo" -> 'foo'
+	'foo' -> "foo"
+	"foo\"" -> 'foo\"'
+<
+
+augend.paren.alias.brackets~
+
+3種類の括弧 `()`, `[]`, `{}` を相互変換します。ネストも考慮されます。
+>
+	(foo) -> [foo] -> {foo} -> (foo) -> ...
+<
+
+augend.paren.alias.lua_str_literal~
+
+Lua の string literal 記法を相互変換します。
+>
+	"foo" -> [[foo]] -> [=[foo]=] -> [==[foo]==] -> [===[foo]===]
+<
+
+augend.paren.alias.rust_str_literal~
+
+Rust の string literal 記法を相互変換します。
+>
+	"foo" -> r#"foo"# -> r##"foo"## -> r###"foo"###
+<
 
 USER									*dial-augends-user*
 -----
