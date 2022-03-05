@@ -65,6 +65,12 @@ local function find_nested_paren(line, open, close, nested, cursor_idx, escape_c
                 -- 括弧が閉じきっていないときに close が見つかったら stack を pop
                 -- util.dbg"close char detected!"
                 idx = idx + #close
+
+                -- idx が cursor_idx を超えた瞬間に paren_nested_level_at_cursor を記録
+                if depth_at_cursor == nil and idx >= cursor_idx then
+                    -- util.dbg"cursor detected!"
+                    depth_at_cursor = #start_idx_stack
+                end
                 if escaped then
                     escaped = false
                     return nil
@@ -193,5 +199,40 @@ function AugendParen:add(text, addend, cursor)
     cursor = #text
     return { text = text, cursor = cursor }
 end
+
+M.alias = {
+    quote = M.new{
+        patterns = { {"'", "'"}, {'"', '"'} },
+        nested = false,
+        escape_char = [[\]],
+        cyclic = true,
+    },
+    brackets = M.new{
+        patterns = { {"(", ")"}, {"[", "]"}, {"{", "}"} },
+        nested = true,
+        cyclic = true,
+    },
+    lua_str_literal = M.new{
+        patterns = {
+            {'"', '"'},
+            {"[[", "]]"},
+            {"[=[", "]=]"},
+            {"[==[", "]==]"},
+            {"[===[", "]===]"},
+        },
+        nested = false,
+        cyclic = false,
+    },
+    rust_str_literal = M.new{
+        patterns = {
+            {'"', '"'},
+            {'r#"', '"#'},
+            {'r##"', '"##'},
+            {'r###"', '"###'},
+        },
+        nested = false,
+        cyclic = false,
+    }
+}
 
 return M
