@@ -304,6 +304,37 @@ Represents n-ary integer.
 	}
 <
 
+The argument table of `augend.integer.new` can take the following keys:
+		radix (number, default: 10)
+				represents radix of the number, e.g., 10 in decimal system and
+				2 in binary system.
+		prefix (string, default: "")
+				can be used to specify a string to be prepended to a number,
+				e.g., `0x`.
+		natural (boolean, default: true)
+				toggles whether or not a number should be treated as a natural
+				number. If true, the augend matches only natural numbers. That
+				is, if the cursor is on `-1`, it does not match `-1` but `1`.
+		case ("upper" | "lower", default: "lower")
+				represents the case of the alphabet used for numbers with
+				radix larger than 10, such as hexadecimal numbers.
+		delimiter (char, default: "")
+				represents a numerical separator. For example, giving ",", the
+				augend will match the following numbers:
+>
+					1,234,567
+					1,23,4,5,67
+<
+				In every situation, the separator is simply ignored when
+				evaluating the number, but when incrementing/decrementing, the
+				position of the separator is formatted as an n-digit
+				separator. The value of n can be controlled by the value of
+				`delimiter_digits`, described below.
+		delimiter_digits (number, default: 3)
+				specifies how many digits to split a number when `delimiter`
+				is specified.
+				It is meaningless if `delimiter` is an empty string.
+
 augend.integer.alias.decimal~
 
 Increments/decrements a non-negative decimal number. It matches such as

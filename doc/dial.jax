@@ -311,6 +311,33 @@ n 進数の整数 (`2 <= n <= 36`) を表します。 `augend.integer.new{ ...op
 	}
 <
 
+`augend.integer.new` の引数のテーブルは以下のキーをとることができます。
+		radix (number, default: 10)
+				表記に用いる進数を表します。
+		prefix (string, default: "")
+				数値に前置される文字列を指定できます (e.g. `0x`)。
+		natural (boolean, default: true)
+				true のときは自然数にのみマッチします。
+				つまり、 `-1` のうえにカーソルがあったとしても `1` にマッチし、
+				`-1` にはマッチしません。
+		case ("upper" | "lower", default: "lower")
+				16進数のように10よりも大きな進数のときに用いるアルファベットの
+				大文字/小文字を指定します。
+		delimiter (char, default: "")
+				数値の区切り文字を指定します。たとえば "," を与えると、以下の
+				ような数値にもマッチするようになります。
+>
+					1,234,567
+					1,23,4,5,67
+<
+				いずれも数値を解釈するときは単にカンマが無視されますが、増減時
+				にカンマの位置が n 桁区切りとなるよう整形されます。n の値は後
+				述する `delimiter_digits` の値で制御できます。
+		delimiter_digits (number, default: 3)
+				数値の区切り文字が指定されているとき、数値を何桁区切りで表示す
+				るか指定します。
+				`delimiter` が空文字列のときには意味がありません。
+
 augend.integer.alias.decimal~
 
 十進数の整数。
