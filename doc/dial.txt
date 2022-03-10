@@ -22,6 +22,8 @@ Configurations					|dial-config|
     Number						|dial-augends-number|
     Date						|dial-augends-date|
     Char						|dial-augends-char|
+Advanced Usage					|dial-advanced-usage|
+  Dot Repeating					|dial-dot-repeating|
 Interface						|dial-interface|
   Mapping						|dial-mapping|
   Command						|dial-command|
@@ -673,6 +675,92 @@ Matches following triplet of natural integers:
 	0.3.0
 	3.9.14
 	1.2.3
+<
+
+PAREN									*dial-augends-paren*
+-----
+
+Matches strings surrounded by brackets or quotations and changes the type of
+what surrounds it. You can use it with `augend.paren.new{ ...opts }` .
+
+>
+	require("dial.config").augends:register_group{
+	  default = {
+		augend.paren.new{
+		  patterns = {
+			{'"', '"'},
+			{"[[", "]]"},
+			{"[=[", "]=]"},
+			{"[==[", "]==]"},
+			{"[===[", "]===]"},
+		  },
+		  nested = false,
+		  cyclic = false,
+		},
+		augend.paren.new{
+		  patterns = { {"'", "'"}, {'"', '"'} },
+		  nested = false,
+		  escape_char = [[\]],
+		  cyclic = true,
+		},
+	  },
+	}
+<
+
+Function `new` has these parameters:
+		patterns (string[][], required)
+				List of the pairs of parens you want to interconvert. Each
+				element of a pair represents an opening bracket and closing
+				bracket, respectively.
+		nested (boolean, default: true)
+				If true, the augend detects nested parens.
+				It does not make sense if the opening and closing bracket
+				strings are same.
+		cyclic (boolean, default: true)
+				If true, the augends circulates the patterns  for
+				increment/decrement operations.
+		escape_char (string, default: nil)
+				If defined, regards the string as the escape character.
+				Immediately following the escape char, the opening and closing
+				bracket characters are ignored. However, if two escape chars
+				appears in succession, the escape char itself is considered
+				to be escaped.
+
+NOTE: It is not possible to detect or manipulate parentheses across multiple
+lines. dial.nvim's overall policy is to limit operations with CTRL-A and
+CTRL-X to those that fits within a single line. For multi-line parenthesis
+manipulation, we recommend the use of plugins that specialize more in
+parenthesis manipulation.
+
+augend.paren.alias.quote~
+
+Interconverts single-quoted literal and double-quoted literal.
+`\` is treated as escape character.
+>
+	"foo" -> 'foo'
+	'foo' -> "foo"
+	"foo\"" -> 'foo\"'
+<
+
+augend.paren.alias.brackets~
+
+Interconverts `()`, `[]`, `{}`. It considers nestings.
+>
+	(foo) -> [foo] -> {foo} -> (foo) -> ...
+<
+
+augend.paren.alias.lua_str_literal~
+
+Interconverts Lua string literals.
+>
+	"foo" -> [[foo]] -> [=[foo]=] -> [==[foo]==] -> [===[foo]===]
+<
+
+augend.paren.alias.rust_str_literal~
+
+Interconverts Rust-style string literals.
+>
+	"foo" -> r#"foo"# -> r##"foo"## -> r###"foo"###
 <
 
 USER									*dial-augends-user*
