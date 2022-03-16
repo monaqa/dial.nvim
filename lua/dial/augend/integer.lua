@@ -1,7 +1,6 @@
 local common = require"dial.augend.common"
 local util   = require "dial.util"
 
--- ---@alias AugendIntegerConfig { radix?: integer, prefix?: string, natural?: boolean, case?: '"upper"' | '"lower"' }
 ---@alias AugendIntegerConfig {}
 
 ---@class AugendInteger
@@ -137,7 +136,11 @@ function AugendInteger:add(text, addend, cursor)
     local n_prefix = #self.prefix
     local subtext = text:sub(n_prefix + 1)
     if self.delimiter ~= "" then
-        subtext = text:gsub(self.delimiter, "")
+        local ptn = self.delimiter
+        if ptn == "." or ptn == "%" or ptn == "^" or ptn == "$" then
+            ptn = "%" .. ptn
+        end
+        subtext = text:gsub(ptn, "")
     end
     local n = tonumber(subtext, self.radix)
     local n_string_digit = subtext:len()
