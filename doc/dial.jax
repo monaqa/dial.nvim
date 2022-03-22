@@ -1064,4 +1064,4 @@ require("dial.config").augends:get(group_name)
 	登録されているグループのうち、 `group_name` をグループ名にもつものを取得し
 	ます。
 
-vim:tw=78:fo=tcq2mM:ts=4:ft=help:norl:noet:fdm=marker:fen:cole=0
+vim:tw=78:fo=tcq2mM:ts=4:ft=help:norl:noet:fdm=marker:fen

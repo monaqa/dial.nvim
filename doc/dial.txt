@@ -1042,4 +1042,4 @@ require("dial.config").augends:get(group_name)
 	Get the registered groups which have `group_name` as their group name.
 
 
-vim:tw=78:fo=tcq2mM:ts=4:ft=help:norl:noet:fdm=marker:fen:cole=0
+vim:tw=78:fo=tcq2mM:ts=4:ft=help:norl:noet:fdm=marker:fen
