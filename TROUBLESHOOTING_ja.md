@@ -56,4 +56,4 @@
 |`char#alph#small#str`       |can be defined with `augend.constant.new` |
 |`char#alph#capital#str`     |can be defined with `augend.constant.new` |
 |`color#hex`                 |`augend.hexcolor.new{}`                   |
-|`markup#markdown#header`    |not implemented                           |
+|`markup#markdown#header`    |`augend.misc.alias.markdown_header`       |

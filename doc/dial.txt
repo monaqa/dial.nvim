@@ -21,7 +21,12 @@ Configurations					|dial-config|
   Augends						|dial-augends|
     Number						|dial-augends-number|
     Date						|dial-augends-date|
-    Char						|dial-augends-char|
+    Constant					|dial-augends-constant|
+    Hexcolor					|dial-augends-hexcolor|
+    Semver						|dial-augends-semver|
+    Paren						|dial-augends-paren|
+    Misc						|dial-augends-misc|
+    User						|dial-augends-user|
 Advanced Usage					|dial-advanced-usage|
   Dot Repeating					|dial-dot-repeating|
 Interface						|dial-interface|
@@ -245,14 +250,14 @@ ALIASES									*dial-aliases*
 
 The following aliases are provided by default (See |dial-augends| for detail):
 
-	|dial-augend-integer-alias|:
+	integer:
 		`augend.integer.alias.decimal`
 		`augend.integer.alias.decimal_int`
 		`augend.integer.alias.hex`
 		`augend.integer.alias.octal`
 		`augend.integer.alias.binary`
 
-	|dial-augend-date-alias|:
+	date:
 		`augend.date.alias["%Y/%m/%d"]`
 		`augend.date.alias["%m/%d/%Y"]`
 		`augend.date.alias["%d/%m/%Y"]`
@@ -266,15 +271,24 @@ The following aliases are provided by default (See |dial-augends| for detail):
 		`augend.date.alias["%H:%M:%S"]`
 		`augend.date.alias["%H:%M"]`
 
-	|dial-augend-constant-alias|:
+	constant:
 		`augend.constant.alias.ja_weekday`
 		`augend.constant.alias.ja_weekday_full`
 		`augend.constant.alias.bool`
 		`augend.constant.alias.alpha`
 		`augend.constant.alias.Alpha`
 
-	|dial-augend-semver-alias|:
+	semver:
 		`augend.semver.alias.semver`
+
+	paren:
+		`augend.paren.alias.quote`
+		`augend.paren.alias.brackets`
+		`augend.paren.alias.lua_str_literal`
+		`augend.paren.alias.rust_str_literal`
+
+	misc:
+		`augend.misc.alias.markdown_header`
 
 ------------------------------------------------------------------------------
 AUGENDS									*dial-augends*
@@ -793,6 +807,27 @@ Interconverts Rust-style string literals.
 >
 	"foo" -> r#"foo"# -> r##"foo"## -> r###"foo"###
 <
+
+MISC									*dial-augends-user*
+-----
+
+Miscellaneous augends are defined together under `augend.misc.alias`.
+
+augend.misc.alias.markdown_header~
+
+Increment/decrement header levels in Markdown.
+>
+	# Header1
+	## Header2
+	###### Header6
+<
+
+NOTE: unusually for an augend, it matches even when the cursor is positioned
+after `#`.
+In that case, however, any other valid augend on or after the cursor will take
+precedence. If you want to increment/decrement `markdown_header` with
+certainty, it is recommended that you move the cursor to the beginning of the
+line before operating.
 
 USER									*dial-augends-user*
 -----
