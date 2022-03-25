@@ -5,6 +5,7 @@ local integer = require("dial.augend.integer")
 local semver = require("dial.augend.semver")
 local user = require("dial.augend.user")
 local paren = require("dial.augend.paren")
+local misc = require("dial.augend.misc")
 
 return {
     constant = constant,
@@ -14,4 +15,5 @@ return {
     semver = semver,
     user = user,
     paren = paren,
+    misc = misc,
 }
