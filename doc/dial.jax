@@ -251,14 +251,14 @@ ALIASES									*dial-aliases*
 被加数のエイリアスとして、デフォルトで以下が提供されています。
 詳しくは |dial-augends| の対応する節を参照。
 
-	|dial-augend-integer-alias|:
+	integer:
 		`augend.integer.alias.decimal`
 		`augend.integer.alias.decimal_int`
 		`augend.integer.alias.hex`
 		`augend.integer.alias.octal`
 		`augend.integer.alias.binary`
 
-	|dial-augend-date-alias|:
+	date:
 		`augend.date.alias["%Y/%m/%d"]`
 		`augend.date.alias["%m/%d/%Y"]`
 		`augend.date.alias["%d/%m/%Y"]`
@@ -272,14 +272,14 @@ ALIASES									*dial-aliases*
 		`augend.date.alias["%H:%M:%S"]`
 		`augend.date.alias["%H:%M"]`
 
-	|dial-augend-constant-alias|:
+	constant:
 		`augend.constant.alias.ja_weekday`
 		`augend.constant.alias.ja_weekday_full`
 		`augend.constant.alias.bool`
 		`augend.constant.alias.alpha`
 		`augend.constant.alias.Alpha`
 
-	|dial-augend-semver-alias|:
+	semver:
 		`augend.semver.alias.semver`
 
 ------------------------------------------------------------------------------
@@ -821,6 +821,26 @@ Rust の string literal 記法を相互変換します。
 >
 	"foo" -> r#"foo"# -> r##"foo"## -> r###"foo"###
 <
+
+MISC									*dial-augends-user*
+-----
+
+`augend.misc.alias` 下に雑多な被加数がまとめて定義されています。
+
+augend.misc.alias.markdown_header~
+
+Markdown のヘッダレベルを増減します。
+>
+	# Header1
+	## Header2
+	###### Header6
+<
+
+NOTE: augend としては珍しく、カーソルが `#` より後ろにある場合でもマッチします。
+ただしその場合、カーソル上またはカーソルの後に他の有効な被加数が存在すればそち
+らが優先されます。確実に markdown_header を増減させたければ、カーソルを行頭に
+移動させてから操作することをお勧めします。
+
 
 USER									*dial-augends-user*
 -----
