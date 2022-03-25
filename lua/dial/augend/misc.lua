@@ -12,7 +12,7 @@ M.alias.markdown_header = user.new{
     ---@return textrange?
     find = function (line, cursor)
         local header_mark_s, header_mark_e = line:find("^#+")
-        if header_mark_s == nil or header_mark_e > 7 then
+        if header_mark_s == nil or header_mark_e >= 7 then
             return nil
         end
         return {from = header_mark_s, to = header_mark_e}
