@@ -11,7 +11,7 @@ If you have configured the settings for previous versions, please refer to [TROU
 
 Extended increment/decrement plugin for [Neovim](https://github.com/neovim/neovim). Written in Lua.
 
-![demo.gif](https://github.com/monaqa/dial.nvim/wiki/fig/dial-demo.gif)
+![demo.gif](https://github.com/monaqa/dial.nvim/wiki/fig/dial-demo-2.gif)
 
 ## Features
 
