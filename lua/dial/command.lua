@@ -60,6 +60,13 @@ function M.select_augend_visual(group_name)
         error(("undefined augend group name: %s"):format(group_name))
     end
 
+    local count = vim.v.count
+    if count ~= 0 then
+        handler:set_count(count)
+    else
+        handler:set_count(1)
+    end
+
     local mode = vim.fn.mode(0)
     ---@type integer
     local _, line1, col1, _ = unpack(vim.fn.getpos("v"))
