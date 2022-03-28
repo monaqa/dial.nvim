@@ -12,7 +12,7 @@
 [Neovim](https://github.com/neovim/neovim) の数値増減機能を拡張する Lua 製プラグイン。
 既存の `<C-a>` や `<C-x>` コマンドを拡張し、数値以外も増減・トグルできるようにします。
 
-![demo.gif](https://github.com/monaqa/dial.nvim/wiki/fig/dial-demo.gif)
+![demo.gif](https://github.com/monaqa/dial.nvim/wiki/fig/dial-demo-2.gif)
 
 ## 特徴
 
