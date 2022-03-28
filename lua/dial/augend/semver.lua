@@ -41,6 +41,12 @@ function AugendSemver:find_stateful(line, cursor)
     if range == nil then
         return
     end
+
+    if cursor == nil then
+        -- always increments patch version in VISUAL mode
+        self.kind = "patch"
+        return range
+    end
     local relcurpos = cursor - range.from + 1
     local text = line:sub(range.from, range.to)
     local iterator = text:gmatch("%d+")
