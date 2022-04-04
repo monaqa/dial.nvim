@@ -20,7 +20,12 @@ Configurations					|dial-config|
   Augends						|dial-augends|
     Number						|dial-augends-number|
     Date						|dial-augends-date|
-    Char						|dial-augends-char|
+    Constant					|dial-augends-constant|
+    Hexcolor					|dial-augends-hexcolor|
+    Semver						|dial-augends-semver|
+    Paren						|dial-augends-paren|
+    Misc						|dial-augends-misc|
+    User						|dial-augends-user|
 Advanced Usage					|dial-advanced-usage|
   Dot Repeating					|dial-dot-repeating|
 Interface						|dial-interface|
