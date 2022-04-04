@@ -808,7 +808,7 @@ Interconverts Rust-style string literals.
 	"foo" -> r#"foo"# -> r##"foo"## -> r###"foo"###
 <
 
-MISC									*dial-augends-user*
+MISC									*dial-augends-misc*
 -----
 
 Miscellaneous augends are defined together under `augend.misc.alias`.
