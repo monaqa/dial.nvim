@@ -20,7 +20,12 @@ Configurations					|dial-config|
   Augends						|dial-augends|
     Number						|dial-augends-number|
     Date						|dial-augends-date|
-    Char						|dial-augends-char|
+    Constant					|dial-augends-constant|
+    Hexcolor					|dial-augends-hexcolor|
+    Semver						|dial-augends-semver|
+    Paren						|dial-augends-paren|
+    Misc						|dial-augends-misc|
+    User						|dial-augends-user|
 Advanced Usage					|dial-advanced-usage|
   Dot Repeating					|dial-dot-repeating|
 Interface						|dial-interface|
@@ -822,7 +827,7 @@ Rust の string literal 記法を相互変換します。
 	"foo" -> r#"foo"# -> r##"foo"## -> r###"foo"###
 <
 
-MISC									*dial-augends-user*
+MISC									*dial-augends-misc*
 -----
 
 `augend.misc.alias` 下に雑多な被加数がまとめて定義されています。
