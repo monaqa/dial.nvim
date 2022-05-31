@@ -1,3 +1,4 @@
+local case = require("dial.augend.case")
 local constant = require("dial.augend.constant")
 local date = require("dial.augend.date")
 local hexcolor = require("dial.augend.hexcolor")
@@ -8,6 +9,7 @@ local paren = require("dial.augend.paren")
 local misc = require("dial.augend.misc")
 
 return {
+    case = case,
     constant = constant,
     date = date,
     hexcolor = hexcolor,
