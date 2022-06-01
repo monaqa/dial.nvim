@@ -93,6 +93,24 @@ M.alias = {
         word = false,
         cyclic = true,
     },
+    de_weekday = M.new{
+        elements = { "Mo", "Di", "Mi", "Do", "Fr", "Sa", "So" },
+        word = true,
+        cyclic = true,
+    },
+    de_weekday_full = M.new{
+        elements = {
+            "Montag",
+            "Dienstag",
+            "Mittwoch",
+            "Donnerstag",
+            "Freitag",
+            "Samstag",
+            "Sonntag"
+        },
+        word = true,
+        cyclic = true,
+    }
 }
 
 return M

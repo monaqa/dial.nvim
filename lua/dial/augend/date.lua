@@ -526,6 +526,116 @@ M.alias["%Y年%-m月%-d日(%ja)"] = M.new{
     end,
 }
 
+M.alias["%d.%m.%Y"] = M.new{
+    pattern = {
+        regex = [[(\d{2})\.(\d{2})\.(\d{4})]],
+        capture = { "%d", "%m", "%Y" },
+    },
+    only_valid = true,
+    format = "%d.%m.%Y",
+
+    judge_datekind = function (_, curpos)
+        if curpos == nil or curpos <= 1 then
+            return "day"
+        elseif curpos <= 5 then
+            return "month"
+        else
+            return "year"
+        end
+    end,
+
+    calc_curpos = function (_, kind)
+        if kind == "day" then
+            return 2
+        elseif kind == "month" then
+            return 5
+        else
+            return 10
+        end
+    end,
+}
+
+M.alias["%d.%m.%y"] = M.new{
+    pattern = {
+        regex = [[(\d{2})\.(\d{2})\.(\d{2})]],
+        capture = { "%d", "%m", "%y" },
+    },
+    only_valid = true,
+    format = "%d.%m.%y",
+
+    judge_datekind = function (_, curpos)
+        if curpos == nil or curpos <= 1 then
+            return "day"
+        elseif curpos <= 5 then
+            return "month"
+        else
+            return "year"
+        end
+    end,
+
+    calc_curpos = function (_, kind)
+        if kind == "day" then
+            return 2
+        elseif kind == "month" then
+            return 5
+        else
+            return 8
+        end
+    end,
+}
+
+M.alias["%d.%m."] = M.new{
+    pattern = {
+        regex = [[(\d{2})\.(\d{2})\.]],
+        capture = { "%d", "%m" },
+    },
+    only_valid = true,
+    format = "%d.%m.",
+
+    judge_datekind = function (_, curpos)
+        if curpos == nil or curpos <= 2 then
+            return "day"
+        else
+            return "month"
+        end
+    end,
+
+    calc_curpos = function (_, kind)
+        if kind == "day" then
+            return 2
+        else
+            return 5
+        end
+    end,
+}
+
+M.alias["%-d.%-m."] = M.new{
+    pattern = {
+        regex = [[(\d{1,2})\.(\d{1,2})\.]],
+        capture = { "%d", "%m" },
+    },
+    only_valid = true,
+    format = "%-d.%-m.",
+
+    judge_datekind = function (text, curpos)
+        local idx_dot = text:find(".")
+        if curpos == nil or curpos <= 0 or curpos >= idx_dot then
+            return "month"
+        else
+            return "day"
+        end
+    end,
+
+    calc_curpos = function (text, kind)
+        local idx_dot = text:find(".")
+        if kind == "day" then
+            return idx_dot - 1
+        else
+            return #text
+        end
+    end,
+}
+
 M.alias["%H:%M:%S"] = M.new{
     pattern = {
         regex = [[(\d{2}):(\d{2}):(\d{2})]],
