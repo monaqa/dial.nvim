@@ -535,7 +535,7 @@ M.alias["%d.%m.%Y"] = M.new{
     format = "%d.%m.%Y",
 
     judge_datekind = function (_, curpos)
-        if curpos == nil or curpos <= 1 then
+        if curpos == nil or curpos <= 2 then
             return "day"
         elseif curpos <= 5 then
             return "month"
@@ -564,7 +564,7 @@ M.alias["%d.%m.%y"] = M.new{
     format = "%d.%m.%y",
 
     judge_datekind = function (_, curpos)
-        if curpos == nil or curpos <= 1 then
+        if curpos == nil or curpos <= 2 then
             return "day"
         elseif curpos <= 5 then
             return "month"
