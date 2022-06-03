@@ -618,7 +618,7 @@ M.alias["%-d.%-m."] = M.new{
     format = "%-d.%-m.",
 
     judge_datekind = function (text, curpos)
-        local idx_dot = text:find(".")
+        local idx_dot = text:find(".", 1, true)
         if curpos == nil or curpos <= 0 or curpos >= idx_dot then
             return "month"
         else
@@ -627,7 +627,7 @@ M.alias["%-d.%-m."] = M.new{
     end,
 
     calc_curpos = function (text, kind)
-        local idx_dot = text:find(".")
+        local idx_dot = text:find(".", 1, true)
         if kind == "day" then
             return idx_dot - 1
         else
