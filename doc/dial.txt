@@ -528,6 +528,46 @@ Matches dates with the following format:
 <
 It matches non-existent dates and corrects them to the existent ones.
 
+augend.date.alias["%d.%m.%Y"]~
+
+Matches dates with the following format:
+>
+	31.12.1970
+	01.01.2021
+	13.02.2021
+<
+It matches non-existent dates and corrects them to the existent ones.
+
+augend.date.alias["%d.%m.%y"]~
+
+Matches dates with the following format:
+>
+	31.12.70
+	01.01.21
+	13.02.21
+<
+It matches non-existent dates and corrects them to the existent ones.
+
+augend.date.alias["%d.%m."]~
+
+Matches dates with the following format:
+>
+	31.12.
+	01.01.
+	13.02.
+<
+It matches non-existent dates and corrects them to the existent ones.
+
+augend.date.alias["%-d.%-m."]~
+
+Matches dates with the following format:
+>
+	31.12.
+	1.1.
+	13.2.
+<
+It matches non-existent dates and corrects them to the existent ones.
+
 augend.date.alias["%Y年%-m月%-d日"]~
 
 Matches dates with the following format:
@@ -955,7 +995,7 @@ MAPPING									*dial-mapping*
 	left-hand.
 
 	In linweise VISUAL mode (|V|), this command works similarly in linewise
-	VISUAL mode, but the target is narrowed down to the selection.  
+	VISUAL mode, but the target is narrowed down to the selection.
 
 ["x]<Plug>(dial-decrement)				*<Plug>(dial-decrement)*
 	An alternative to the existing CTRL-X command in NORMAL mode.
