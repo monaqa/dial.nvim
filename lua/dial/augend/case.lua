@@ -209,21 +209,18 @@ end
 ---@return textrange?
 function AugendCase:find(line, cursor)
     ---@type textrange?
-    local largest_range = nil
-    ---@type integer?
-    local largest_span_length = nil
+    local most_front_range = nil
 
     for _, caseptn in ipairs(self.patterns) do
         ---@type textrange
         local range = common.find_pattern_regex(caseptn.word_regex)(line, cursor)
         if range ~= nil  then
-            if largest_span_length == nil or range.to - range.from > largest_span_length then
-                largest_range = range
-                largest_span_length = range.to - range.from
+            if most_front_range == nil or range.from < most_front_range.from then
+                most_front_range = range
             end
         end
     end
-    return largest_range
+    return most_front_range
 end
 
 ---@param text string
