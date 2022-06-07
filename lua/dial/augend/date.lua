@@ -619,10 +619,10 @@ M.alias["%-d.%-m."] = M.new{
 
     judge_datekind = function (text, curpos)
         local idx_dot = text:find(".", 1, true)
-        if curpos == nil or curpos <= 0 or curpos >= idx_dot then
-            return "month"
-        else
+        if curpos == nil or curpos < idx_dot then
             return "day"
+        else
+            return "month"
         end
     end,
 
