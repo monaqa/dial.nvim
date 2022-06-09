@@ -278,10 +278,10 @@ require("dial.config").augends:register_group{
 |`augend.date.alias["%m/%d"]`              |Date in the format `%m/%d` (`0` padding)         |`01/04`, `02/28`, `12/25`, ...      |
 |`augend.date.alias["%-m/%-d"]`            |Date in the format `%-m/%-d` (no paddings)       |`1/4`, `2/28`, `12/25`, ...         |
 |`augend.date.alias["%Y-%m-%d"]`           |Date in the format `%Y-%m-%d` (`0` padding)      |`2021-01-04`, ...                   |
-|`augend.date.alias["%d.%m.%Y"]`           |Date in the format `%d.%m.%Y` (`0` padding)      |`01/23/2021`, ...                   |
-|`augend.date.alias["%d.%m.%y"]`           |Date in the format `%d.%m.%y` (`0` padding)      |`23/01/21`, ...                     |
-|`augend.date.alias["%d.%m."]`             |Date in the format `%d.%m.` (`0` padding)        |`01/04`, `02/28`, `12/25`, ...      |
-|`augend.date.alias["%-d/%-m."]`           |Date in the format `%-d/%-m.` (no paddings)      |`1/4`, `2/28`, `12/25`, ...         |
+|`augend.date.alias["%d.%m.%Y"]`           |Date in the format `%d.%m.%Y` (`0` padding)      |`23.01.2021`, ...                   |
+|`augend.date.alias["%d.%m.%y"]`           |Date in the format `%d.%m.%y` (`0` padding)      |`23.01.21`, ...                     |
+|`augend.date.alias["%d.%m."]`             |Date in the format `%d.%m.` (`0` padding)        |`04.01.`, `28.02.`, `25.12.`, ...   |
+|`augend.date.alias["%-d.%-m."]`           |Date in the format `%-d.%-m.` (no paddings)      |`4.1.`, `28.2.`, `25.12.`, ...      |
 |`augend.date.alias["%Y年%-m月%-d日"]`     |Date in the format `%Y年%-m月%-d日` (no paddings)|`2021年1月4日`, ...                 |
 |`augend.date.alias["%Y年%-m月%-d日(%ja)"]`|Date in the format `%Y年%-m月%-d日(%ja)`         |`2021年1月4日(月)`, ...             |
 |`augend.date.alias["%H:%M:%S"]`           |Time in the format `%H:%M:%S`                    |`14:30:00`, ...                     |
