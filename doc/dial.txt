@@ -22,6 +22,7 @@ Configurations					|dial-config|
     Number						|dial-augends-number|
     Date						|dial-augends-date|
     Constant					|dial-augends-constant|
+    Case						|dial-augends-case|
     Hexcolor					|dial-augends-hexcolor|
     Semver						|dial-augends-semver|
     Paren						|dial-augends-paren|
@@ -670,6 +671,44 @@ That is, incrementing `z` will not change the value to `z`, and decrementing
 augend.constant.alias.Alpha~
 
 Matches a single lowercase alphabet, such as `a` or `z`.
+
+CASE									*dial-augends-case*
+-----
+
+This rule changes identifier (variable, function, and others) name conventions
+in programming languages such as "camelCase" and "snake_case". You can use
+this rule with `augend.case.new { ...opts }`.
+>
+	require("dial.config").augends:register_group{
+	  default = {
+		-- uppercase hex number (0x1A1A, 0xEEFE, etc.)
+		augend.case.new{
+		  types = {"camelCase", "snake_case"},
+		  cyclic = true,
+		},
+	  },
+	}
+<
+
+The argument table of `augend.case.new` can take the following keys:
+		patterns (string[], required)
+				an array of naming conventions you want to corss-convert.
+				Select from the following:
+					- `camelCase`
+					- `snake_case`
+					- `kebab-case`
+					- `PascalCase`
+					- `SCREAMING_SNAKE_CASE`
+		cyclic (boolean, default: true)
+				If true, the augends circulates the patterns  for
+				increment/decrement operations.
+
+NOTE: Currently, this augend does NOT recognize identifiers that consist of
+only one word. For example, it can recognize `dial_nvim` and `dialNvim`,
+but not `dial`. This is because it is impossible to determine whether an
+identifier `dial` is camelCase or snake_case based on the identifier `dial`
+alone. The same applies to other naming conventions, such as PascalCase or
+SCREAMING_SNAKE_CASE, which do not recognize `Dial` or `DIAL`.
 
 HEXCOLOR								*dial-augends-hexcolor*
 --------

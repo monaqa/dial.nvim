@@ -21,6 +21,7 @@ Configurations					|dial-config|
     Number						|dial-augends-number|
     Date						|dial-augends-date|
     Constant					|dial-augends-constant|
+    Case						|dial-augends-case|
     Hexcolor					|dial-augends-hexcolor|
     Semver						|dial-augends-semver|
     Paren						|dial-augends-paren|
@@ -57,6 +58,7 @@ FEATURES								*dial-features*
 	  * `&&` ⇄ `||`
 	  * `a` ⇄ `b` ⇄ ... ⇄ `z`
 	  * `日` ⇄ `月` ⇄ ... ⇄ `土` ⇄ `日` ⇄ ...
+	* 識別子の命名規則 (camelCase, snake_case, etc.)
 	* Hex color
 	* SemVer
 
@@ -677,6 +679,41 @@ augend.constant.alias.alpha~
 augend.constant.alias.Alpha~
 
 `A` や `Z` など、1つの大文字アルファベットにマッチします。
+
+CASE									*dial-augends-case*
+-----
+
+camelCase や snake_case といったプログラミング言語における変数名や関数名の規則
+を変更します。 `augend.case.new { ...opts }` で使用できます。
+
+>
+	require("dial.config").augends:register_group{
+	  default = {
+		-- uppercase hex number (0x1A1A, 0xEEFE, etc.)
+		augend.case.new{
+		  types = {"camelCase", "snake_case"},
+		  cyclic = true,
+		},
+	  },
+	}
+<
+
+以下のパラメータを有します。
+		patterns (string[], 必須)
+				相互変換したい命名規則のリスト。以下から選択:
+					- `camelCase`
+					- `snake_case`
+					- `kebab-case`
+					- `PascalCase`
+					- `SCREAMING_SNAKE_CASE`
+		cyclic (boolean, default: true)
+				true のとき、増減操作を行う際に巡回します。
+
+NOTE: 現時点で、1つの単語のみから構成される識別子には反応しません。たとえば
+`dial_nvim` や `dialNvim` には反応しますが、 `dial` という識別子には反応しませ
+ん。これは `dial` という識別子だけを見て、それが camelCase なのか snake_case
+なのか判別することが不可能だからです。これは PascalCase など他の規則を選んだ場
+合も同様であり、 `Dial` や `DIAL` には反応しません。
 
 HEXCOLOR								*dial-augends-hexcolor*
 --------
