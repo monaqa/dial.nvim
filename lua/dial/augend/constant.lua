@@ -1,7 +1,7 @@
 local util = require"dial.util"
 local common = require"dial.augend.common"
 
----@alias AugendConstantConfig { elements: string[], cyclic: boolean, pattern_regexp: string }
+---@alias AugendConstantConfig { elements: string[], cyclic: boolean, pattern_regexp: string, preserve_case: boolean }
 
 ---@class AugendConstant
 ---@implement Augend
@@ -10,22 +10,50 @@ local AugendConstant = {}
 
 local M = {}
 
----@param config { elements: string[], word?: boolean, cyclic?: boolean, pattern_regexp?: string }
----@return Augend
+---@param word string
+---@return string
+local function to_first_upper(word)
+    local first_letter = word:sub(1, 1)
+    local rest = word:sub(2)
+    return first_letter:upper() .. rest:lower()
+end
+
+---@param word string
+---@return "all-lower" | "all-upper" | "first-upper" | nil
+local function preserve_case(word)
+    if word:lower() == word then
+        return "all-lower"
+    end
+    if word:upper() == word then
+        return "all-upper"
+    end
+    if to_first_upper(word) == word then
+        return "first-upper"
+    end
+    return nil
+end
+
+---@param config { elements: string[], word?: boolean, cyclic?: boolean, pattern_regexp?: string, preserve_case?: boolean }
+---@return AugendConstant
 function M.new(config)
     util.validate_list("config.elements", config.elements, "string")
 
     vim.validate{
         word = {config.word, "boolean", true},
         cyclic = {config.cyclic, "boolean", true},
-        pattern_regexp = {config.pattern_regexp, "string", true}
+        pattern_regexp = {config.pattern_regexp, "string", true},
+        preserve_case = {config.preserve_case, "boolean", true}
     }
+    if config.preserve_case == nil then
+        config.preserve_case = false
+    end
     if config.pattern_regexp == nil then
+        local case_sensitive_flag = util.if_expr(config.preserve_case, [[\c]], [[\C]])
         local word = util.unwrap_or(config.word, true)
         if word then
-            config.pattern_regexp = [[\C\V\<\(%s\)\>]]
+            config.pattern_regexp = case_sensitive_flag .. [[\V\<\(%s\)\>]]
         else
-            config.pattern_regexp = [[\C\V\(%s\)]]
+            config.pattern_regexp = case_sensitive_flag .. [[\V\(%s\)]]
         end
     end
     if config.cyclic == nil then
@@ -56,8 +84,20 @@ function AugendConstant:add(text, addend, cursor)
     local elements = self.config.elements
     local n_patterns = #elements
     local n = 1
+
+    local query
+    if self.config.preserve_case then
+        query = function(elem)
+            return text:lower() == elem:lower()
+        end
+    else
+        query = function(elem)
+            return text == elem
+        end
+    end
+
     for i, elem in ipairs(elements) do
-        if text == elem then
+        if query(elem) then
             n = i
         end
     end
@@ -68,7 +108,22 @@ function AugendConstant:add(text, addend, cursor)
         if n < 1 then n = 1 end
         if n > n_patterns then n = n_patterns end
     end
-    text = elements[n]
+    local new_text = elements[n]
+
+    local case = nil
+    if self.config.preserve_case then
+        case = preserve_case(text)
+    end
+    if case == "all-lower" then
+        text = new_text:lower()
+    elseif case == "all-upper" then
+        text = new_text:upper()
+    elseif case == "first-upper" then
+        text = to_first_upper(new_text)
+    else
+        text = new_text
+    end
+
     cursor = #text
     return { text = text, cursor = cursor }
 end
