@@ -649,6 +649,32 @@ Predefined sequence of strings. You can use this rule with
 	}
 <
 
+The argument table of `augend.constant.new` can take the following keys:
+		elements (string[], required)
+				An array of strings you want to cross-convert.
+		word (boolean, default: true)
+				If true, the augend matches only if the string matching
+				elements is on a word boundary.
+		cyclic (boolean, default: true)
+				If true, the augend circulates the patterns for
+				increment/decrement operations.
+		preserve_case (boolean, default: false)
+				If true, the augend attempts to preserve the pattern of
+				uppercase/lowercase letters for conversion.
+		pattern_regexp (string, default: `\C\V\<\(%s\)\>`)
+				A regular expression used in search. `%s` represents the string
+				specified in `elements.`
+
+NOTE: Set `cyclic` to false when cross-converting strings consisting of
+symbols, such as `&&` and `||`.
+NOTE: When `preserve_case` is true, it matches the string specified for
+elements, ignoring case. The case pattern is preserved only if the string
+matches one of the following three patterns:
+* All lowercase (e.g.: `true <-> false`)
+* All uppercase (g.g.: `TRUE <-> FALSE`)
+* Only the first letter is uppercase (e.g.: `True <-> False`)
+Otherwise the string is converted to lowercase.
+
 augend.constant.alias.ja_weekday~
 
 Matches Japanese day names:
@@ -760,7 +786,7 @@ this rule with `augend.case.new { ...opts }`.
 
 The argument table of `augend.case.new` can take the following keys:
 		patterns (string[], required)
-				an array of naming conventions you want to corss-convert.
+				An array of naming conventions you want to corss-convert.
 				Select from the following:
 					- `camelCase`
 					- `snake_case`
@@ -768,7 +794,7 @@ The argument table of `augend.case.new` can take the following keys:
 					- `PascalCase`
 					- `SCREAMING_SNAKE_CASE`
 		cyclic (boolean, default: true)
-				If true, the augends circulates the patterns  for
+				If true, the augend circulates the patterns for
 				increment/decrement operations.
 
 NOTE: Currently, this augend does NOT recognize identifiers that consist of
