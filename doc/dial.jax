@@ -618,6 +618,31 @@ CONSTANT								*dial-augends-constant*
 	}
 <
 
+以下のパラメータを有します。
+		elements (string[], 必須)
+				相互変換したい文字列のリスト。
+		word (boolean, default: true)
+				true のとき、elements に一致する文字列が単語の境界にあるときの
+				みマッチします。
+		cyclic (boolean, default: true)
+				true のとき、増減操作を行う際に巡回します。
+		preserve_case (boolean, default: false)
+				true のとき、アルファベットの大文字・小文字のパターンを保存し
+				ての変換を試みます。
+		pattern_regexp (string, default: `\C\V\<\(%s\)\>`)
+				文字列検索を行う際の正規表現。 elements に指定した文字列を
+				`%s` に指定します。
+
+注意: `&&` と `||` のように、記号からなる文字列を相互変換するときは `cyclic`
+を false にしてください。
+注意: `preserve_case` が true のときは、大文字・小文字を無視して elements に
+指定した文字列にマッチします。このとき、文字列が以下の3パターンのいずれかに該
+当する場合に限り、大文字・小文字のパターンを保存して文字列を切り替えます。
+* 全て小文字の場合（例: `true <-> false`）
+* 全て大文字の場合（例: `TRUE <-> FALSE`）
+* 先頭のみ大文字の場合（例: `True <-> False`）
+それ以外のときは全て小文字に変換します。
+
 augend.constant.alias.ja_weekday~
 
 日本語の曜日名にマッチします。
