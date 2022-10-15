@@ -1,8 +1,8 @@
 ---Neovim とのインターフェースを司る。
 ---Neovim のバッファの中身を弄ったり、変数を読み込んだりする。
-local config = require("dial.config")
+local config = require "dial.config"
 local handler = require("dial.handle").new()
-local util = require("dial.util")
+local util = require "dial.util"
 
 local M = {}
 
@@ -17,9 +17,9 @@ function M.expand_augend(augend)
 end
 
 local function is_augend(obj)
-    vim.validate{
-        find = {obj.find, "function"},
-        add = {obj.add, "function"}
+    vim.validate {
+        find = { obj.find, "function" },
+        add = { obj.add, "function" },
     }
 end
 
@@ -42,8 +42,8 @@ function M.select_augend_normal(group_name)
     else
         handler:set_count(1)
     end
-    local col = vim.fn.col(".")
-    local line = vim.fn.getline(".")
+    local col = vim.fn.col "."
+    local line = vim.fn.getline "."
     handler:select_augend(line, col, augends)
 end
 
@@ -69,9 +69,9 @@ function M.select_augend_visual(group_name)
 
     local mode = vim.fn.mode(0)
     ---@type integer
-    local _, line1, col1, _ = unpack(vim.fn.getpos("v"))
+    local _, line1, col1, _ = unpack(vim.fn.getpos "v")
     ---@type integer
-    local _, line2, col2, _ = unpack(vim.fn.getpos("."))
+    local _, line2, col2, _ = unpack(vim.fn.getpos ".")
 
     if mode == "V" then
         -- line-wise visual mode
@@ -83,7 +83,6 @@ function M.select_augend_visual(group_name)
         end
 
         handler:select_augend_visual(lines, nil, augends)
-
     elseif mode == VISUAL_BLOCK then
         -- block-wise visual mode
         local line_min = math.min(line1, line2)
@@ -97,7 +96,6 @@ function M.select_augend_visual(group_name)
         end
 
         handler:select_augend_visual(lines, nil, augends)
-
     else
         -- char-wise visual mode
         local line_min = math.min(line1, line2)
@@ -111,7 +109,6 @@ function M.select_augend_visual(group_name)
             text = text:sub(col_min)
         end
         handler:select_augend(text, nil, augends)
-
     end
 end
 
@@ -122,9 +119,9 @@ end
 ---operator が呼ばれたときに走る処理。
 ---@param direction direction
 function M.operator_normal(direction)
-    local col = vim.fn.col(".")
-    local line_num = vim.fn.line(".")
-    local line = vim.fn.getline(".")
+    local col = vim.fn.col "."
+    local line_num = vim.fn.line "."
+    local line = vim.fn.getline "."
 
     local result = handler:operate(line, col, direction)
 
@@ -132,7 +129,7 @@ function M.operator_normal(direction)
         vim.fn.setline(".", result.line)
     end
     if result.cursor ~= nil then
-        vim.fn.cursor({line_num, result.cursor})
+        vim.fn.cursor { line_num, result.cursor }
     end
 end
 
@@ -141,8 +138,8 @@ end
 ---@param stairlike boolean
 function M.operator_visual(direction, stairlike)
     local mode = vim.fn.visualmode(0)
-    local _, line1, col1, _ = unpack(vim.fn.getpos("'["))
-    local _, line2, col2, _ = unpack(vim.fn.getpos("']"))
+    local _, line1, col1, _ = unpack(vim.fn.getpos "'[")
+    local _, line2, col2, _ = unpack(vim.fn.getpos "']")
     local tier = 1
 
     ---@param lnum integer
@@ -150,7 +147,7 @@ function M.operator_visual(direction, stairlike)
     local function operate_line(lnum, range)
         local line = vim.fn.getline(lnum)
         local result = handler:operate_visual(line, range, direction, tier)
-        if (result.line ~= nil) then
+        if result.line ~= nil then
             vim.fn.setline(lnum, result.line)
             if stairlike then
                 tier = tier + 1
@@ -165,24 +162,24 @@ function M.operator_visual(direction, stairlike)
         local col_start = util.if_expr(line1 < line2, col1, col2)
         local col_end = util.if_expr(line1 < line2, col2, col1)
         if line_start == line_end then
-            operate_line(line_start, {from = math.min(col1, col2), to = math.max(col1, col2)})
+            operate_line(line_start, { from = math.min(col1, col2), to = math.max(col1, col2) })
         else
             local lnum = line_start
-            operate_line(lnum, {from = col_start})
+            operate_line(lnum, { from = col_start })
             for idx = line_start + 1, line_end - 1, 1 do
-                operate_line(idx, {from = 1})
+                operate_line(idx, { from = 1 })
             end
-            operate_line(line_end, {from = 1, to = col_end})
+            operate_line(line_end, { from = 1, to = col_end })
         end
     elseif mode == "V" then
         for lnum = line_start, line_end, 1 do
-            operate_line(lnum, {from = 1})
+            operate_line(lnum, { from = 1 })
         end
     else
         local col_start = util.if_expr(col1 < col2, col1, col2)
         local col_end = util.if_expr(col1 < col2, col2, col1)
         for lnum = line_start, line_end, 1 do
-            operate_line(lnum, {from = col_start, to = col_end})
+            operate_line(lnum, { from = col_start, to = col_end })
         end
     end
 end
@@ -195,8 +192,8 @@ function M.textobj()
     if count ~= 0 then
         handler:set_count(count)
     end
-    local col = vim.fn.col(".")
-    local line = vim.fn.getline(".")
+    local col = vim.fn.col "."
+    local line = vim.fn.getline "."
 
     handler:find_text_range(line, col)
 end
@@ -226,13 +223,13 @@ function M.command(direction, line_range, groups)
     local function operate_line(lnum, range)
         local line = vim.fn.getline(lnum)
         local result = handler:operate_visual(line, range, direction, 1)
-        if (result.line ~= nil) then
+        if result.line ~= nil then
             vim.fn.setline(lnum, result.line)
         end
     end
 
     for lnum = line_min, line_max, 1 do
-        operate_line(lnum, {from = 1})
+        operate_line(lnum, { from = 1 })
     end
 end
 

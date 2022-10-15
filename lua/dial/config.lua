@@ -1,5 +1,5 @@
-local augend = require("dial.augend")
-local util   = require("dial.util")
+local augend = require "dial.augend"
+local util = require "dial.util"
 local M = {}
 
 ---@class augends
@@ -24,7 +24,6 @@ function M.augends:register_group(tbl)
     -- TODO: validate augends
 
     for name, augends in pairs(tbl) do
-
         local nil_keys = util.index_with_nil_value(augends)
 
         if #nil_keys ~= 0 then

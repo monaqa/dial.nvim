@@ -24,7 +24,7 @@
 ---@field neg_end_pos integer
 local Score = {}
 
-local util = require"dial.util"
+local util = require "dial.util"
 
 ---constructor
 ---@param cursor_loc integer
@@ -32,7 +32,10 @@ local util = require"dial.util"
 ---@param neg_end_pos integer
 ---@return Score
 function Score.new(cursor_loc, start_pos, neg_end_pos)
-    return setmetatable({cursor_loc = cursor_loc, start_pos = start_pos, neg_end_pos = neg_end_pos}, {__index = Score})
+    return setmetatable(
+        { cursor_loc = cursor_loc, start_pos = start_pos, neg_end_pos = neg_end_pos },
+        { __index = Score }
+    )
 end
 
 ---スコアを計算する。
@@ -49,7 +52,7 @@ local function calc_score(s, e, cursor)
     else
         cursor_loc = 0
     end
-    return {cursor_loc = cursor_loc, start_pos = s, neg_end_pos = -e}
+    return { cursor_loc = cursor_loc, start_pos = s, neg_end_pos = -e }
 end
 
 ---カーソルと範囲からスコアを生成する。
@@ -59,7 +62,7 @@ end
 ---@return Score
 function Score.from_cursor(s, e, cursor)
     local tbl = calc_score(s, e, cursor)
-    return setmetatable(tbl, {__index = Score})
+    return setmetatable(tbl, { __index = Score })
 end
 
 ---スコアを比較する。
@@ -93,10 +96,7 @@ end
 local Handler = {}
 
 function Handler.new()
-    return setmetatable(
-        {count = 1, range = nil, active_augend = nil},
-        {__index = Handler}
-    )
+    return setmetatable({ count = 1, range = nil, active_augend = nil }, { __index = Handler })
 end
 
 ---addend の値を取得する。
@@ -121,20 +121,20 @@ end
 ---@param cursor? integer
 ---@param augends Augend[]
 function Handler:select_augend(line, cursor, augends)
-    local interim_augend = nil;
-    local interim_score = Score.new(3, 0, 0)  -- 最も優先度の低いスコア
+    local interim_augend = nil
+    local interim_score = Score.new(3, 0, 0) -- 最も優先度の低いスコア
 
     for _, augend in ipairs(augends) do
         (function()
             ---@type textrange?
-            local range = nil;
-            if (augend.find_stateful == nil) then
+            local range = nil
+            if augend.find_stateful == nil then
                 range = augend:find(line, cursor)
             else
                 range = augend:find_stateful(line, cursor)
             end
             if range == nil then
-                return;
+                return
             end
             local score = Score.from_cursor(range.from, range.to, cursor)
             if score:cmp(interim_score) then
@@ -151,21 +151,21 @@ end
 ---@param cursor? integer
 ---@param augends Augend[]
 function Handler:select_augend_visual(lines, cursor, augends)
-    local interim_augend = nil;
-    local interim_score = Score.new(3, 0, 0)  -- 最も優先度の低いスコア
+    local interim_augend = nil
+    local interim_score = Score.new(3, 0, 0) -- 最も優先度の低いスコア
 
     for _, line in ipairs(lines) do
         for _, augend in ipairs(augends) do
             (function()
                 ---@type textrange?
-                local range = nil;
-                if (augend.find_stateful == nil) then
+                local range = nil
+                if augend.find_stateful == nil then
                     range = augend:find(line, cursor)
                 else
                     range = augend:find_stateful(line, cursor)
                 end
                 if range == nil then
-                    return;  -- equivalent to break (of nested for block)
+                    return -- equivalent to break (of nested for block)
                 end
                 local score = Score.from_cursor(range.from, range.to, cursor)
                 if score:cmp(interim_score) then
@@ -179,7 +179,6 @@ function Handler:select_augend_visual(lines, cursor, augends)
             return
         end
     end
-
 end
 
 ---comment
@@ -188,7 +187,7 @@ end
 ---@param direction direction
 ---@return {line?: string, cursor?: integer}
 function Handler:operate(line, cursor, direction)
-    if (self.range == nil or self.active_augend == nil) then
+    if self.range == nil or self.active_augend == nil then
         return {}
     end
 
@@ -205,7 +204,7 @@ function Handler:operate(line, cursor, direction)
         new_cursor = self.range.from - 1 + add_result.cursor
     end
 
-    return {line = new_line, cursor = new_cursor}
+    return { line = new_line, cursor = new_cursor }
 end
 
 ---comment
@@ -233,7 +232,7 @@ function Handler:operate_visual(line, selected_range, direction, tier)
     if add_result.text ~= nil then
         newline = line:sub(1, from - 1) .. add_result.text .. line:sub(to + 1)
     end
-    return {line = newline}
+    return { line = newline }
 end
 
 ---text object が call されたとき、（副作用を伴わずに）現在 active な augend の対象範囲を range に設定する。

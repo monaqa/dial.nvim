@@ -1,5 +1,5 @@
-local util = require"dial.util"
-local common = require"dial.augend.common"
+local util = require "dial.util"
+local common = require "dial.augend.common"
 
 ---@alias AugendUserConfig { find: findf, add: addf }
 
@@ -11,12 +11,12 @@ local AugendUser = {}
 ---@param config AugendUserConfig
 ---@return Augend
 function AugendUser.new(config)
-    vim.validate{
-        find = {config.find, "function"},
-        add = {config.add, "function"},
+    vim.validate {
+        find = { config.find, "function" },
+        add = { config.add, "function" },
     }
 
-    return setmetatable({config = config}, {__index = AugendUser})
+    return setmetatable({ config = config }, { __index = AugendUser })
 end
 
 ---@param line string

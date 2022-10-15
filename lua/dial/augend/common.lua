@@ -1,6 +1,6 @@
 -- augend で共通して用いられる関数。
 
-local util = require("dial.util")
+local util = require "dial.util"
 
 local M = {}
 
@@ -19,7 +19,7 @@ function M.find_pattern(ptn)
                 -- 検索結果があったら
                 if cursor == nil or cursor <= e then
                     -- cursor が終了文字より後ろにあったら終了
-                    return {from = s, to = e}
+                    return { from = s, to = e }
                 else
                     -- 終了文字の後ろから探し始める
                     idx_start = e + 1
@@ -44,18 +44,16 @@ function M.find_pattern_regex(ptn)
     local function f(line, cursor)
         local idx_start = 1
         while idx_start <= #line do
-
             local s, e = vim.regex(ptn):match_str(line:sub(idx_start))
 
             if s then
-
-                s = s + idx_start      -- 上で得られた s は相対位置なので
-                e = e + idx_start - 1  -- 上で得られた s は相対位置なので
+                s = s + idx_start -- 上で得られた s は相対位置なので
+                e = e + idx_start - 1 -- 上で得られた s は相対位置なので
 
                 -- 検索結果があったら
                 if cursor == nil or cursor <= e then
                     -- cursor が終了文字より後ろにあったら終了
-                    return {from = s, to = e}
+                    return { from = s, to = e }
                 else
                     -- 終了文字の後ろから探し始める
                     idx_start = e + 1
@@ -69,6 +67,5 @@ function M.find_pattern_regex(ptn)
     end
     return f
 end
-
 
 return M

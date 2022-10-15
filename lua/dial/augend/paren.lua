@@ -1,5 +1,5 @@
-local util = require"dial.util"
-local common = require"dial.augend.common"
+local util = require "dial.util"
+local common = require "dial.augend.common"
 
 ---@class AugendParen
 ---@implement Augend
@@ -50,8 +50,7 @@ local function find_nested_paren(line, open, close, nested, cursor_idx, escape_c
         -- idx を増やしつつ走査。
         -- 括弧の open, close または escape char に当たったら特別処理を入れる。
         -- open と close が同じパターン列の場合は close を優先。
-        local from, to = (function ()
-
+        local from, to = (function()
             -- escape 文字: escaped のトグルを行う
             if escape_char ~= nil and precedes(line, escape_char, idx) then
                 -- util.dbg"escape char detected!"
@@ -119,7 +118,7 @@ end
 ---@return Augend
 function M.new(config)
     if config.patterns == nil then
-        config.patterns = { {[[']], [[']]}, {[["]], [["]]} }
+        config.patterns = { { [[']], [[']] }, { [["]], [["]] } }
     end
     if config.nested == nil then
         config.nested = true
@@ -127,12 +126,12 @@ function M.new(config)
     if config.cyclic == nil then
         config.cyclic = true
     end
-    vim.validate{
-        cyclic = { config.cyclic, "boolean" }
+    vim.validate {
+        cyclic = { config.cyclic, "boolean" },
     }
     util.validate_list("patterns", config.patterns, "table")
 
-    return setmetatable({ config = config, }, {__index = AugendParen})
+    return setmetatable({ config = config }, { __index = AugendParen })
 end
 
 ---@param line string
@@ -183,14 +182,18 @@ function AugendParen:add(text, addend, cursor)
     end
     local old_paren_pair = self.config.patterns[n]
     -- util.dbg{old_paren_pair = old_paren_pair, text = text}
-    local text_inner = text:sub(#(old_paren_pair[1]) + 1, #text - #(old_paren_pair[2]))
+    local text_inner = text:sub(#old_paren_pair[1] + 1, #text - #old_paren_pair[2])
 
     if self.config.cyclic then
         n = (n + addend - 1) % n_patterns + 1
     else
         n = n + addend
-        if n < 1 then n = 1 end
-        if n > n_patterns then n = n_patterns end
+        if n < 1 then
+            n = 1
+        end
+        if n > n_patterns then
+            n = n_patterns
+        end
     end
     local new_paren_pair = self.config.patterns[n]
     local new_paren_open = new_paren_pair[1]
@@ -202,38 +205,38 @@ function AugendParen:add(text, addend, cursor)
 end
 
 M.alias = {
-    quote = M.new{
-        patterns = { {"'", "'"}, {'"', '"'} },
+    quote = M.new {
+        patterns = { { "'", "'" }, { '"', '"' } },
         nested = false,
         escape_char = [[\]],
         cyclic = true,
     },
-    brackets = M.new{
-        patterns = { {"(", ")"}, {"[", "]"}, {"{", "}"} },
+    brackets = M.new {
+        patterns = { { "(", ")" }, { "[", "]" }, { "{", "}" } },
         nested = true,
         cyclic = true,
     },
-    lua_str_literal = M.new{
+    lua_str_literal = M.new {
         patterns = {
-            {'"', '"'},
-            {"[[", "]]"},
-            {"[=[", "]=]"},
-            {"[==[", "]==]"},
-            {"[===[", "]===]"},
+            { '"', '"' },
+            { "[[", "]]" },
+            { "[=[", "]=]" },
+            { "[==[", "]==]" },
+            { "[===[", "]===]" },
         },
         nested = false,
         cyclic = false,
     },
-    rust_str_literal = M.new{
+    rust_str_literal = M.new {
         patterns = {
-            {'"', '"'},
-            {'r#"', '"#'},
-            {'r##"', '"##'},
-            {'r###"', '"###'},
+            { '"', '"' },
+            { 'r#"', '"#' },
+            { 'r##"', '"##' },
+            { 'r###"', '"###' },
         },
         nested = false,
         cyclic = false,
-    }
+    },
 }
 
 return M

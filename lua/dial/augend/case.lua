@@ -1,5 +1,5 @@
-local common = require"dial.augend.common"
-local util   = require "dial.util"
+local common = require "dial.augend.common"
+local util = require "dial.util"
 
 local M = {}
 
@@ -22,7 +22,7 @@ M.case_patterns["camelCase"] = {
 
     ---@param word string
     ---@return string[] | nil
-    extract = function (word)
+    extract = function(word)
         local subwords = {}
         local ptr = 1
         for i = 1, word:len(), 1 do
@@ -39,12 +39,14 @@ M.case_patterns["camelCase"] = {
             end
         end
         table.insert(subwords, word:sub(ptr, word:len()))
-        return vim.tbl_map(function (s) return s:lower() end, subwords)
+        return vim.tbl_map(function(s)
+            return s:lower()
+        end, subwords)
     end,
 
     ---@param terms string[]
     ---@return string
-    constract = function (terms)
+    constract = function(terms)
         local result = ""
         for index, term in ipairs(terms) do
             if index == 1 then
@@ -55,7 +57,7 @@ M.case_patterns["camelCase"] = {
         end
 
         return result
-    end
+    end,
 }
 
 M.case_patterns["PascalCase"] = {
@@ -63,7 +65,7 @@ M.case_patterns["PascalCase"] = {
 
     ---@param word string
     ---@return string[] | nil
-    extract = function (word)
+    extract = function(word)
         local subwords = {}
         local ptr = 1
         for i = 2, word:len(), 1 do
@@ -76,19 +78,21 @@ M.case_patterns["PascalCase"] = {
             end
         end
         table.insert(subwords, word:sub(ptr, word:len()))
-        return vim.tbl_map(function (s) return s:lower() end, subwords)
+        return vim.tbl_map(function(s)
+            return s:lower()
+        end, subwords)
     end,
 
     ---@param terms string[]
     ---@return string
-    constract = function (terms)
+    constract = function(terms)
         local result = ""
         for _, term in ipairs(terms) do
             result = result .. term:sub(1, 1):upper() .. term:sub(2)
         end
 
         return result
-    end
+    end,
 }
 
 M.case_patterns["snake_case"] = {
@@ -96,7 +100,7 @@ M.case_patterns["snake_case"] = {
 
     ---@param word string
     ---@return string[] | nil
-    extract = function (word)
+    extract = function(word)
         local subwords = {}
         local ptr = 1
         for i = 1, word:len(), 1 do
@@ -112,9 +116,9 @@ M.case_patterns["snake_case"] = {
 
     ---@param terms string[]
     ---@return string
-    constract = function (terms)
+    constract = function(terms)
         return table.concat(terms, "_")
-    end
+    end,
 }
 
 M.case_patterns["kebab-case"] = {
@@ -122,7 +126,7 @@ M.case_patterns["kebab-case"] = {
 
     ---@param word string
     ---@return string[] | nil
-    extract = function (word)
+    extract = function(word)
         local subwords = {}
         local ptr = 1
         for i = 1, word:len(), 1 do
@@ -138,9 +142,9 @@ M.case_patterns["kebab-case"] = {
 
     ---@param terms string[]
     ---@return string
-    constract = function (terms)
+    constract = function(terms)
         return table.concat(terms, "-")
-    end
+    end,
 }
 
 M.case_patterns["SCREAMING_SNAKE_CASE"] = {
@@ -148,7 +152,7 @@ M.case_patterns["SCREAMING_SNAKE_CASE"] = {
 
     ---@param word string
     ---@return string[] | nil
-    extract = function (word)
+    extract = function(word)
         local subwords = {}
         local ptr = 1
         for i = 1, word:len(), 1 do
@@ -159,49 +163,48 @@ M.case_patterns["SCREAMING_SNAKE_CASE"] = {
             end
         end
         table.insert(subwords, word:sub(ptr, word:len()))
-        return vim.tbl_map(function (s) return s:lower() end, subwords)
+        return vim.tbl_map(function(s)
+            return s:lower()
+        end, subwords)
     end,
 
     ---@param terms string[]
     ---@return string
-    constract = function (terms)
+    constract = function(terms)
         return table.concat(terms, "_"):upper()
-    end
+    end,
 }
-
 
 ---@param config { types: casetype[], cyclic?: boolean }
 ---@return Augend
 function M.new(config)
-    vim.validate{
-        cyclic = { config.cyclic, "boolean", true }
+    vim.validate {
+        cyclic = { config.cyclic, "boolean", true },
     }
     if config.cyclic == nil then
         config.cyclic = true
     end
-    util.validate_list("types", config.types, function (val)
-        if (val == "PascalCase"
+    util.validate_list("types", config.types, function(val)
+        if
+            val == "PascalCase"
             or val == "camelCase"
             or val == "snake_case"
             or val == "kebab-case"
             or val == "SCREAMING_SNAKE_CASE"
-            ) then
+        then
             return true
         end
         return false
     end)
-    local patterns = vim.tbl_map(function (type)
+    local patterns = vim.tbl_map(function(type)
         return M.case_patterns[type]
     end, config.types)
 
     -- local query = prefix .. util.if_expr(natural, "", "-?") .. "[" .. radix_to_query_character(radix) .. delimiter .. "]+"
-    return setmetatable(
-    {
+    return setmetatable({
         patterns = patterns,
         config = config,
-    },
-    {__index = AugendCase}
-    )
+    }, { __index = AugendCase })
 end
 
 ---@param line string
@@ -214,7 +217,7 @@ function AugendCase:find(line, cursor)
     for _, caseptn in ipairs(self.patterns) do
         ---@type textrange
         local range = common.find_pattern_regex(caseptn.word_regex)(line, cursor)
-        if range ~= nil  then
+        if range ~= nil then
             if most_front_range == nil or range.from < most_front_range.from then
                 most_front_range = range
             end
@@ -235,7 +238,7 @@ function AugendCase:add(text, addend, cursor)
         local range = common.find_pattern_regex(caseptn.word_regex)(text, 1)
         if range ~= nil then
             index = i
-            break;
+            break
         end
     end
 
@@ -254,7 +257,7 @@ function AugendCase:add(text, addend, cursor)
         end
     end
     if new_index == index then
-        return {cursor = text:len()}
+        return { cursor = text:len() }
     end
     text = self.patterns[new_index].constract(terms)
     return { text = text, cursor = text:len() }

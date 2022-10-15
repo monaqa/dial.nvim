@@ -1,5 +1,5 @@
-local util = require"dial.util"
-local common = require"dial.augend.common"
+local util = require "dial.util"
+local common = require "dial.augend.common"
 
 local function cast_u8(n)
     if n <= 0 then
@@ -25,25 +25,25 @@ local M = {}
 ---@param config { case: colorcase }
 ---@return Augend
 function M.new(config)
-    vim.validate{
-        case = {config.case, "string", true},
+    vim.validate {
+        case = { config.case, "string", true },
     }
 
-    return setmetatable({ config = config, kind = "all" }, {__index = AugendHexColor})
+    return setmetatable({ config = config, kind = "all" }, { __index = AugendHexColor })
 end
 
 ---@param line string
 ---@param cursor? integer
 ---@return textrange?
 function AugendHexColor:find(line, cursor)
-    return common.find_pattern("#%x%x%x%x%x%x")(line, cursor)
+    return common.find_pattern "#%x%x%x%x%x%x"(line, cursor)
 end
 
 ---@param line string
 ---@param cursor? integer
 ---@return textrange?
 function AugendHexColor:find_stateful(line, cursor)
-    local range = common.find_pattern("#%x%x%x%x%x%x")(line, cursor)
+    local range = common.find_pattern "#%x%x%x%x%x%x"(line, cursor)
     if range == nil then
         return
     end
@@ -68,7 +68,9 @@ function AugendHexColor:add(text, addend, cursor)
     local r = tonumber(text:sub(2, 3), 16)
     local g = tonumber(text:sub(4, 5), 16)
     local b = tonumber(text:sub(6, 7), 16)
-    if cursor == nil then cursor = 1 end  -- default: all
+    if cursor == nil then
+        cursor = 1
+    end -- default: all
     if self.kind == "all" then
         -- increment all
         r = cast_u8(r + addend)
@@ -86,7 +88,7 @@ function AugendHexColor:add(text, addend, cursor)
         cursor = 7
     end
     text = "#" .. string.format("%02x", r) .. string.format("%02x", g) .. string.format("%02x", b)
-    return {text = text, cursor = cursor}
+    return { text = text, cursor = cursor }
 end
 
 return M

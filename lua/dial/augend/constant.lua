@@ -1,5 +1,5 @@
-local util = require"dial.util"
-local common = require"dial.augend.common"
+local util = require "dial.util"
+local common = require "dial.augend.common"
 
 ---@alias AugendConstantConfig { elements: string[], cyclic: boolean, pattern_regexp: string, preserve_case: boolean }
 
@@ -38,11 +38,11 @@ end
 function M.new(config)
     util.validate_list("config.elements", config.elements, "string")
 
-    vim.validate{
-        word = {config.word, "boolean", true},
-        cyclic = {config.cyclic, "boolean", true},
-        pattern_regexp = {config.pattern_regexp, "string", true},
-        preserve_case = {config.preserve_case, "boolean", true}
+    vim.validate {
+        word = { config.word, "boolean", true },
+        cyclic = { config.cyclic, "boolean", true },
+        pattern_regexp = { config.pattern_regexp, "string", true },
+        preserve_case = { config.preserve_case, "boolean", true },
     }
     if config.preserve_case == nil then
         config.preserve_case = false
@@ -59,19 +59,16 @@ function M.new(config)
     if config.cyclic == nil then
         config.cyclic = true
     end
-    return setmetatable({config = config}, {__index = AugendConstant})
+    return setmetatable({ config = config }, { __index = AugendConstant })
 end
 
 ---@param line string
 ---@param cursor? integer
 ---@return textrange?
 function AugendConstant:find(line, cursor)
-    local escaped_elements = vim.tbl_map(
-        function (e)
-            return vim.fn.escape(e, [[/\]])
-        end,
-        self.config.elements
-    )
+    local escaped_elements = vim.tbl_map(function(e)
+        return vim.fn.escape(e, [[/\]])
+    end, self.config.elements)
     local vim_regex_ptn = self.config.pattern_regexp:format(table.concat(escaped_elements, [[\|]]))
     return common.find_pattern_regex(vim_regex_ptn)(line, cursor)
 end
@@ -105,8 +102,12 @@ function AugendConstant:add(text, addend, cursor)
         n = (n + addend - 1) % n_patterns + 1
     else
         n = n + addend
-        if n < 1 then n = 1 end
-        if n > n_patterns then n = n_patterns end
+        if n < 1 then
+            n = 1
+        end
+        if n > n_patterns then
+            n = n_patterns
+        end
     end
     local new_text = elements[n]
 
@@ -129,31 +130,85 @@ function AugendConstant:add(text, addend, cursor)
 end
 
 M.alias = {
-    bool = M.new{ elements = {"true", "false"} },
-    alpha = M.new{ elements = {
-        "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
-        "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
-    }, cyclic = false},
-    Alpha = M.new{ elements = {
-        "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
-        "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
-    }, cyclic = false},
-    ja_weekday = M.new{
+    bool = M.new { elements = { "true", "false" } },
+    alpha = M.new {
+        elements = {
+            "a",
+            "b",
+            "c",
+            "d",
+            "e",
+            "f",
+            "g",
+            "h",
+            "i",
+            "j",
+            "k",
+            "l",
+            "m",
+            "n",
+            "o",
+            "p",
+            "q",
+            "r",
+            "s",
+            "t",
+            "u",
+            "v",
+            "w",
+            "x",
+            "y",
+            "z",
+        },
+        cyclic = false,
+    },
+    Alpha = M.new {
+        elements = {
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F",
+            "G",
+            "H",
+            "I",
+            "J",
+            "K",
+            "L",
+            "M",
+            "N",
+            "O",
+            "P",
+            "Q",
+            "R",
+            "S",
+            "T",
+            "U",
+            "V",
+            "W",
+            "X",
+            "Y",
+            "Z",
+        },
+        cyclic = false,
+    },
+    ja_weekday = M.new {
         elements = { "日", "月", "火", "水", "木", "金", "土" },
         word = true,
         cyclic = true,
     },
-    ja_weekday_full = M.new{
+    ja_weekday_full = M.new {
         elements = { "日曜日", "月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日" },
         word = false,
         cyclic = true,
     },
-    de_weekday = M.new{
+    de_weekday = M.new {
         elements = { "Mo", "Di", "Mi", "Do", "Fr", "Sa", "So" },
         word = true,
         cyclic = true,
     },
-    de_weekday_full = M.new{
+    de_weekday_full = M.new {
         elements = {
             "Montag",
             "Dienstag",
@@ -161,11 +216,11 @@ M.alias = {
             "Donnerstag",
             "Freitag",
             "Samstag",
-            "Sonntag"
+            "Sonntag",
         },
         word = true,
         cyclic = true,
-    }
+    },
 }
 
 return M

@@ -1,5 +1,5 @@
-local util = require"dial.util"
-local common = require"dial.augend.common"
+local util = require "dial.util"
+local common = require "dial.augend.common"
 
 ---@alias dateptn { regex: string, capture: datefmtptn[] }
 ---@alias datefmtptn '"%Y"' | '"%y"' | '"%m"' | '"%d"' | '"%H"' | '"%M"' | '"%S"'
@@ -62,21 +62,20 @@ local M = {}
 ---@param config datefmt
 ---@return Augend
 function M.new(config)
-    vim.validate{
+    vim.validate {
         -- format_name = {config.format_name, "string"},
-        pattern_regex = {config.pattern.regex, "string"},
-        pattern_capture = {config.pattern.capture, "table"},
+        pattern_regex = { config.pattern.regex, "string" },
+        pattern_capture = { config.pattern.capture, "table" },
         -- format = {config.format, "string"},
-        judge_datekind = {config.judge_datekind, "function"},
-        calc_curpos = {config.calc_curpos, "function"},
-        only_valid = {config.only_valid, "boolean", true},
+        judge_datekind = { config.judge_datekind, "function" },
+        calc_curpos = { config.calc_curpos, "function" },
+        only_valid = { config.only_valid, "boolean", true },
     }
 
     local only_valid = util.unwrap_or(config.only_valid, false)
 
-    return setmetatable({ datefmt = config, only_valid = only_valid, kind = "day" }, {__index = AugendDate})
+    return setmetatable({ datefmt = config, only_valid = only_valid, kind = "day" }, { __index = AugendDate })
 end
-
 
 ---@param line string
 ---@param cursor? integer
@@ -153,22 +152,22 @@ function AugendDate:add(text, addend, cursor)
         text = self.datefmt.format(datetime)
     end
     cursor = self.datefmt.calc_curpos(text, self.kind)
-    return {text = text, cursor = cursor}
+    return { text = text, cursor = cursor }
 end
 
 M.alias = {}
 
-M.alias["%Y/%m/%d"] = M.new{
+M.alias["%Y/%m/%d"] = M.new {
     pattern = {
         regex = [[(\d{4})/(\d{2})/(\d{2})]],
-        capture = { "%Y", "%m", "%d" }
+        capture = { "%Y", "%m", "%d" },
     },
     format = "%Y/%m/%d",
 
     ---テキストとカーソル位置から増減対象の datekind を判断する。
     ---@param curpos? integer  # 1-based
     ---@return datekind
-    judge_datekind = function (_, curpos)
+    judge_datekind = function(_, curpos)
         if curpos == nil or curpos <= 0 or curpos >= 8 then
             return "day"
         elseif curpos <= 4 then
@@ -181,7 +180,7 @@ M.alias["%Y/%m/%d"] = M.new{
     ---増減後の text と 元の datekind からカーソル位置を求める。
     ---@param kind datekind
     ---@return integer?  # 1-based
-    calc_curpos = function (_, kind)
+    calc_curpos = function(_, kind)
         if kind == "year" then
             return 4
         elseif kind == "month" then
@@ -192,10 +191,10 @@ M.alias["%Y/%m/%d"] = M.new{
     end,
 }
 
-M.alias["%d/%m/%Y"] = M.new{
+M.alias["%d/%m/%Y"] = M.new {
     pattern = {
         regex = [[(\d{2})/(\d{2})/(\d{4})]],
-        capture = { "%d", "%m", "%Y" }
+        capture = { "%d", "%m", "%Y" },
     },
     only_valid = true,
     format = "%d/%m/%Y",
@@ -203,7 +202,7 @@ M.alias["%d/%m/%Y"] = M.new{
     ---テキストとカーソル位置から増減対象の datekind を判断する。
     ---@param curpos? integer  # 1-based
     ---@return datekind
-    judge_datekind = function (_, curpos)
+    judge_datekind = function(_, curpos)
         if curpos == nil or curpos <= 0 then
             return "day"
         elseif curpos <= 2 then
@@ -218,7 +217,7 @@ M.alias["%d/%m/%Y"] = M.new{
     ---増減後の text と 元の datekind からカーソル位置を求める。
     ---@param kind datekind
     ---@return integer?  # 1-based
-    calc_curpos = function (_, kind)
+    calc_curpos = function(_, kind)
         if kind == "year" then
             return 10
         elseif kind == "month" then
@@ -229,10 +228,10 @@ M.alias["%d/%m/%Y"] = M.new{
     end,
 }
 
-M.alias["%d/%m/%y"] = M.new{
+M.alias["%d/%m/%y"] = M.new {
     pattern = {
         regex = [[(\d{2})/(\d{2})/(\d{2})]],
-        capture = { "%d", "%m", "%y" }
+        capture = { "%d", "%m", "%y" },
     },
     only_valid = true,
     format = "%d/%m/%y",
@@ -240,7 +239,7 @@ M.alias["%d/%m/%y"] = M.new{
     ---テキストとカーソル位置から増減対象の datekind を判断する。
     ---@param curpos? integer  # 1-based
     ---@return datekind
-    judge_datekind = function (_, curpos)
+    judge_datekind = function(_, curpos)
         if curpos == nil or curpos <= 0 then
             return "day"
         elseif curpos <= 2 then
@@ -255,7 +254,7 @@ M.alias["%d/%m/%y"] = M.new{
     ---増減後の text と 元の datekind からカーソル位置を求める。
     ---@param kind datekind
     ---@return integer?  # 1-based
-    calc_curpos = function (_, kind)
+    calc_curpos = function(_, kind)
         if kind == "year" then
             return 8
         elseif kind == "month" then
@@ -266,10 +265,10 @@ M.alias["%d/%m/%y"] = M.new{
     end,
 }
 
-M.alias["%m/%d/%Y"] = M.new{
+M.alias["%m/%d/%Y"] = M.new {
     pattern = {
         regex = [[(\d{2})/(\d{2})/(\d{4})]],
-        capture = { "%m", "%d", "%Y" }
+        capture = { "%m", "%d", "%Y" },
     },
     only_valid = true,
     format = "%m/%d/%Y",
@@ -277,7 +276,7 @@ M.alias["%m/%d/%Y"] = M.new{
     ---テキストとカーソル位置から増減対象の datekind を判断する。
     ---@param curpos? integer  # 1-based
     ---@return datekind
-    judge_datekind = function (_, curpos)
+    judge_datekind = function(_, curpos)
         if curpos == nil or curpos <= 0 then
             return "day"
         elseif curpos <= 2 then
@@ -292,7 +291,7 @@ M.alias["%m/%d/%Y"] = M.new{
     ---増減後の text と 元の datekind からカーソル位置を求める。
     ---@param kind datekind
     ---@return integer?  # 1-based
-    calc_curpos = function (_, kind)
+    calc_curpos = function(_, kind)
         if kind == "year" then
             return 10
         elseif kind == "month" then
@@ -303,10 +302,10 @@ M.alias["%m/%d/%Y"] = M.new{
     end,
 }
 
-M.alias["%m/%d/%y"] = M.new{
+M.alias["%m/%d/%y"] = M.new {
     pattern = {
         regex = [[(\d{2})/(\d{2})/(\d{2})]],
-        capture = { "%m", "%d", "%y" }
+        capture = { "%m", "%d", "%y" },
     },
     only_valid = true,
     format = "%m/%d/%y",
@@ -314,7 +313,7 @@ M.alias["%m/%d/%y"] = M.new{
     ---テキストとカーソル位置から増減対象の datekind を判断する。
     ---@param curpos? integer  # 1-based
     ---@return datekind
-    judge_datekind = function (_, curpos)
+    judge_datekind = function(_, curpos)
         if curpos == nil or curpos <= 0 then
             return "day"
         elseif curpos <= 2 then
@@ -329,7 +328,7 @@ M.alias["%m/%d/%y"] = M.new{
     ---増減後の text と 元の datekind からカーソル位置を求める。
     ---@param kind datekind
     ---@return integer?  # 1-based
-    calc_curpos = function (_, kind)
+    calc_curpos = function(_, kind)
         if kind == "year" then
             return 8
         elseif kind == "month" then
@@ -340,17 +339,17 @@ M.alias["%m/%d/%y"] = M.new{
     end,
 }
 
-M.alias["%Y-%m-%d"] = M.new{
+M.alias["%Y-%m-%d"] = M.new {
     pattern = {
         regex = [[(\d{4})-(\d{2})-(\d{2})]],
-        capture = { "%Y", "%m", "%d" }
+        capture = { "%Y", "%m", "%d" },
     },
     format = "%Y-%m-%d",
 
     ---テキストとカーソル位置から増減対象の datekind を判断する。
     ---@param curpos? integer  # 1-based
     ---@return datekind
-    judge_datekind = function (_, curpos)
+    judge_datekind = function(_, curpos)
         if curpos == nil or curpos <= 0 or curpos >= 8 then
             return "day"
         elseif curpos <= 4 then
@@ -363,7 +362,7 @@ M.alias["%Y-%m-%d"] = M.new{
     ---増減後の text と 元の datekind からカーソル位置を求める。
     ---@param kind datekind
     ---@return integer?  # 1-based
-    calc_curpos = function (_, kind)
+    calc_curpos = function(_, kind)
         if kind == "year" then
             return 4
         elseif kind == "month" then
@@ -374,17 +373,17 @@ M.alias["%Y-%m-%d"] = M.new{
     end,
 }
 
-M.alias["%m/%d"] = M.new{
+M.alias["%m/%d"] = M.new {
     pattern = {
         regex = [[(\d{2})/(\d{2})]],
-        capture = { "%m", "%d" }
+        capture = { "%m", "%d" },
     },
     format = "%m/%d",
 
     ---テキストとカーソル位置から増減対象の datekind を判断する。
     ---@param curpos? integer  # 1-based
     ---@return datekind
-    judge_datekind = function (_, curpos)
+    judge_datekind = function(_, curpos)
         if curpos == nil or curpos <= 0 or curpos >= 3 then
             return "day"
         else
@@ -395,7 +394,7 @@ M.alias["%m/%d"] = M.new{
     ---増減後の text と 元の datekind からカーソル位置を求める。
     ---@param kind datekind
     ---@return integer?  # 1-based
-    calc_curpos = function (_, kind)
+    calc_curpos = function(_, kind)
         if kind == "month" then
             return 2
         else
@@ -404,10 +403,10 @@ M.alias["%m/%d"] = M.new{
     end,
 }
 
-M.alias["%-m/%-d"] = M.new{
+M.alias["%-m/%-d"] = M.new {
     pattern = {
         regex = [[(\d{1,2})/(\d{1,2})]],
-        capture = { "%m", "%d" }
+        capture = { "%m", "%d" },
     },
     format = "%-m/%-d",
     only_valid = true,
@@ -416,8 +415,8 @@ M.alias["%-m/%-d"] = M.new{
     ---@param text string
     ---@param curpos? integer  # 1-based
     ---@return datekind
-    judge_datekind = function (text, curpos)
-        local idx_slash = text:find("/")
+    judge_datekind = function(text, curpos)
+        local idx_slash = text:find "/"
         if curpos == nil or curpos <= 0 or curpos >= idx_slash then
             return "day"
         else
@@ -429,8 +428,8 @@ M.alias["%-m/%-d"] = M.new{
     ---@param text string
     ---@param kind datekind
     ---@return integer?  # 1-based
-    calc_curpos = function (text, kind)
-        local idx_slash = text:find("/")
+    calc_curpos = function(text, kind)
+        local idx_slash = text:find "/"
         if kind == "month" then
             return idx_slash - 1
         else
@@ -439,10 +438,10 @@ M.alias["%-m/%-d"] = M.new{
     end,
 }
 
-M.alias["%Y年%-m月%-d日"] = M.new{
+M.alias["%Y年%-m月%-d日"] = M.new {
     pattern = {
         regex = [[(\d{4})年(\d{1,2})月(\d{1,2})日]],
-        capture = { "%Y", "%m", "%d" }
+        capture = { "%Y", "%m", "%d" },
     },
     format = "%Y年%-m月%-d日",
 
@@ -450,9 +449,9 @@ M.alias["%Y年%-m月%-d日"] = M.new{
     ---@param text string
     ---@param curpos? integer  # 1-based
     ---@return datekind
-    judge_datekind = function (text, curpos)
-        local _, idx_nen = text:find("年")
-        local _, idx_tsuki = text:find("月")
+    judge_datekind = function(text, curpos)
+        local _, idx_nen = text:find "年"
+        local _, idx_tsuki = text:find "月"
         if curpos == nil or curpos <= 0 or curpos > idx_tsuki then
             return "day"
         elseif curpos <= idx_nen then
@@ -466,10 +465,10 @@ M.alias["%Y年%-m月%-d日"] = M.new{
     ---@param text string
     ---@param kind datekind
     ---@return integer?  # 1-based
-    calc_curpos = function (text, kind)
-        local idx_nen = text:find("年")
-        local idx_tsuki = text:find("月")
-        local idx_day = text:find("日")
+    calc_curpos = function(text, kind)
+        local idx_nen = text:find "年"
+        local idx_tsuki = text:find "月"
+        local idx_day = text:find "日"
         if kind == "year" then
             return idx_nen - 1
         elseif kind == "month" then
@@ -480,12 +479,12 @@ M.alias["%Y年%-m月%-d日"] = M.new{
     end,
 }
 
-M.alias["%Y年%-m月%-d日(%ja)"] = M.new{
+M.alias["%Y年%-m月%-d日(%ja)"] = M.new {
     pattern = {
         regex = [[(\d{4})年(\d{1,2})月(\d{1,2})日\((月|火|水|木|金|土|日)\)]],
-        capture = { "%Y", "%m", "%d" }
+        capture = { "%Y", "%m", "%d" },
     },
-    format = function (datetime)
+    format = function(datetime)
         local text_date = os.date("%Y年%-m月%-d日", datetime)
         local tbl_date = os.date("*t", datetime)
         local text_weekday = JA_WEEKDAYS[tbl_date.wday]
@@ -496,9 +495,9 @@ M.alias["%Y年%-m月%-d日(%ja)"] = M.new{
     ---@param text string
     ---@param curpos? integer  # 1-based
     ---@return datekind
-    judge_datekind = function (text, curpos)
-        local _, idx_nen = text:find("年")
-        local _, idx_tsuki = text:find("月")
+    judge_datekind = function(text, curpos)
+        local _, idx_nen = text:find "年"
+        local _, idx_tsuki = text:find "月"
         if curpos == nil or curpos <= 0 or curpos > idx_tsuki then
             return "day"
         elseif curpos <= idx_nen then
@@ -512,10 +511,10 @@ M.alias["%Y年%-m月%-d日(%ja)"] = M.new{
     ---@param text string
     ---@param kind datekind
     ---@return integer?  # 1-based
-    calc_curpos = function (text, kind)
-        local idx_nen = text:find("年")
-        local idx_tsuki = text:find("月")
-        local idx_hi = text:find("日")
+    calc_curpos = function(text, kind)
+        local idx_nen = text:find "年"
+        local idx_tsuki = text:find "月"
+        local idx_hi = text:find "日"
         if kind == "year" then
             return idx_nen - 1
         elseif kind == "month" then
@@ -526,7 +525,7 @@ M.alias["%Y年%-m月%-d日(%ja)"] = M.new{
     end,
 }
 
-M.alias["%d.%m.%Y"] = M.new{
+M.alias["%d.%m.%Y"] = M.new {
     pattern = {
         regex = [[(\d{2})\.(\d{2})\.(\d{4})]],
         capture = { "%d", "%m", "%Y" },
@@ -534,7 +533,7 @@ M.alias["%d.%m.%Y"] = M.new{
     only_valid = true,
     format = "%d.%m.%Y",
 
-    judge_datekind = function (_, curpos)
+    judge_datekind = function(_, curpos)
         if curpos == nil or curpos <= 2 then
             return "day"
         elseif curpos <= 5 then
@@ -544,7 +543,7 @@ M.alias["%d.%m.%Y"] = M.new{
         end
     end,
 
-    calc_curpos = function (_, kind)
+    calc_curpos = function(_, kind)
         if kind == "day" then
             return 2
         elseif kind == "month" then
@@ -555,7 +554,7 @@ M.alias["%d.%m.%Y"] = M.new{
     end,
 }
 
-M.alias["%d.%m.%y"] = M.new{
+M.alias["%d.%m.%y"] = M.new {
     pattern = {
         regex = [[(\d{2})\.(\d{2})\.(\d{2})]],
         capture = { "%d", "%m", "%y" },
@@ -563,7 +562,7 @@ M.alias["%d.%m.%y"] = M.new{
     only_valid = true,
     format = "%d.%m.%y",
 
-    judge_datekind = function (_, curpos)
+    judge_datekind = function(_, curpos)
         if curpos == nil or curpos <= 2 then
             return "day"
         elseif curpos <= 5 then
@@ -573,7 +572,7 @@ M.alias["%d.%m.%y"] = M.new{
         end
     end,
 
-    calc_curpos = function (_, kind)
+    calc_curpos = function(_, kind)
         if kind == "day" then
             return 2
         elseif kind == "month" then
@@ -584,7 +583,7 @@ M.alias["%d.%m.%y"] = M.new{
     end,
 }
 
-M.alias["%d.%m."] = M.new{
+M.alias["%d.%m."] = M.new {
     pattern = {
         regex = [[(\d{2})\.(\d{2})\.]],
         capture = { "%d", "%m" },
@@ -592,7 +591,7 @@ M.alias["%d.%m."] = M.new{
     only_valid = true,
     format = "%d.%m.",
 
-    judge_datekind = function (_, curpos)
+    judge_datekind = function(_, curpos)
         if curpos == nil or curpos <= 2 then
             return "day"
         else
@@ -600,7 +599,7 @@ M.alias["%d.%m."] = M.new{
         end
     end,
 
-    calc_curpos = function (_, kind)
+    calc_curpos = function(_, kind)
         if kind == "day" then
             return 2
         else
@@ -609,7 +608,7 @@ M.alias["%d.%m."] = M.new{
     end,
 }
 
-M.alias["%-d.%-m."] = M.new{
+M.alias["%-d.%-m."] = M.new {
     pattern = {
         regex = [[(\d{1,2})\.(\d{1,2})\.]],
         capture = { "%d", "%m" },
@@ -617,7 +616,7 @@ M.alias["%-d.%-m."] = M.new{
     only_valid = true,
     format = "%-d.%-m.",
 
-    judge_datekind = function (text, curpos)
+    judge_datekind = function(text, curpos)
         local idx_dot = text:find(".", 1, true)
         if curpos == nil or curpos < idx_dot then
             return "day"
@@ -626,7 +625,7 @@ M.alias["%-d.%-m."] = M.new{
         end
     end,
 
-    calc_curpos = function (text, kind)
+    calc_curpos = function(text, kind)
         local idx_dot = text:find(".", 1, true)
         if kind == "day" then
             return idx_dot - 1
@@ -636,10 +635,10 @@ M.alias["%-d.%-m."] = M.new{
     end,
 }
 
-M.alias["%H:%M:%S"] = M.new{
+M.alias["%H:%M:%S"] = M.new {
     pattern = {
         regex = [[(\d{2}):(\d{2}):(\d{2})]],
-        capture = { "%H", "%M", "%S" }
+        capture = { "%H", "%M", "%S" },
     },
     format = "%H:%M:%S",
     only_valid = true,
@@ -647,7 +646,7 @@ M.alias["%H:%M:%S"] = M.new{
     ---テキストとカーソル位置から増減対象の datekind を判断する。
     ---@param curpos? integer  # 1-based
     ---@return datekind
-    judge_datekind = function (_, curpos)
+    judge_datekind = function(_, curpos)
         if curpos == nil or curpos <= 0 or curpos > 5 then
             return "sec"
         elseif curpos <= 2 then
@@ -660,7 +659,7 @@ M.alias["%H:%M:%S"] = M.new{
     ---増減後の text と 元の datekind からカーソル位置を求める。
     ---@param kind datekind
     ---@return integer?  # 1-based
-    calc_curpos = function (_, kind)
+    calc_curpos = function(_, kind)
         if kind == "hour" then
             return 2
         elseif kind == "min" then
@@ -671,10 +670,10 @@ M.alias["%H:%M:%S"] = M.new{
     end,
 }
 
-M.alias["%H:%M"] = M.new{
+M.alias["%H:%M"] = M.new {
     pattern = {
         regex = [[(\d{2}):(\d{2})]],
-        capture = { "%H", "%M" }
+        capture = { "%H", "%M" },
     },
     format = "%H:%M",
     only_valid = true,
@@ -682,7 +681,7 @@ M.alias["%H:%M"] = M.new{
     ---テキストとカーソル位置から増減対象の datekind を判断する。
     ---@param curpos? integer  # 1-based
     ---@return datekind
-    judge_datekind = function (_, curpos)
+    judge_datekind = function(_, curpos)
         if curpos == nil or curpos <= 0 or curpos > 2 then
             return "min"
         else
@@ -693,7 +692,7 @@ M.alias["%H:%M"] = M.new{
     ---増減後の text と 元の datekind からカーソル位置を求める。
     ---@param kind datekind
     ---@return integer?  # 1-based
-    calc_curpos = function (_, kind)
+    calc_curpos = function(_, kind)
         if kind == "hour" then
             return 2
         else

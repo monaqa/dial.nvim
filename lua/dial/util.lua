@@ -24,33 +24,15 @@ function M.unwrap_or(x, default)
     return x
 end
 
-function M.dbg(obj, text)
-    if text ~= nil then
-        print("[" .. text .. "]: " .. vim.inspect(obj))
-    else
-        print(vim.inspect(obj))
+function M.Set(list)
+    local set = {}
+    for _, l in ipairs(list) do
+        set[l] = true
     end
-end
-
-function M.Set (list)
-  local set = {}
-  for _, l in ipairs(list) do set[l] = true end
-  return set
-end
-
-function M.split(str, delim)
-  local t = {}
-  local i = 1
-  for s in str:gmatch("([^" .. delim .. "]+)") do
-    t[i] = s
-    i = i + 1
-  end
-
-  return t
+    return set
 end
 
 -- Check if the argument is a valid list (which does not contain nil).
----第2引数が特定の型を持つ（または特定の性質を満たす）ことを確かめる。
 ---@param name string
 ---@param list any[]
 ---@param arg1 string | function
@@ -66,20 +48,14 @@ function M.validate_list(name, list, arg1, arg2)
         local count_idx = 0
         for idx, value in ipairs(list) do
             count_idx = idx
-            -- 型名が一致しない場合
             if type(value) ~= typename then
-                error(("Type error: %s[%d] should have type %s, got %s"):format(
-                        name, idx, typename, type(value)
-                    ))
+                error(("Type error: %s[%d] should have type %s, got %s"):format(name, idx, typename, type(value)))
             end
         end
 
         if count_idx ~= #list then
-            error(("The %s[%d] is nil. nil is not allowed in a list."):format(
-                    name, count_idx + 1
-                ))
+            error(("The %s[%d] is nil. nil is not allowed in a list."):format(name, count_idx + 1))
         end
-
     else
         local checkf, errormsg = arg1, arg2
 
@@ -88,22 +64,18 @@ function M.validate_list(name, list, arg1, arg2)
             count_idx = idx
             local ok, err = checkf(value)
             if not ok then
-                error(("List validation error: %s[%d] does not satisfy '%s' (%s)"):format(
-                        name, idx, errormsg, err
-                    ))
+                error(("List validation error: %s[%d] does not satisfy '%s' (%s)"):format(name, idx, errormsg, err))
             end
         end
 
         if count_idx ~= #list then
-            error(("The %s[%d] is nil. nil is not allowed in valid list."):format(
-                    name, count_idx + 1
-                ))
+            error(("The %s[%d] is nil. nil is not allowed in valid list."):format(name, count_idx + 1))
         end
     end
 end
 
-
----配列のうち、nil 値をもつインデックス列を返す。
+---Returns the indices with the value nil.
+---returns an index array
 ---@param tbl array
 ---@return integer[]
 function M.index_with_nil_value(tbl)
@@ -150,7 +122,7 @@ function M.filter_map_zip(fn, ary)
     local a = {}
     for i = 1, #ary do
         if fn(ary[i]) ~= nil then
-            table.insert(a, {ary[i], fn(ary[i])})
+            table.insert(a, { ary[i], fn(ary[i]) })
         end
     end
     return a
@@ -158,7 +130,9 @@ end
 
 function M.tostring_with_base(n, b, wid, pad)
     n = math.floor(n)
-    if not b or b == 10 then return tostring(n) end
+    if not b or b == 10 then
+        return tostring(n)
+    end
     local digits = "0123456789abcdefghijklmnopqrstuvwxyz"
     local t = {}
     if n < 0 then
@@ -168,9 +142,9 @@ function M.tostring_with_base(n, b, wid, pad)
     repeat
         local d = (n % b) + 1
         n = math.floor(n / b)
-        table.insert(t, 1, digits:sub(d,d))
+        table.insert(t, 1, digits:sub(d, d))
     until n == 0
-    local text = table.concat(t,"")
+    local text = table.concat(t, "")
     if wid then
         if #text < wid then
             if pad == nil then

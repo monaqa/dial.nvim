@@ -1,5 +1,5 @@
-local common = require"dial.augend.common"
-local util   = require "dial.util"
+local common = require "dial.augend.common"
+local util = require "dial.util"
 
 ---@alias AugendIntegerConfig {}
 
@@ -22,9 +22,11 @@ local M = {}
 ---@param case '"upper"' | '"lower"'
 ---@return string
 local function tostring_with_radix(n, radix, case)
-    local floor,insert = math.floor, table.insert
+    local floor, insert = math.floor, table.insert
     n = floor(n)
-    if not radix or radix == 10 then return tostring(n) end
+    if not radix or radix == 10 then
+        return tostring(n)
+    end
 
     local digits = "0123456789abcdefghijklmnopqrstuvwxyz"
     if case == "upper" then
@@ -35,14 +37,14 @@ local function tostring_with_radix(n, radix, case)
     local sign = ""
     if n < 0 then
         sign = "-"
-    n = -n
+        n = -n
     end
     repeat
         local d = (n % radix) + 1
         n = floor(n / radix)
-        insert(t, 1, digits:sub(d,d))
+        insert(t, 1, digits:sub(d, d))
     until n == 0
-    return sign .. table.concat(t,"")
+    return sign .. table.concat(t, "")
 end
 
 ---デリミタを挟んだ数字を出力する。
@@ -83,13 +85,13 @@ end
 ---@param config { radix?: integer, prefix?: string, natural?: boolean, case?: '"upper"' | '"lower"', delimiter?: string, delimiter_digits?: number }
 ---@return Augend
 function M.new(config)
-    vim.validate{
-        radix = {config.radix, "number", true},
-        prefix = {config.prefix, "string", true},
-        natural = {config.natural, "boolean", true},
-        case = {config.case, "string", true},
-        delimiter = {config.delimiter, "string", true},
-        delimiter_digits = {config.delimiter_digits, "number", true},
+    vim.validate {
+        radix = { config.radix, "number", true },
+        prefix = { config.prefix, "string", true },
+        natural = { config.natural, "boolean", true },
+        case = { config.case, "string", true },
+        delimiter = { config.delimiter, "string", true },
+        delimiter_digits = { config.delimiter_digits, "number", true },
     }
     local radix = util.unwrap_or(config.radix, 10)
     local prefix = util.unwrap_or(config.prefix, "")
@@ -105,20 +107,17 @@ function M.new(config)
         radix_to_query_character(radix),
         vim.fn.escape(delimiter, [[]\/]]),
         radix_to_query_character(radix)
-        )
-
-    return setmetatable(
-        {
-            radix = radix,
-            prefix = prefix,
-            natural = natural,
-            query = query,
-            case = case,
-            delimiter = delimiter,
-            delimiter_digits = delimiter_digits,
-        },
-        {__index = AugendInteger}
     )
+
+    return setmetatable({
+        radix = radix,
+        prefix = prefix,
+        natural = natural,
+        query = query,
+        case = case,
+        delimiter = delimiter,
+        delimiter_digits = delimiter_digits,
+    }, { __index = AugendInteger })
 end
 
 ---@param line string
@@ -167,15 +166,15 @@ function AugendInteger:add(text, addend, cursor)
     end
     text = self.prefix .. digits
     cursor = #text
-    return {text = text, cursor = cursor}
+    return { text = text, cursor = cursor }
 end
 
 M.alias = {
-    decimal = M.new{},
-    decimal_int = M.new{ natural = false },
-    binary = M.new{ radix = 2, prefix = "0b", natural = true },
-    octal = M.new{ radix = 8, prefix = "0o", natural = true },
-    hex = M.new{ radix = 16, prefix = "0x", natural = true },
+    decimal = M.new {},
+    decimal_int = M.new { natural = false },
+    binary = M.new { radix = 2, prefix = "0b", natural = true },
+    octal = M.new { radix = 8, prefix = "0o", natural = true },
+    hex = M.new { radix = 16, prefix = "0x", natural = true },
 }
 
 return M
