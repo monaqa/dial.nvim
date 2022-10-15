@@ -1,4 +1,5 @@
---sumneko lua の type annotation のうち、複数ファイルにまたがるものをここで定義する。
+-- define type annotations
+-- (See: https://github.com/sumneko/lua-language-server/wiki/Annotations)
 
 ---@alias direction '"increment"' | '"decrement"'
 ---@alias mode '"normal"' | '"visual"' | '"gvisual"'

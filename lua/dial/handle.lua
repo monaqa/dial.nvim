@@ -1,23 +1,26 @@
--- ドットリピートを実現するため、増減の工程を以下の3つに分割している。
+-- The business logic of dial.nvim.
+-- To achieve dot repeating, dial.nvim divides the increment/decrement process
+-- into the following three parts:
 --
--- 1. **ルール選択**:
---    現在行 + カーソル位置の情報を元に、増減すべき augend rule を決定する
+-- 1. Select the rule:
+--    determine the augend rule to increment/decrement from the current line and cursor position.
 --
--- 2. **範囲選択**:
---    上で決まった rule に基づいて、増減するバッファ上の文字列の範囲を決定する
---    （テキストオブジェクト）
+-- 2. Select the range:
+--    determine the range of strings (text object) on the buffer
+--    to be incremented/decremented based on the rule determined above.
 --
--- 3. **バッファ操作**: 上で決まった文字列を実際に増減する（オペレータ）
+-- 3. Edit the buffer:
+--    actually increment/decrement the string (operator).
 --
--- ノーマルモードの <C-a> や <C-x> では 1, 2, 3 が呼び出される。
--- ドットリピート実施時には 2, 3 のみ呼び出される。
+-- In NORMAL mode <C-a>/<C-x>, 1, 2, and 3 are called.
+-- In NORMAL mode dot repeating, only 2 and 3 are called.
 --
--- 本クラスでは上の工程で定まる情報（augend rule やテキストの範囲など）を
--- 状態として保持しておき、実際に augend の関数を呼び出す処理を行う。
---
--- テキスト操作などの副作用はここでは起こさない。
+-- `Handler` class, defined in this module, saves information such as augend rule
+-- and text range as a state, and performs the actual increment/decrement operation
+-- by calling the augend function.
+-- Text on buffers is not manipulated from the handler instance.
 
----増減対象のテキストの範囲から、その範囲の優先順位を決めるスコア。
+---Scores used to determine which rules to operate.
 ---@class Score
 ---@field cursor_loc integer
 ---@field start_pos integer
@@ -38,7 +41,7 @@ function Score.new(cursor_loc, start_pos, neg_end_pos)
     )
 end
 
----スコアを計算する。
+---Calculate the score.
 ---@param s integer
 ---@param e integer
 ---@param cursor? integer
@@ -55,7 +58,7 @@ local function calc_score(s, e, cursor)
     return { cursor_loc = cursor_loc, start_pos = s, neg_end_pos = -e }
 end
 
----カーソルと範囲からスコアを生成する。
+---Calculate the score from the cursor position and text range.
 ---@param s integer
 ---@param e integer
 ---@param cursor? integer
@@ -65,7 +68,8 @@ function Score.from_cursor(s, e, cursor)
     return setmetatable(tbl, { __index = Score })
 end
 
----スコアを比較する。
+---Compare the score.
+---If and only if `self` has the higher priority than `rhs`, returns true.
 ---@param rhs Score
 function Score.cmp(self, rhs)
     if self.cursor_loc < rhs.cursor_loc then
@@ -99,7 +103,7 @@ function Handler.new()
     return setmetatable({ count = 1, range = nil, active_augend = nil }, { __index = Handler })
 end
 
----addend の値を取得する。
+---Get addend value.
 ---@param direction direction
 ---@return integer
 function Handler:get_addend(direction)
@@ -110,19 +114,19 @@ function Handler:get_addend(direction)
     end
 end
 
----count の値を設定する。
+---Set count value.
 ---@param count integer
 function Handler:set_count(count)
     self.count = count
 end
 
----comment
+---Select the most appropriate augend (in NORMAL mode).
 ---@param line string
 ---@param cursor? integer
 ---@param augends Augend[]
 function Handler:select_augend(line, cursor, augends)
     local interim_augend = nil
-    local interim_score = Score.new(3, 0, 0) -- 最も優先度の低いスコア
+    local interim_score = Score.new(3, 0, 0) -- score with the lowest priority
 
     for _, augend in ipairs(augends) do
         (function()
@@ -146,7 +150,7 @@ function Handler:select_augend(line, cursor, augends)
     self.active_augend = interim_augend
 end
 
----comment
+---Select the most appropriate augend (in VISUAL mode).
 ---@param lines string[]
 ---@param cursor? integer
 ---@param augends Augend[]
@@ -181,7 +185,7 @@ function Handler:select_augend_visual(lines, cursor, augends)
     end
 end
 
----comment
+---The process that runs when operator is called (in NORMAL mode).
 ---@param line string
 ---@param cursor integer
 ---@param direction direction
@@ -207,8 +211,7 @@ function Handler:operate(line, cursor, direction)
     return { line = new_line, cursor = new_cursor }
 end
 
----comment
----@param line string
+---The process that runs when operator is called (in VISUAL mode).
 ---@param selected_range {from: integer, to?: integer}
 ---@param direction direction
 ---@param tier integer
@@ -235,7 +238,7 @@ function Handler:operate_visual(line, selected_range, direction, tier)
     return { line = newline }
 end
 
----text object が call されたとき、（副作用を伴わずに）現在 active な augend の対象範囲を range に設定する。
+---Set self.range to the target range of the currently active augend (without side effects).
 ---@param line any
 ---@param cursor any
 function Handler:find_text_range(line, cursor)

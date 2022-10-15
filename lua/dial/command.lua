@@ -1,5 +1,6 @@
----Neovim とのインターフェースを司る。
----Neovim のバッファの中身を弄ったり、変数を読み込んだりする。
+-- Interface between Neovim and dial.nvim.
+-- Functions in this module edits the buffer and read variables defined by Neovim.
+
 local config = require "dial.config"
 local handler = require("dial.handle").new()
 local util = require "dial.util"
@@ -8,22 +9,7 @@ local M = {}
 
 VISUAL_BLOCK = string.char(22)
 
----alias を展開する関数。
----TODO: 実装
----@param augend Augend | string
----@return Augend
-function M.expand_augend(augend)
-    return augend
-end
-
-local function is_augend(obj)
-    vim.validate {
-        find = { obj.find, "function" },
-        add = { obj.add, "function" },
-    }
-end
-
----comment
+---Select the most appropriate augend from given augend group (in NORMAL mode).
 ---@param group_name? string
 function M.select_augend_normal(group_name)
     if group_name == nil and vim.v.register == "=" then
@@ -47,7 +33,7 @@ function M.select_augend_normal(group_name)
     handler:select_augend(line, col, augends)
 end
 
----comment
+---Select the most appropriate augend from given augend group (in VISUAL mode).
 ---@param group_name? string
 function M.select_augend_visual(group_name)
     if group_name == nil and vim.v.register == "=" then
@@ -112,11 +98,13 @@ function M.select_augend_visual(group_name)
     end
 end
 
+---Select the most appropriate augend from given augend group (in VISUAL mode with g<C-a>).
+---@param group_name? string
 function M.select_augend_gvisual(group_name)
     M.select_augend_visual(group_name)
 end
 
----operator が呼ばれたときに走る処理。
+---The process that runs when operator is called (in NORMAL mode).
 ---@param direction direction
 function M.operator_normal(direction)
     local col = vim.fn.col "."
@@ -133,7 +121,7 @@ function M.operator_normal(direction)
     end
 end
 
----operator が呼ばれたときに走る処理。
+---The process that runs when operator is called (in VISUAL mode).
 ---@param direction direction
 ---@param stairlike boolean
 function M.operator_visual(direction, stairlike)
@@ -184,9 +172,9 @@ function M.operator_visual(direction, stairlike)
     end
 end
 
---- text object が指定されたときに走る処理。
---- 現在の行の情報を元に範囲を選択する handler.findTextRange() を呼び出す。
---- また、ドットリピートの際は指定されたカウンタの値を受け取って加数を更新する。
+---The process that runs when text object is called.
+---Call handler.findTextRange() to select a range based on the information in the current line.
+---Also, for dot repeat, it receives the value of the specified counter and updates the addend.
 function M.textobj()
     local count = vim.v.count
     if count ~= 0 then
