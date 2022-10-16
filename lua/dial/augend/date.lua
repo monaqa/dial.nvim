@@ -12,8 +12,8 @@ local M = {}
 ---@return fun(string, osdate): osdate
 local function simple_updater(datekind)
     if datekind == nil then
-        return function(_)
-            return {}
+        return function(_, date)
+            return date
         end
     end
     return function(text, date)
@@ -246,9 +246,7 @@ M.date_elements = {
     ["J"] = {
         kind = nil,
         regex = enum_to_regex(WEEKDAYS_JA),
-        update_date = function(_, date)
-            return date
-        end,
+        update_date = simple_updater(),
         format = function(time)
             local wday = os.date("*t", time).wday --[[ @as integer ]]
             return WEEKDAYS_JA[wday]
@@ -259,17 +257,17 @@ M.date_elements = {
 ---@class DateFormat
 ---@field sequences string[]
 ---@field default_kind datekind
----@field only_words boolean
+---@field word boolean
 local DateFormat = {}
 
 ---Parse date pattern string and create new DateFormat.
 ---@param pattern string
 ---@param default_kind datekind
----@param only_words? boolean
+---@param word? boolean
 ---@return DateFormat
-function DateFormat.new(pattern, default_kind, only_words)
+function DateFormat.new(pattern, default_kind, word)
     local date_elements_keys = vim.tbl_keys(M.date_elements) --[[@as string[] ]]
-    only_words = util.unwrap_or(only_words, false)
+    word = util.unwrap_or(word, false)
 
     local sequences = {}
 
@@ -281,7 +279,7 @@ function DateFormat.new(pattern, default_kind, only_words)
             if c == "-" then
                 stack = "%-"
             elseif c == "%" then
-                table.insert(sequences, "%%")
+                table.insert(sequences, "%")
                 stack = ""
             elseif vim.tbl_contains(date_elements_keys, c) then
                 table.insert(sequences, "%" .. c)
@@ -316,10 +314,7 @@ function DateFormat.new(pattern, default_kind, only_words)
         end
     end
 
-    return setmetatable(
-        { sequences = sequences, default_kind = default_kind, only_words = only_words },
-        { __index = DateFormat }
-    )
+    return setmetatable({ sequences = sequences, default_kind = default_kind, word = word }, { __index = DateFormat })
 end
 
 ---returns the regex.
@@ -329,8 +324,8 @@ function DateFormat:regex()
         ---@param s string
         ---@return string
         function(s)
-            if s == "%%" then
-                return "%%"
+            if s == "%" then
+                return [[\(%\)]]
             elseif s:sub(1, 1) == "%" then
                 return [[\(]] .. M.date_elements[s:sub(2)].regex .. [[\)]]
             else
@@ -340,7 +335,7 @@ function DateFormat:regex()
         self.sequences
     ) --[[ @as string[] ]]
 
-    if self.only_words then
+    if self.word then
         return [[\V\C\<]] .. table.concat(regexes, "") .. [[\>]]
     else
         return [[\V\C]] .. table.concat(regexes, "")
@@ -372,7 +367,7 @@ function DateFormat:find(line, cursor)
         local substr = matchlist[i + 1]
         scan_cursor = scan_cursor + #substr
 
-        if pattern:sub(1, 1) == "%" and pattern ~= "%%" then
+        if pattern:sub(1, 1) == "%" and pattern ~= "%" then
             local date_element = M.date_elements[pattern:sub(2)]
             dt_info = date_element.update_date(substr, dt_info)
             if scan_cursor >= cursor and not flag_set_status and date_element.kind ~= nil then
@@ -410,7 +405,7 @@ function DateFormat:strftime(time, datekind)
     local text = ""
     local cursor
     for i, pattern in ipairs(self.sequences) do
-        if pattern:sub(1, 1) == "%" and pattern ~= "%%" then
+        if pattern:sub(1, 1) == "%" and pattern ~= "%" then
             local date_element = M.date_elements[pattern:sub(2)]
             if date_element.format ~= nil then
                 text = text .. date_element.format(time)
@@ -434,24 +429,24 @@ end
 ---@class AugendDate
 ---@implement Augend
 ---@field kind datekind
----@field config {pattern: string, default_kind: datekind, only_valid: boolean, only_words: boolean}
+---@field config {pattern: string, default_kind: datekind, only_valid: boolean, word: boolean}
 ---@field date_format DateFormat
 local AugendDate = {}
 
----@param config {pattern: string, default_kind: datekind, only_valid?: boolean, only_words?: boolean}
+---@param config {pattern: string, default_kind: datekind, only_valid?: boolean, word?: boolean}
 ---@return AugendDate
 function M.new(config)
     vim.validate {
         pattern = { config.pattern, "string" },
         default_kind = { config.default_kind, "string" },
         only_valid = { config.only_valid, "boolean", true },
-        only_words = { config.only_words, "boolean", true },
+        word = { config.word, "boolean", true },
     }
 
     config.only_valid = util.unwrap_or(config.only_valid, false)
-    config.only_words = util.unwrap_or(config.only_words, false)
+    config.word = util.unwrap_or(config.word, false)
 
-    local date_format = DateFormat.new(config.pattern, config.default_kind, config.only_words)
+    local date_format = DateFormat.new(config.pattern, config.default_kind, config.word)
 
     return setmetatable(
         { config = config, kind = config.default_kind, date_format = date_format },
