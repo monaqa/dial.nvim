@@ -325,11 +325,11 @@ function DateFormat:regex()
         ---@return string
         function(s)
             if s == "%" then
-                return [[\(%\)]]
+                return [[%]]
             elseif s:sub(1, 1) == "%" then
                 return [[\(]] .. M.date_elements[s:sub(2)].regex .. [[\)]]
             else
-                return [[\(]] .. vim.fn.escape(s, [[\]]) .. [[\)]]
+                return vim.fn.escape(s, [[\]])
             end
         end,
         self.sequences
@@ -362,18 +362,21 @@ function DateFormat:find(line, cursor)
     local dt_info = os.date("*t", os.time()) --[[@as osdate]]
     local datekind = self.default_kind
 
-    for i, pattern in ipairs(self.sequences) do
+    local match_idx = 2
+    for _, pattern in ipairs(self.sequences) do
         ---@type string
-        local substr = matchlist[i + 1]
-        scan_cursor = scan_cursor + #substr
-
         if pattern:sub(1, 1) == "%" and pattern ~= "%" then
+            local substr = matchlist[match_idx]
+            scan_cursor = scan_cursor + #substr
             local date_element = M.date_elements[pattern:sub(2)]
             dt_info = date_element.update_date(substr, dt_info)
             if scan_cursor >= cursor and not flag_set_status and date_element.kind ~= nil then
                 datekind = date_element.kind
                 flag_set_status = true
             end
+            match_idx = match_idx + 1
+        else
+            scan_cursor = scan_cursor + #pattern
         end
     end
     return { range = range, dt_info = dt_info, kind = datekind }
@@ -404,7 +407,7 @@ end
 function DateFormat:strftime(time, datekind)
     local text = ""
     local cursor
-    for i, pattern in ipairs(self.sequences) do
+    for _, pattern in ipairs(self.sequences) do
         if pattern:sub(1, 1) == "%" and pattern ~= "%" then
             local date_element = M.date_elements[pattern:sub(2)]
             if date_element.format ~= nil then
