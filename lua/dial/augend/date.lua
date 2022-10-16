@@ -1,6 +1,8 @@
 local util = require "dial.util"
 local common = require "dial.augend.common"
 
+local M = {}
+
 ---@alias dateptn { regex: string, capture: datefmtptn[] }
 ---@alias datefmtptn '"%Y"' | '"%y"' | '"%m"' | '"%d"' | '"%H"' | '"%M"' | '"%S"'
 ---@alias datekind '"year"' | '"month"' | '"day"' | '"hour"' | '"min"' | '"sec"'
@@ -9,6 +11,203 @@ local common = require "dial.augend.common"
 ---@alias calc_curpos fun(text: string, kind: datekind) -> integer?
 -- parse: 日付の検出に用いられる正規表現
 -- format: 日付を文字列に変換するときに用いられるパターン文字列または関数
+
+---@param datekind datekind | nil
+---@return fun(string): dttable
+local function simple_parser(datekind)
+    if datekind == nil then
+        return function(_)
+            return {}
+        end
+    end
+    return function(text)
+        return { [datekind] = tonumber(text) }
+    end
+end
+
+---@alias dttable table<datekind, integer>
+---@alias dateparser fun(string): dttable
+---@alias dateformatter fun(osdate): string
+
+---@type table<string, {kind: datekind, regex: string, parse: dateparser, format: dateformatter}>
+local date_elements = {
+    ["Y"] = {
+        kind = "year",
+        regex = [[\d\d\d\d]],
+        parse = simple_parser "year",
+        format = function(dt_info)
+            return ("%04d"):format(dt_info.year)
+        end,
+    },
+    ["m"] = {
+        kind = "month",
+        regex = [[\d\d]],
+        parse = simple_parser "month",
+        format = function(dt_info)
+            return ("%02d"):format(dt_info.month)
+        end,
+    },
+    ["d"] = {
+        kind = "day",
+        regex = [[\d\d]],
+        parse = simple_parser "day",
+        format = function(dt_info)
+            return ("%02d"):format(dt_info.day)
+        end,
+    },
+}
+
+local date_elements_keys = vim.tbl_keys(date_elements) --[[@as string[] ]]
+
+---@class DateFormat
+---@field sequences string[]
+---@field default_kind? datekind
+local DateFormat = {}
+
+---Parse date pattern string and create new DateFormat.
+---@param pattern string
+---@param default_kind? datekind
+---@return DateFormat
+function DateFormat.new(pattern, default_kind)
+    local sequences = {}
+
+    ---@type string
+    local stack = ""
+
+    for c in util.chars(pattern) do
+        if stack == "%" then
+            if c == "-" then
+                stack = "%-"
+            elseif c == "%" then
+                table.insert(sequences, "%%")
+                stack = ""
+            elseif vim.tbl_contains(date_elements_keys, c) then
+                table.insert(sequences, "%" .. c)
+                stack = ""
+            else
+                error("Unsupported special character: %" .. c)
+            end
+        elseif stack == "%-" then
+            if vim.tbl_contains(date_elements_keys, c) then
+                table.insert(sequences, "%-" .. c)
+                stack = ""
+            else
+                error("Unsupported special character: %-" .. c)
+            end
+        else
+            if c == "%" then
+                if stack ~= "" then
+                    table.insert(sequences, stack)
+                end
+                stack = "%"
+            else
+                stack = stack .. c
+            end
+        end
+    end
+
+    if stack ~= "" then
+        if vim.startswith(stack, "%") then
+            error("Pattern string cannot end with '" .. stack .. "'.")
+        else
+            table.insert(sequences, stack)
+        end
+    end
+
+    return setmetatable({ sequences = sequences, default_kind = default_kind }, { __index = DateFormat })
+end
+
+---returns the regex.
+---@return string
+function DateFormat:regex()
+    local regexes = vim.tbl_map(
+        ---@param s string
+        ---@return string
+        function(s)
+            if s == "%%" then
+                return "%%"
+            elseif s:sub(1, 1) == "%" then
+                return [[\(]] .. date_elements[s:sub(2)].regex .. [[\)]]
+            else
+                return [[\(]] .. vim.fn.escape(s, [[\]]) .. [[\)]]
+            end
+        end,
+        self.sequences
+    ) --[[ @as string[] ]]
+    return [[\V\C]] .. table.concat(regexes, "")
+end
+
+---@param line string
+---@param cursor? integer
+---@return {range: textrange, dt_info: osdate, kind: datekind} | nil
+function DateFormat:find(line, cursor)
+    local range = common.find_pattern_regex(self:regex())(line, cursor)
+    if range == nil then
+        return nil
+    end
+
+    -- cursor が nil になるときはカーソルが最初にあるときとみなして良い
+    if cursor == nil then
+        cursor = 0
+    end
+
+    local matchlist = vim.fn.matchlist(line:sub(range.from, range.to), self:regex())
+    local scan_cursor = range.from
+    local cursor_overtaken = scan_cursor >= cursor
+    local dt_info = os.date("*t", os.time()) --[[@as osdate]]
+    local datekind = self.default_kind
+
+    for i, pattern in ipairs(self.sequences) do
+        ---@type string
+        local substr = matchlist[i + 1]
+        scan_cursor = scan_cursor + #substr
+
+        vim.pretty_print {
+            pattern = pattern,
+            substr = substr,
+            scan_cursor = scan_cursor,
+            cursor_overtaken = cursor_overtaken,
+        }
+
+        if pattern:sub(1, 1) == "%" and pattern ~= "%%" then
+            local date_element = date_elements[pattern:sub(2)]
+            local dttable = date_element.parse(substr)
+            for key, value in pairs(dttable) do
+                dt_info[key] = value
+            end
+            if not cursor_overtaken then
+                datekind = date_element.kind
+            end
+        end
+
+        if scan_cursor >= cursor then
+            cursor_overtaken = true
+        end
+    end
+    return { range = range, dt_info = dt_info, kind = datekind }
+end
+
+---@param dt_info osdate
+---@param datekind datekind
+---@return addresult
+function DateFormat:strftime(dt_info, datekind)
+    local text = ""
+    local cursor
+    for i, pattern in ipairs(self.sequences) do
+        if pattern:sub(1, 1) == "%" and pattern ~= "%%" then
+            local date_element = date_elements[pattern:sub(2)]
+            text = text .. date_element.format(dt_info)
+            if date_element.kind == datekind then
+                cursor = #text
+            end
+        else
+            text = text .. pattern
+        end
+    end
+    return { text = text, cursor = cursor }
+end
+
+M.DateFormat = DateFormat
 
 local JA_WEEKDAYS = { "日", "月", "火", "水", "木", "金", "土" }
 
@@ -56,8 +255,6 @@ end
 ---@field only_valid boolean
 ---@field kind datekind
 local AugendDate = {}
-
-local M = {}
 
 ---@param config datefmt
 ---@return Augend
