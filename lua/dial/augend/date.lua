@@ -140,6 +140,14 @@ M.date_elements = {
     },
 
     -- with hyphen
+    ["-y"] = {
+        kind = "year",
+        regex = [[\d\{1,2\}]],
+        update_date = function(text, date)
+            date.year = 2000 + tonumber(text)
+            return date
+        end,
+    },
     ["-m"] = {
         kind = "month",
         regex = [[\d\{1,2\}]],
@@ -154,6 +162,21 @@ M.date_elements = {
         kind = "hour",
         regex = [[\d\{1,2\}]],
         update_date = simple_updater "hour",
+    },
+    ["-I"] = {
+        kind = "hour",
+        regex = [[\d\{1,2\}]],
+        update_date = function(text, date)
+            local hour = tonumber(text)
+            if date.hour < 12 and hour >= 12 then
+                date.hour = hour - 12
+            elseif date.hour >= 12 and hour < 12 then
+                date.hour = hour + 12
+            else
+                date.hour = hour
+            end
+            return date
+        end,
     },
     ["-M"] = {
         kind = "min",
