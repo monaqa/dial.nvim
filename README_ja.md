@@ -181,7 +181,49 @@ require("dial.config").augends:register_group{
 
 ### 日付
 
-日付や時刻を表します。後述のエイリアスから選択します。
+日付や時刻を表します。
+
+```lua
+require("dial.config").augends:register_group{
+  default = {
+    -- date with format `yyyy/mm/dd`
+    augend.date.new{
+        pattern = "%Y/%m/%d",
+        default_kind = "day",
+        -- if true, it does not match dates which does not exist, such as 2022/05/32
+        only_valid = true,
+        -- if true, it only matches dates with word boundary
+        word = false,
+    },
+  },
+}
+```
+
+`pattern` で指定する文字列には、以下のエスケープシーケンスを使用できます。
+
+|文字列|意味                                                        |
+|-----|-------------------------------------------------------------|
+|`%Y` |4桁の西暦。 (e.g. `2022`)                                    |
+|`%y` |西暦の下2桁。上2桁は `20` として解釈されます。 (e.g. `22`)   |
+|`%m` |2桁の月。 (e.g. `09`)                                        |
+|`%d` |2桁の日。 (e.g. `28`)                                        |
+|`%H` |24時間で表示した2桁の時間。 (e.g. `15`)                      |
+|`%I` |12時間で表示した2桁の時間。 (e.g. `03`)                      |
+|`%M` |2桁の分。 (e.g. `05`)                                        |
+|`%S` |2桁の秒。 (e.g. `08`)                                        |
+|`%-y`|西暦の下2桁を1–2桁で表したもの。(e.g. `9` で `2009` 年を表す)|
+|`%-m`|1–2桁の月。 (e.g. `9`)                                       |
+|`%-d`|1–2桁の日。 (e.g. `28`)                                      |
+|`%-H`|24時間で表示した1–2桁の時間。 (e.g. `15`)                    |
+|`%-I`|12時間で表示した1–2桁の時間。 (e.g. `3`)                     |
+|`%-M`|1–2桁の分。 (e.g. `5`)                                       |
+|`%-S`|1–2桁の秒。 (e.g. `8`)                                       |
+|`%a` |英語表記の短い曜日。 (`Sun`, `Mon`, ..., `Sat`)              |
+|`%A` |英語表記の曜日。 (`Sunday`, `Monday`, ..., `Saturday`)       |
+|`%b` |英語表記の短い月名。 (`Jan`, ..., `Dec`)                     |
+|`%B` |英語表記の月名。 (`January`, ..., `December`)                |
+|`%p` |`AM` または `PM`。                                           |
+|`%J` |日本語表記の曜日。 (`日`, `月`, ..., `土`)                   |
 
 ### 定数
 
