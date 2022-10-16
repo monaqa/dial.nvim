@@ -179,4 +179,11 @@ function M.try_get_keys(tbl, keylst)
     return values
 end
 
+---return the iterator returning UTF-8 based characters
+---@param text string
+---@return fun(): string | nil
+function M.chars(text)
+    return text:gmatch "[%z\1-\127\194-\244][\128-\191]*"
+end
+
 return M

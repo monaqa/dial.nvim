@@ -140,14 +140,22 @@ operation, and group represents a group of multiple augends.
 	  default = {
 		augend.integer.alias.decimal,   -- nonnegative decimal number
 		augend.integer.alias.hex,       -- nonnegative hex number
-		augend.date.alias["%Y/%m/%d"],  -- date (2022/02/19, etc.)
+		-- date (2022/02/19, etc.)
+		augend.date.new {
+		  pattern = "%Y/%m/%d",
+		  default_kind = "day",
+		},
 	  },
 
 	  -- augends used when group with name `mygroup` is specified
 	  mygroup = {
 		augend.integer.alias.decimal,
 		augend.constant.alias.bool,    -- boolean value (true <-> false)
-		augend.date.alias["%m/%d/%Y"], -- date (02/19/2022, etc.)
+		-- date (02/19/2022, etc.)
+		augend.date.new {
+		  pattern = "%m/%d/%Y",
+		  default_kind = "day",
+		},
 	  }
 	}
 <
@@ -195,10 +203,24 @@ If no settings are made, it is equivalent to having the following settings:
 	  default = {
 		augend.integer.alias.decimal,
 		augend.integer.alias.hex,
-		augend.date.alias["%Y/%m/%d"],
-		augend.date.alias["%Y-%m-%d"],
-		augend.date.alias["%m/%d"],
-		augend.date.alias["%H:%M"],
+		augend.date.new {
+			pattern = "%Y/%m/%d",
+			default_kind = "day",
+		},
+		augend.date.new {
+			pattern = "%Y-%m-%d",
+			default_kind = "day",
+		},
+		augend.date.new {
+			pattern = "%m/%d",
+			default_kind = "day",
+			only_valid = true,
+		},
+		augend.date.new {
+			pattern = "%H:%M",
+			default_kind = "day",
+			only_valid = true,
+		},
 		augend.constant.alias.ja_weekday_full,
 	  },
 	}
@@ -212,7 +234,10 @@ Augends Only Valid in VISUAL Mode~
 	  visual = {
 		augend.integer.alias.decimal,
 		augend.integer.alias.hex,
-		augend.date.alias["%Y/%m/%d"],
+		augend.date.new {
+			pattern = "%Y/%m/%d",
+			default_kind = "day",
+		},
 		augend.constant.alias.alpha,
 		augend.constant.alias.Alpha,
 	  },
@@ -290,6 +315,9 @@ The following aliases are provided by default (See |dial-augends| for detail):
 
 	misc:
 		`augend.misc.alias.markdown_header`
+
+NOTE: aliases in `augend.date.alias` are deprecated. These will be removed in
+future release.
 
 ------------------------------------------------------------------------------
 AUGENDS									*dial-augends*
@@ -416,8 +444,93 @@ notation. It matches strings such as:
 DATE									*dial-augends-date*
 -----
 
-Matches dates and times. You can use this rule with the following augend
-aliases.
+Matches dates and times.
+
+>
+	require("dial.config").augends:register_group{
+	  default = {
+		augend.date.new{
+			pattern = "%Y/%m/%d",
+			default_kind = "day",
+			only_valid = true,
+			word = false,
+		},
+	  },
+	}
+<
+
+The argument table of `augend.date.new` can take the following keys:
+		pattern (string, required)
+			date pattern to match. See |dial-augends-date-pattern| for
+			details.
+		default_kind (string, required)
+			represents in which unit the date to be incremented/decremented
+			when the cursor position is far from the date or in VISUAL mode.
+			Choose from the following values:
+			* `year`
+			* `month`
+			* `day`
+			* `hour`
+			* `min`
+			* `sec`
+		only_valid (boolean, default: false)
+			When true, it doesn't match non-existent dates or times, such as
+			`2022/13/52` and `27:30`. It is useful to avoid matching an
+			unintended range.
+			When false, it matches non-existent dates or times, and corrects
+			them to the existent ones. For example, when you increment the
+			date `2022/06/31` by one day, the original string is interpreted
+			as the date `2022/07/01` and the final date becomes `2022/07/02`.
+		word (boolean, default: false)
+			If true, the augend matches only if the string matching
+			elements is on a word boundary.
+
+										*dial-augends-date-pattern*
+The argument `pattern` can be a string like the following:
+>
+	%Y/%m/%d     (e.g. 2022/02/06)
+	%H:%M:%S     (e.g. 15:30:00)
+	%-m/%-d      (e.g. 2/6)
+<
+`%` is an escape character to represent a date elements. Escape sequence can
+be a combination of `%` and a single alphabetic character, or `%-` and a
+single alphabetic character. `%` itself can be represented by `%%`.
+Only the following escape sequences are allowed, and other combinations and
+single use of `%` results in an error.
+
+		`%Y`	4-digit year. (e.g. `2022`)
+		`%y`	Last 2 digits of year.
+				The upper 2 digits are interpreted as `20`. (e.g. `22`)
+		`%m`	2-digit month. (e.g. `09`)
+		`%d`	2-digit day. (e.g. `28`)
+		`%H`	2-digit hour, expressed in 24 hours. (e.g. `15`)
+		`%I`	2-digit hour, expressed in 12 hours. (e.g. `03`)
+		`%M`	2-digit minute. (e.g. `05`)
+		`%S`	2-digit second. (e.g. `08`)
+		`%-y`	1- or 2-digit year. (e.g. `9` represents 2009)
+		`%-m`	1- or 2-digit month. (e.g. `9`)
+		`%-d`	1- or 2-digit day. (e.g. `28`)
+		`%-H`	1- or 2-digit hour, expressed in 24 hours. (e.g. `15`)
+		`%-I`	1- or 2-digit hour, expressed in 12 hours. (e.g. `3`)
+		`%-M`	1- or 2-digit minute. (e.g. `5`)
+		`%-S`	1- or 2-digit second. (e.g. `8`)
+		`%a`	English weekdays (`Sun`, `Mon`, ..., `Sat`)
+		`%A`	English full weekdays (`Sunday`, `Monday`, ..., `Saturday`)
+		`%b`	English month names (`Jan`, ..., `Dec`)
+		`%B`	English month full names (`January`, ..., `December`)
+		`%p`	`AM` or `PM`.
+		`%J`	Japanese weekdays (`日`, `月`, ..., `土`)
+
+NOTE: patterns must contain information about date or time. For example, the
+string that only contains `%a` cannot be a pattern, because the day of the
+week alone is not enough to infer the date.
+
+There are some aliases in `augend.date`.
+
+NOTE: the following aliases are remnants of a time when it was hard and
+tedious to specify date formats. Now that you can freely specify the date
+format, the aliases are losing their value. They are currently retained for
+compatibility, but will be removed in the future.
 
 augend.date.alias["%Y/%m/%d"]~
 

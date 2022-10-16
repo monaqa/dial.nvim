@@ -9,10 +9,24 @@ M.augends = {
         default = {
             augend.integer.alias.decimal,
             augend.integer.alias.hex,
-            augend.date.alias["%Y/%m/%d"],
-            augend.date.alias["%Y-%m-%d"],
-            augend.date.alias["%m/%d"],
-            augend.date.alias["%H:%M"],
+            augend.date.new {
+                pattern = "%Y/%m/%d",
+                default_kind = "day",
+            },
+            augend.date.new {
+                pattern = "%Y-%m-%d",
+                default_kind = "day",
+            },
+            augend.date.new {
+                pattern = "%m/%d",
+                default_kind = "day",
+                only_valid = true,
+            },
+            augend.date.new {
+                pattern = "%H:%M",
+                default_kind = "day",
+                only_valid = true,
+            },
             augend.constant.alias.ja_weekday_full,
         },
     },
