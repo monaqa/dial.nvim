@@ -68,4 +68,9 @@ function M.find_pattern_regex(ptn)
     return f
 end
 
+---@param elems string[]
+function M.enum_to_regex(elems)
+    return table.concat(elems, [[\|]])
+end
+
 return M

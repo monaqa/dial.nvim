@@ -7,6 +7,7 @@ local M = {}
 ---@alias dttable table<datekind, integer>
 ---@alias dateparser fun(string, osdate): osdate
 ---@alias dateformatter fun(osdate): string
+---@alias dateelement {kind?: datekind, regex: string, update_date: dateparser, format?: dateformatter}
 
 ---@param datekind datekind | nil
 ---@return fun(string, osdate): osdate
@@ -20,11 +21,6 @@ local function simple_updater(datekind)
         date[datekind] = tonumber(text)
         return date
     end
-end
-
----@param elems string[]
-local function enum_to_regex(elems)
-    return table.concat(elems, [[\|]])
 end
 
 local WEEKDAYS = {
@@ -83,8 +79,8 @@ local MONTHS_FULL = {
     "December",
 }
 
----@type table<string, {kind?: datekind, regex: string, update_date: dateparser, format: dateformatter}>
-M.date_elements = {
+---@type table<string, dateelement>
+local date_elements = {
     ["Y"] = {
         kind = "year",
         regex = [[\d\d\d\d]],
@@ -192,7 +188,7 @@ M.date_elements = {
     -- names
     ["a"] = {
         kind = nil,
-        regex = enum_to_regex(WEEKDAYS),
+        regex = common.enum_to_regex(WEEKDAYS),
         update_date = function(_, date)
             return date
         end,
@@ -203,7 +199,7 @@ M.date_elements = {
     },
     ["A"] = {
         kind = nil,
-        regex = enum_to_regex(WEEKDAYS_FULL),
+        regex = common.enum_to_regex(WEEKDAYS_FULL),
         update_date = function(_, date)
             return date
         end,
@@ -214,7 +210,7 @@ M.date_elements = {
     },
     ["b"] = {
         kind = "month",
-        regex = enum_to_regex(MONTHS),
+        regex = common.enum_to_regex(MONTHS),
         update_date = function(text, date)
             for index, value in ipairs(MONTHS) do
                 if value == text then
@@ -230,7 +226,7 @@ M.date_elements = {
     },
     ["B"] = {
         kind = "month",
-        regex = enum_to_regex(MONTHS_FULL),
+        regex = common.enum_to_regex(MONTHS_FULL),
         update_date = function(text, date)
             for index, value in ipairs(MONTHS_FULL) do
                 if value == text then
@@ -246,7 +242,7 @@ M.date_elements = {
     },
     ["p"] = {
         kind = "hour",
-        regex = enum_to_regex { "AM", "PM" },
+        regex = common.enum_to_regex { "AM", "PM" },
         update_date = function(text, date)
             if text == "PM" and date.hour < 12 then
                 date.hour = date.hour + 12
@@ -268,7 +264,7 @@ M.date_elements = {
     -- custom
     ["J"] = {
         kind = nil,
-        regex = enum_to_regex(WEEKDAYS_JA),
+        regex = common.enum_to_regex(WEEKDAYS_JA),
         update_date = simple_updater(),
         format = function(time)
             local wday = os.date("*t", time).wday --[[ @as integer ]]
@@ -277,11 +273,11 @@ M.date_elements = {
     },
 }
 
----comment
 ---@param pattern string
 ---@return string[]
-local function parse_date_pattern(pattern)
-    local date_elements_keys = vim.tbl_keys(M.date_elements) --[[@as string[] ]]
+---@param custom_date_element_keys string[]
+local function parse_date_pattern(pattern, custom_date_element_keys)
+    local date_elements_keys = vim.tbl_keys(date_elements) --[[@as string[] ]]
 
     local sequences = {}
 
@@ -289,9 +285,29 @@ local function parse_date_pattern(pattern)
     local stack = ""
 
     for c in util.chars(pattern) do
-        if stack == "%" then
-            if c == "-" then
-                stack = "%-"
+        if vim.startswith(stack, "%(") then
+            if c == ")" then
+                local custom_element_name = stack:sub(3)
+                if vim.tbl_contains(custom_date_element_keys, custom_element_name) then
+                    table.insert(sequences, stack .. ")")
+                    stack = ""
+                else
+                    error(("Unknown custom elements: %s"):format(custom_element_name))
+                end
+            else
+                stack = stack .. c
+            end
+        elseif stack == "%-" then
+            if vim.tbl_contains(date_elements_keys, c) then
+                table.insert(sequences, "%-" .. c)
+                stack = ""
+            else
+                error("Unsupported special character: %-" .. c)
+            end
+        elseif stack == "%" then
+            -- special character
+            if c == "-" or c == "(" then
+                stack = "%" .. c
             elseif c == "%" then
                 table.insert(sequences, "%")
                 stack = ""
@@ -301,14 +317,8 @@ local function parse_date_pattern(pattern)
             else
                 error("Unsupported special character: %" .. c)
             end
-        elseif stack == "%-" then
-            if vim.tbl_contains(date_elements_keys, c) then
-                table.insert(sequences, "%-" .. c)
-                stack = ""
-            else
-                error("Unsupported special character: %-" .. c)
-            end
         else
+            -- escape character
             if c == "%" then
                 if stack ~= "" then
                     table.insert(sequences, stack)
@@ -321,7 +331,9 @@ local function parse_date_pattern(pattern)
     end
 
     if stack ~= "" then
-        if vim.startswith(stack, "%") then
+        if vim.startswith(stack, "%(") then
+            error("The end of custom date element was not found:'" .. stack .. "'.")
+        elseif vim.startswith(stack, "%") then
             error("Pattern string cannot end with '" .. stack .. "'.")
         else
             table.insert(sequences, stack)
@@ -336,19 +348,40 @@ end
 ---@field sequences string[]
 ---@field default_kind datekind
 ---@field word boolean
+---@field custom_date_elements table<string, dateelement>
 local DateFormat = {}
 
 ---Parse date pattern string and create new DateFormat.
 ---@param pattern string
 ---@param default_kind datekind
 ---@param word? boolean
+---@param custom_date_elements? table<string, dateelement>
 ---@return DateFormat
-function DateFormat.new(pattern, default_kind, word)
+function DateFormat.new(pattern, default_kind, word, custom_date_elements)
     word = util.unwrap_or(word, false)
+    custom_date_elements = util.unwrap_or(custom_date_elements, {})
 
-    local sequences = parse_date_pattern(pattern)
+    local custom_date_elements_keys = vim.tbl_keys(custom_date_elements) --[[@as string[] ]]
+    local sequences = parse_date_pattern(pattern, custom_date_elements_keys)
 
-    return setmetatable({ sequences = sequences, default_kind = default_kind, word = word }, { __index = DateFormat })
+    return setmetatable(
+        { sequences = sequences, default_kind = default_kind, word = word, custom_date_elements = custom_date_elements },
+        { __index = DateFormat }
+    )
+end
+
+---@param pattern string
+---@return dateelement
+function DateFormat:get_date_elements(pattern)
+    if vim.startswith(pattern, "%(") and vim.endswith(pattern, ")") then
+        local custom_element_name = pattern:sub(3, -2)
+        return self.custom_date_elements[custom_element_name]
+    elseif vim.startswith(pattern, "%") then
+        local element_name = pattern:sub(2)
+        return date_elements[element_name]
+    else
+        error(("unknown pattern: '%s'"):format(pattern))
+    end
 end
 
 ---returns the regex.
@@ -360,8 +393,8 @@ function DateFormat:regex()
         function(s)
             if s == "%" then
                 return [[%]]
-            elseif s:sub(1, 1) == "%" then
-                return [[\(]] .. M.date_elements[s:sub(2)].regex .. [[\)]]
+            elseif vim.startswith(s, "%") then
+                return [[\(]] .. self:get_date_elements(s).regex .. [[\)]]
             else
                 return vim.fn.escape(s, [[\]])
             end
@@ -399,10 +432,10 @@ function DateFormat:find(line, cursor)
     local match_idx = 2
     for _, pattern in ipairs(self.sequences) do
         ---@type string
-        if pattern:sub(1, 1) == "%" and pattern ~= "%" then
+        if pattern ~= "%" and vim.startswith(pattern, "%") then
             local substr = matchlist[match_idx]
             scan_cursor = scan_cursor + #substr
-            local date_element = M.date_elements[pattern:sub(2)]
+            local date_element = self:get_date_elements(pattern)
             dt_info = date_element.update_date(substr, dt_info)
             if scan_cursor >= cursor and not flag_set_status and date_element.kind ~= nil then
                 datekind = date_element.kind
@@ -442,8 +475,8 @@ function DateFormat:strftime(time, datekind)
     local text = ""
     local cursor
     for _, pattern in ipairs(self.sequences) do
-        if pattern:sub(1, 1) == "%" and pattern ~= "%" then
-            local date_element = M.date_elements[pattern:sub(2)]
+        if pattern ~= "%" and vim.startswith(pattern, "%") then
+            local date_element = self:get_date_elements(pattern)
             if date_element.format ~= nil then
                 text = text .. date_element.format(time)
             else
@@ -466,11 +499,11 @@ end
 ---@class AugendDate
 ---@implement Augend
 ---@field kind datekind
----@field config {pattern: string, default_kind: datekind, only_valid: boolean, word: boolean}
+---@field config {pattern: string, default_kind: datekind, only_valid: boolean, word: boolean, custom_date_elements: dateelement}
 ---@field date_format DateFormat
 local AugendDate = {}
 
----@param config {pattern: string, default_kind: datekind, only_valid?: boolean, word?: boolean}
+---@param config {pattern: string, default_kind: datekind, only_valid?: boolean, word?: boolean, custom_date_elements?: table<string, dateelement>}
 ---@return AugendDate
 function M.new(config)
     vim.validate {
@@ -478,12 +511,13 @@ function M.new(config)
         default_kind = { config.default_kind, "string" },
         only_valid = { config.only_valid, "boolean", true },
         word = { config.word, "boolean", true },
+        custom_date_elements = { config.custom_date_elements, "table", true },
     }
 
     config.only_valid = util.unwrap_or(config.only_valid, false)
     config.word = util.unwrap_or(config.word, false)
 
-    local date_format = DateFormat.new(config.pattern, config.default_kind, config.word)
+    local date_format = DateFormat.new(config.pattern, config.default_kind, config.word, config.custom_date_elements)
 
     return setmetatable(
         { config = config, kind = config.default_kind, date_format = date_format },
