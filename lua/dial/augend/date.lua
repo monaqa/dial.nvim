@@ -277,20 +277,11 @@ M.date_elements = {
     },
 }
 
----@class DateFormat
----@field sequences string[]
----@field default_kind datekind
----@field word boolean
-local DateFormat = {}
-
----Parse date pattern string and create new DateFormat.
+---comment
 ---@param pattern string
----@param default_kind datekind
----@param word? boolean
----@return DateFormat
-function DateFormat.new(pattern, default_kind, word)
+---@return string[]
+local function parse_date_pattern(pattern)
     local date_elements_keys = vim.tbl_keys(M.date_elements) --[[@as string[] ]]
-    word = util.unwrap_or(word, false)
 
     local sequences = {}
 
@@ -334,8 +325,28 @@ function DateFormat.new(pattern, default_kind, word)
             error("Pattern string cannot end with '" .. stack .. "'.")
         else
             table.insert(sequences, stack)
+            stack = ""
         end
     end
+
+    return sequences
+end
+
+---@class DateFormat
+---@field sequences string[]
+---@field default_kind datekind
+---@field word boolean
+local DateFormat = {}
+
+---Parse date pattern string and create new DateFormat.
+---@param pattern string
+---@param default_kind datekind
+---@param word? boolean
+---@return DateFormat
+function DateFormat.new(pattern, default_kind, word)
+    word = util.unwrap_or(word, false)
+
+    local sequences = parse_date_pattern(pattern)
 
     return setmetatable({ sequences = sequences, default_kind = default_kind, word = word }, { __index = DateFormat })
 end
