@@ -492,12 +492,10 @@ The argument `pattern` can be a string like the following:
 	%H:%M:%S     (e.g. 15:30:00)
 	%-m/%-d      (e.g. 2/6)
 <
-`%` is an escape character to represent a date elements. Escape sequence can
-be a combination of `%` and a single alphabetic character, or `%-` and a
-single alphabetic character. `%` itself can be represented by `%%`.
-Only the following escape sequences are allowed, and other combinations and
-single use of `%` results in an error.
+`%` is an escape character to represent a date elements and can be used by the
+following pattern.
 
+* `%` + a single alphabetical character.
 		`%Y`	4-digit year. (e.g. `2022`)
 		`%y`	Last 2 digits of year.
 				The upper 2 digits are interpreted as `20`. (e.g. `22`)
@@ -507,13 +505,6 @@ single use of `%` results in an error.
 		`%I`	2-digit hour, expressed in 12 hours. (e.g. `03`)
 		`%M`	2-digit minute. (e.g. `05`)
 		`%S`	2-digit second. (e.g. `08`)
-		`%-y`	1- or 2-digit year. (e.g. `9` represents 2009)
-		`%-m`	1- or 2-digit month. (e.g. `9`)
-		`%-d`	1- or 2-digit day. (e.g. `28`)
-		`%-H`	1- or 2-digit hour, expressed in 24 hours. (e.g. `15`)
-		`%-I`	1- or 2-digit hour, expressed in 12 hours. (e.g. `3`)
-		`%-M`	1- or 2-digit minute. (e.g. `5`)
-		`%-S`	1- or 2-digit second. (e.g. `8`)
 		`%a`	English weekdays (`Sun`, `Mon`, ..., `Sat`)
 		`%A`	English full weekdays (`Sunday`, `Monday`, ..., `Saturday`)
 		`%b`	English month names (`Jan`, ..., `Dec`)
@@ -521,9 +512,96 @@ single use of `%` results in an error.
 		`%p`	`AM` or `PM`.
 		`%J`	Japanese weekdays (`日`, `月`, ..., `土`)
 
+* `%-` + a single alphabetical character.
+		`%-y`	1- or 2-digit year. (e.g. `9` represents 2009)
+		`%-m`	1- or 2-digit month. (e.g. `9`)
+		`%-d`	1- or 2-digit day. (e.g. `28`)
+		`%-H`	1- or 2-digit hour, expressed in 24 hours. (e.g. `15`)
+		`%-I`	1- or 2-digit hour, expressed in 12 hours. (e.g. `3`)
+		`%-M`	1- or 2-digit minute. (e.g. `5`)
+		`%-S`	1- or 2-digit second. (e.g. `8`)
+
+* `%%`. This is used to represent `%` itself.
+
+* Text of the form `%(element_name)` (|dial-augends-date-custom-format|),
+  where `element_name` can be any string in which the `)` character does not
+  appear.
+
 NOTE: patterns must contain information about date or time. For example, the
 string that only contains `%a` cannot be a pattern, because the day of the
 week alone is not enough to infer the date.
+
+										*dial-augends-date-custom-format*
+In date patterns, `%(element_name)` is a special placeholder that can be
+defined by the user. The placeholder can be given in the
+`custom_date_elements` argument of `augend.date.new`.
+
+For example, consider the following configuration:
+>
+	local WEEKDAYS_FLUSHRIGHT = {
+		"   Sunday",
+		"   Monday",
+		"  Tuesday",
+		"Wednesday",
+		" Thursday",
+		"   Friday",
+		" Saturday",
+	}
+	require("dial.config").augends:register_group {
+		default = {
+			augend.date.new {
+				pattern = "%d/%m/%y %(week_flushright)",
+				default_kind = "day",
+				custom_date_elements = {
+					week_flushright = {
+						kind = nil,
+						regex = common.enum_to_regex(WEEKDAYS_FLUSHRIGHT),
+						update_date = function(_, date)
+							return date
+						end,
+						format = function(time)
+							local wday = os.date("*t", time).wday
+							return WEEKDAYS_FLUSHRIGHT[wday]
+						end,
+					}
+				}
+			}
+		},
+	}
+<
+This example defines a custom date element named `week_flushright` and uses
+the element with `%(week_flushright)`. As the result, this rule matches the
+following string:
+>
+	18/10/22   Tuesday
+<
+and pressing <C-a> on the date increments it to the following string:
+>
+	19/10/22 Wednesday
+<
+
+The following fileds are required in the custom_date_elements value:
+		kind (string | nil, default: nil)
+			which information is tied to the element on the date.
+			* `year`
+			* `month`
+			* `day`
+			* `hour`
+			* `min`
+			* `sec`
+		regex (string, required)
+			regular expression to search the element.
+		update_date (function, required)
+			How the date is updated by reading the element: the first argument
+			is a string matching the placeholder, and the second argument is
+			information about the date before the update (a table of the same
+			form as `os.date("*t")`).
+		format (function, required)
+			Given a date (and time), how the element should be converted to a
+			string. unix time is passed as an integer for the first argument.
+
+Yes, it is really flexible! Flexible, but complicated. We recommend to use
+existing elements such as `%a` and `%y`, if possible.
 
 There are some aliases in `augend.date`.
 

@@ -481,20 +481,21 @@ DATE									*dial-augends-date*
 		word (boolean, default: false)
 			true のとき、フォーマットに一致する文字列が単語の境界にあるときの
 			みマッチします。
+		custom_date_elements (table<string, dateelement>, default: {})
+			ユーザが自分自身で日付の形式を定義する際に用いる発展的なオプション。
+			詳細は |dial-augends-date-custom-format| を参照。
 
 										*dial-augends-date-pattern*
-`pattern` 引数は、以下のような文字列を指定することができます。
+`pattern` 引数には以下のような文字列を指定することができます。
 >
 	%Y/%m/%d     (e.g. 2022/02/06)
 	%H:%M:%S     (e.g. 15:30:00)
 	%-m/%-d      (e.g. 2/6)
 <
-`%` は日付の要素を表すために用いられるエスケープ文字であり、`%` とアルファベッ
-ト1文字、もしくは `%-` とアルファベット1文字の組み合わせで使用することができま
-す。 `%` 自体を表現したいときは `%%` を使用します。
-エスケープシーケンスは以下のものに限り使用することができます。それ以外の組み合
-わせで使用したり、 `%` を単独で使用したりすることはできません。
+`%` は日付の要素を表すために用いられるエスケープ文字であり、以下のようにして用
+いることができます。
 
+* `%` とアルファベット1文字。
 		`%Y`	4桁の西暦。 (e.g. `2022`)
 		`%y`	西暦の下2桁。上2桁は `20` として解釈されます。 (e.g. `22`)
 		`%m`	2桁の月。 (e.g. `09`)
@@ -503,6 +504,13 @@ DATE									*dial-augends-date*
 		`%I`	12時間で表示した2桁の時間。 (e.g. `03`)
 		`%M`	2桁の分。 (e.g. `05`)
 		`%S`	2桁の秒。 (e.g. `08`)
+		`%a`	英語表記の短い曜日。 (`Sun`, `Mon`, ..., `Sat`)
+		`%A`	英語表記の曜日。 (`Sunday`, `Monday`, ..., `Saturday`)
+		`%b`	英語表記の短い月名。 (`Jan`, ..., `Dec`)
+		`%B`	英語表記の月名。 (`January`, ..., `December`)
+		`%p`	`AM` または `PM`。
+		`%J`	日本語表記の曜日。 (`日`, `月`, ..., `土`)
+* `%-` とアルファベット1文字。
 		`%-y`	西暦の下2桁を1–2桁で表したもの。(e.g. `9` で `2009` 年を表す)
 		`%-m`	1–2桁の月。 (e.g. `9`)
 		`%-d`	1–2桁の日。 (e.g. `28`)
@@ -510,16 +518,86 @@ DATE									*dial-augends-date*
 		`%-I`	12時間で表示した1–2桁の時間。 (e.g. `3`)
 		`%-M`	1–2桁の分。 (e.g. `5`)
 		`%-S`	1–2桁の秒。 (e.g. `8`)
-		`%a`	英語表記の短い曜日。 (`Sun`, `Mon`, ..., `Sat`)
-		`%A`	英語表記の曜日。 (`Sunday`, `Monday`, ..., `Saturday`)
-		`%b`	英語表記の短い月名。 (`Jan`, ..., `Dec`)
-		`%B`	英語表記の月名。 (`January`, ..., `December`)
-		`%p`	`AM` または `PM`。
-		`%J`	日本語表記の曜日。 (`日`, `月`, ..., `土`)
+* `%%`。これは `%` 自体を表現するのに用います。
+* `%(element_name)` という形式のテキスト (|dial-augends-date-custom-format|)。
+  `element_name` には `)` という文字が出現しない任意の文字列を入れることができ
+  ます。
 
 NOTE パターンには日付または時刻に関する情報を含める必要があり、曜日単体で使う
 ことはできません。たとえば `%a` をパターンとして指定しても期待通りの動作をしま
 せん。曜日だけでは日付を推定できないためです。
+
+										*dial-augends-date-custom-format*
+日付のパターンにおいて、`%(element_name)` はユーザの手で定義できる特殊なプレー
+スホルダーです。プレースホルダーは `augend.date.new` の `custom_date_elements`
+引数で以下のように与えることができます。
+
+>
+	local WEEKDAYS_FLUSHRIGHT = {
+		"   Sunday",
+		"   Monday",
+		"  Tuesday",
+		"Wednesday",
+		" Thursday",
+		"   Friday",
+		" Saturday",
+	}
+	require("dial.config").augends:register_group {
+		default = {
+			augend.date.new {
+				pattern = "%d/%m/%y %(week_flushright)",
+				default_kind = "day",
+				custom_date_elements = {
+					week_flushright = {
+						kind = nil,
+						regex = common.enum_to_regex(WEEKDAYS_FLUSHRIGHT),
+						update_date = function(_, date)
+							return date
+						end,
+						format = function(time)
+							local wday = os.date("*t", time).wday
+							return WEEKDAYS_FLUSHRIGHT[wday]
+						end,
+					}
+				}
+			}
+		},
+	}
+<
+
+上の例では `week_flushright` という日付の要素を定義し、`%(week_flushright)` と
+してパターン内で使用しています。その結果このルールは
+>
+	18/10/22   Tuesday
+<
+にマッチし、日付の上で <C-a> を実行することで
+>
+	19/10/22 Wednesday
+<
+へとインクリメントできるようになります。
+
+日付の要素に求められるフィールドは以下のとおりです。
+		kind (string | nil, default: nil)
+			その要素が日付のどの情報に紐付いているか。
+			* `year`
+			* `month`
+			* `day`
+			* `hour`
+			* `min`
+			* `sec`
+		regex (string, 必須)
+			その要素を検索する際のパターン文字列。
+		update_date (function, 必須)
+			その要素を読んだことによって、日付がどのようにアップデートされるか。
+			1つ目の引数にはプレースホルダーにマッチした文字列、2つ目の引数には
+			アップデート前の日付の情報 (`os.date("*t")` と同形式のテーブル) が
+			渡されます。
+		format (function, 必須)
+			日付（時刻）が与えられたとき、その要素をどのように文字列に変換する
+			か。1つ目の引数には unix time が integer で渡されます。
+
+非常に柔軟にパターンを定義できるものの、設定が複雑になるため可能な限り `%a` や
+`%y` といった既存の要素を用いることが推奨されます。
 
 `augend.date` には以下のエイリアスが用意されています。
 
