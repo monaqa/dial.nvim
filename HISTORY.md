@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### New Features
+
+* add options to augend 'date'
+    * `custom_date_elements`
+    * `clamp`
+    * `end_sensitive`
+
 ## 0.4.0
 
 ### New Features

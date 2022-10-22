@@ -484,6 +484,13 @@ The argument table of `augend.date.new` can take the following keys:
 		word (boolean, default: false)
 			If true, the augend matches only if the string matching
 			elements is on a word boundary.
+		clamp (boolean, default: false)
+			See |dial-augends-date-clamp|.
+		end_sensitive (boolean, default: false)
+			See |dial-augends-date-end-sensitive|.
+		custom_date_elements (table<string, dateelement>, default: {})
+			Advanced option to define the custom date elements by user.
+			Refer to |dial-augends-date-custom-format| for detail.
 
 										*dial-augends-date-pattern*
 The argument `pattern` can be a string like the following:
@@ -603,6 +610,72 @@ The following fileds are required in the custom_date_elements value:
 Yes, it is really flexible! Flexible, but complicated. We recommend to use
 existing elements such as `%a` and `%y`, if possible.
 
+										*dial-augends-date-clamp*
+										*dial-augends-date-end-sensitive*
+When operating increment/decrement such as "1 month later" or "1 year later",
+the date it represents may not be obvious. For example, given the date
+`2022-01-31` in `yyyy-mm-dd` format, one might think that 1 month later of
+`2022-01-31` is `2022-03-31` with 31 days added, or `2022-02-28`, tha last day
+of the month following January. To accomodate various cases, augend.date has
+two options `clamp` and `end_sensitive.`
+
+For example, consider one month after `2022-01-31`. The straightforward answer
+is `2022-02-31`, but such a date does not exist. When `clamp = false`, it is
+automatically corrected to a date that exists by carrying forward to the next
+month:
+>
+	2022-01-31  --(+1 month)-->  2022-02-31  (that does not exist)
+	                        ~~>  2022-03-03  (FINAL RESULT)
+<
+On the other hand, when `clamp = false`, it is automatically corrected by
+truncating it preserving the month.
+>
+	2022-01-31  --(+1 month)-->  2022-02-31  (that does not exist)
+	                        ~~>  2022-02-28  (FINAL RESULT)
+<
+
+By using `end_sensitive` option, the last day of the month is treated
+specially.
+When `end_sensitive = true` and the date to operate is the last day of the
+month, incrementing/decrementing the year or month will force the conversion
+to the last day of the month, regardless of the `clamp` option.
+>
+	2022-01-31  --(+1 month)-->  2022-02-28
+<
+
+`clamp` and `end_sensitive` are very similar, but work slightly differently.
+Choose the best value that fits your use case, respectively.
+
+* When `clamp = false, end_sensitive = false`
+>
+	2022-01-30  --(+1 month)-->  2022-03-02
+	2022-01-31  --(+1 month)-->  2022-03-03
+	2022-02-28  --(+1 month)-->  2022-03-28
+	2022-03-31  --(-1 month)-->  2022-03-03
+<
+* When `clamp = true, end_sensitive = false`
+>
+	2022-01-30  --(+1 month)-->  2022-02-28  # Clamped!
+	2022-01-31  --(+1 month)-->  2022-02-28  # Clamped!
+	2022-02-28  --(+1 month)-->  2022-03-28
+	2022-03-31  --(-1 month)-->  2022-02-28  # Clamped!
+<
+* When `clamp = false, end_sensitive = true`
+>
+	2022-01-30  --(+1 month)-->  2022-03-02
+	2022-01-31  --(+1 month)-->  2022-02-28  # Last day of the month!
+	2022-02-28  --(+1 month)-->  2022-03-31  # Last day of the month!
+	2022-03-31  --(-1 month)-->  2022-02-28  # Last day of the month!
+<
+* When `clamp = true, end_sensitive = true`
+>
+	2022-01-30  --(+1 month)-->  2022-02-28  # Clamped!
+	2022-01-31  --(+1 month)-->  2022-02-28  # Last day of the month!
+	2022-02-28  --(+1 month)-->  2022-03-31  # Last day of the month!
+	2022-03-31  --(-1 month)-->  2022-02-28  # Last day of the month!
+<
+
+										*dial-augends-date-aliases*
 There are some aliases in `augend.date`.
 
 NOTE: the following aliases are remnants of a time when it was hard and
