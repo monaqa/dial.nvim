@@ -157,3 +157,137 @@ describe([[Test of date with format "%Y年%-m月%-d日(%ja)":]], function()
         end)
     end)
 end)
+
+describe([[Test of clamp & end_sensitive option:]], function()
+    describe("{clamp = false and end_sensitive = false}", function()
+        local augend = date.new {
+            pattern = "%Y/%m/%d",
+            default_kind = "day",
+            clamp = false,
+            end_sensitive = false,
+        }
+        it("does not clamp day or treat last days of month specially", function()
+            augend.kind = "month"
+            assert.are.same(augend:add("2022/01/28", 1), { text = "2022/02/28", cursor = 7 })
+            assert.are.same(augend:add("2022/01/29", 1), { text = "2022/03/01", cursor = 7 })
+            assert.are.same(augend:add("2022/01/30", 1), { text = "2022/03/02", cursor = 7 })
+            assert.are.same(augend:add("2022/01/31", 1), { text = "2022/03/03", cursor = 7 })
+            assert.are.same(augend:add("2022/02/01", 1), { text = "2022/03/01", cursor = 7 })
+            assert.are.same(augend:add("2022/02/27", 1), { text = "2022/03/27", cursor = 7 })
+            assert.are.same(augend:add("2022/02/28", 1), { text = "2022/03/28", cursor = 7 })
+            assert.are.same(augend:add("2022/03/30", 1), { text = "2022/04/30", cursor = 7 })
+            assert.are.same(augend:add("2022/03/31", 1), { text = "2022/05/01", cursor = 7 })
+
+            assert.are.same(augend:add("2022/03/28", -1), { text = "2022/02/28", cursor = 7 })
+            assert.are.same(augend:add("2022/03/29", -1), { text = "2022/03/01", cursor = 7 })
+            assert.are.same(augend:add("2022/03/30", -1), { text = "2022/03/02", cursor = 7 })
+            assert.are.same(augend:add("2022/03/31", -1), { text = "2022/03/03", cursor = 7 })
+            assert.are.same(augend:add("2022/02/27", -1), { text = "2022/01/27", cursor = 7 })
+            assert.are.same(augend:add("2022/02/28", -1), { text = "2022/01/28", cursor = 7 })
+            assert.are.same(augend:add("2022/12/31", -1), { text = "2022/12/01", cursor = 7 })
+
+            augend.kind = "year"
+            assert.are.same(augend:add("2024/02/29", 1), { text = "2025/03/01", cursor = 4 })
+            assert.are.same(augend:add("2025/02/28", -1), { text = "2024/02/28", cursor = 4 })
+        end)
+    end)
+
+    describe("{clamp = true and end_sensitive = false}", function()
+        local augend = date.new {
+            pattern = "%Y/%m/%d",
+            default_kind = "day",
+            clamp = true,
+            end_sensitive = false,
+        }
+        it("clamps day but does not treat last days of month specially", function()
+            augend.kind = "month"
+            assert.are.same(augend:add("2022/01/28", 1), { text = "2022/02/28", cursor = 7 })
+            assert.are.same(augend:add("2022/01/29", 1), { text = "2022/02/28", cursor = 7 })
+            assert.are.same(augend:add("2022/01/30", 1), { text = "2022/02/28", cursor = 7 })
+            assert.are.same(augend:add("2022/01/31", 1), { text = "2022/02/28", cursor = 7 })
+            assert.are.same(augend:add("2022/02/01", 1), { text = "2022/03/01", cursor = 7 })
+            assert.are.same(augend:add("2022/02/27", 1), { text = "2022/03/27", cursor = 7 })
+            assert.are.same(augend:add("2022/02/28", 1), { text = "2022/03/28", cursor = 7 })
+            assert.are.same(augend:add("2022/03/30", 1), { text = "2022/04/30", cursor = 7 })
+            assert.are.same(augend:add("2022/03/31", 1), { text = "2022/04/30", cursor = 7 })
+
+            assert.are.same(augend:add("2022/03/28", -1), { text = "2022/02/28", cursor = 7 })
+            assert.are.same(augend:add("2022/03/29", -1), { text = "2022/02/28", cursor = 7 })
+            assert.are.same(augend:add("2022/03/30", -1), { text = "2022/02/28", cursor = 7 })
+            assert.are.same(augend:add("2022/03/31", -1), { text = "2022/02/28", cursor = 7 })
+            assert.are.same(augend:add("2022/02/27", -1), { text = "2022/01/27", cursor = 7 })
+            assert.are.same(augend:add("2022/02/28", -1), { text = "2022/01/28", cursor = 7 })
+            assert.are.same(augend:add("2022/12/31", -1), { text = "2022/11/30", cursor = 7 })
+
+            augend.kind = "year"
+            assert.are.same(augend:add("2024/02/29", 1), { text = "2025/02/28", cursor = 4 })
+            assert.are.same(augend:add("2025/02/28", -1), { text = "2024/02/28", cursor = 4 })
+        end)
+    end)
+
+    describe("{clamp = false and end_sensitive = true}", function()
+        local augend = date.new {
+            pattern = "%Y/%m/%d",
+            default_kind = "day",
+            clamp = false,
+            end_sensitive = true,
+        }
+        it("does not clamp day but treat last days of month specially", function()
+            augend.kind = "month"
+            assert.are.same(augend:add("2022/01/28", 1), { text = "2022/02/28", cursor = 7 })
+            assert.are.same(augend:add("2022/01/29", 1), { text = "2022/03/01", cursor = 7 })
+            assert.are.same(augend:add("2022/01/30", 1), { text = "2022/03/02", cursor = 7 })
+            assert.are.same(augend:add("2022/01/31", 1), { text = "2022/02/28", cursor = 7 })
+            assert.are.same(augend:add("2022/02/01", 1), { text = "2022/03/01", cursor = 7 })
+            assert.are.same(augend:add("2022/02/27", 1), { text = "2022/03/27", cursor = 7 })
+            assert.are.same(augend:add("2022/02/28", 1), { text = "2022/03/31", cursor = 7 })
+            assert.are.same(augend:add("2022/03/30", 1), { text = "2022/04/30", cursor = 7 })
+            assert.are.same(augend:add("2022/03/31", 1), { text = "2022/04/30", cursor = 7 })
+
+            assert.are.same(augend:add("2022/03/28", -1), { text = "2022/02/28", cursor = 7 })
+            assert.are.same(augend:add("2022/03/29", -1), { text = "2022/03/01", cursor = 7 })
+            assert.are.same(augend:add("2022/03/30", -1), { text = "2022/03/02", cursor = 7 })
+            assert.are.same(augend:add("2022/03/31", -1), { text = "2022/02/28", cursor = 7 })
+            assert.are.same(augend:add("2022/02/27", -1), { text = "2022/01/27", cursor = 7 })
+            assert.are.same(augend:add("2022/02/28", -1), { text = "2022/01/31", cursor = 7 })
+            assert.are.same(augend:add("2022/12/31", -1), { text = "2022/11/30", cursor = 7 })
+
+            augend.kind = "year"
+            assert.are.same(augend:add("2024/02/29", 1), { text = "2025/02/28", cursor = 4 })
+            assert.are.same(augend:add("2025/02/28", -1), { text = "2024/02/29", cursor = 4 })
+        end)
+    end)
+
+    describe("{clamp = true and end_sensitive = true}", function()
+        local augend = date.new {
+            pattern = "%Y/%m/%d",
+            default_kind = "day",
+            clamp = true,
+            end_sensitive = true,
+        }
+        it("clamp day and treat last days of month specially", function()
+            augend.kind = "month"
+            assert.are.same(augend:add("2022/01/28", 1), { text = "2022/02/28", cursor = 7 })
+            assert.are.same(augend:add("2022/01/29", 1), { text = "2022/02/28", cursor = 7 })
+            assert.are.same(augend:add("2022/01/30", 1), { text = "2022/02/28", cursor = 7 })
+            assert.are.same(augend:add("2022/01/31", 1), { text = "2022/02/28", cursor = 7 })
+            assert.are.same(augend:add("2022/02/01", 1), { text = "2022/03/01", cursor = 7 })
+            assert.are.same(augend:add("2022/02/27", 1), { text = "2022/03/27", cursor = 7 })
+            assert.are.same(augend:add("2022/02/28", 1), { text = "2022/03/31", cursor = 7 })
+            assert.are.same(augend:add("2022/03/30", 1), { text = "2022/04/30", cursor = 7 })
+            assert.are.same(augend:add("2022/03/31", 1), { text = "2022/04/30", cursor = 7 })
+
+            assert.are.same(augend:add("2022/03/28", -1), { text = "2022/02/28", cursor = 7 })
+            assert.are.same(augend:add("2022/03/29", -1), { text = "2022/02/28", cursor = 7 })
+            assert.are.same(augend:add("2022/03/30", -1), { text = "2022/02/28", cursor = 7 })
+            assert.are.same(augend:add("2022/03/31", -1), { text = "2022/02/28", cursor = 7 })
+            assert.are.same(augend:add("2022/02/27", -1), { text = "2022/01/27", cursor = 7 })
+            assert.are.same(augend:add("2022/02/28", -1), { text = "2022/01/28", cursor = 7 })
+            assert.are.same(augend:add("2022/12/31", -1), { text = "2022/11/30", cursor = 7 })
+
+            augend.kind = "year"
+            assert.are.same(augend:add("2024/02/29", 1), { text = "2025/02/28", cursor = 4 })
+            assert.are.same(augend:add("2025/02/28", -1), { text = "2024/02/29", cursor = 4 })
+        end)
+    end)
+end)
