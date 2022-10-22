@@ -595,6 +595,8 @@ local function update_dt_info(dt_info, kind, addend, clamp, end_sensitive)
     local day_before_add = dt_info.day
     dt_info.day = 1
     dt_info[kind] = dt_info[kind] + addend
+    -- update date information to existent one
+    dt_info = os.date("*t", os.time(dt_info)) --[[@as osdate]]
     local end_day_after_add = calc_end_day(dt_info.year, dt_info.month)
 
     if end_sensitive and end_day_before_add == day_before_add then
