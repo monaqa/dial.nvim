@@ -456,6 +456,7 @@ DATE									*dial-augends-date*
 	}
 <
 
+										*dial-augends-date-arguments*
 `augend.date.new` の引数のテーブルは以下のキーをとることができます。
 		pattern (string, 必須)
 			マッチさせたい日付のパターン。詳細は |dial-augends-date-pattern|
@@ -481,6 +482,14 @@ DATE									*dial-augends-date*
 		word (boolean, default: false)
 			true のとき、フォーマットに一致する文字列が単語の境界にあるときの
 			みマッチします。
+		clamp (boolean, default: false)
+			月や年をインクリメントすることによって日付がその月の末日を超えると
+			きにどう扱うかを制御する。true ならば末日での切り詰めを行う。
+			|dial-augends-date-clamp| 参照。
+		end_sensitive (boolean, default: false)
+			月や年をインクリメントする際に、月の末日のみ特別扱いするかどうかを
+			制御する。true ならば、末日を特別扱いして扱う。
+			|dial-augends-date-end-sensitive| 参照。
 		custom_date_elements (table<string, dateelement>, default: {})
 			ユーザが自分自身で日付の形式を定義する際に用いる発展的なオプション。
 			詳細は |dial-augends-date-custom-format| を参照。
@@ -599,6 +608,70 @@ NOTE パターンには日付または時刻に関する情報を含める必要
 非常に柔軟にパターンを定義できるものの、設定が複雑になるため可能な限り `%a` や
 `%y` といった既存の要素を用いることが推奨されます。
 
+										*dial-augends-date-clamp*
+										*dial-augends-date-end-sensitive*
+「1ヶ月後」「1年後」のような増減操作を行うとき、それが表す日付は自明ではない場
+合があります。たとえば `yyyy-mm-dd` 形式で `2022-01-31` という日付を考えると、
+その1ヶ月後は31日を加算した `2022-03-03` だと考える人もいるかもしれませんし、
+「1月の次の月の末日」である `2022-02-28` だと考える人もいるでしょう。様々なケ
+ースに対応するため、 augend.date には `clamp` と `end_sensitive` という2種類の
+オプションが用意されています。
+
+具体例として、 `2022-01-31` の1ヶ月後を考えてみます。素直に考えれば
+`2022-02-31` ですが、残念ながらこの日付は存在しません。`clamp = false` のとき
+は、次の月に繰り越すことで存在する日付へと修正します。
+>
+	2022-01-31  --(+1 month)-->  2022-02-31  (that does not exist)
+	                        ~~>  2022-03-03  (FINAL RESULT)
+<
+一方で`clamp = true` のときは、月を保ちつつ日付を切り詰めることで修正します。
+>
+	2022-01-31  --(+1 month)-->  2022-02-31  (that does not exist)
+	                        ~~>  2022-02-28  (FINAL RESULT)
+<
+
+`end_sensitive` オプションを使うと、末日を特別扱いすることができます。
+`end_sensitive = true` のとき、増減対象の日付がある月の末日だった場合、年月を
+インクリメントすると `clamp` にかかわらず強制的にその月の末日へと変換されます。
+よって
+>
+	2022-01-31  -->  2022-02-28
+<
+となります。
+
+`clamp` と `end_sensitive` はよく似たオプションですが、動作が微妙に異なります。
+自分のユースケースに最も合った値をそれぞれ選択してください。
+
+* `clamp = false, end_sensitive = false` のとき
+>
+	2022-01-30  --(+1 month)-->  2022-03-02
+	2022-01-31  --(+1 month)-->  2022-03-03
+	2022-02-28  --(+1 month)-->  2022-03-28
+	2022-03-31  --(-1 month)-->  2022-03-03
+<
+* `clamp = true, end_sensitive = false` のとき
+>
+	2022-01-30  --(+1 month)-->  2022-02-28  # Clamped!
+	2022-01-31  --(+1 month)-->  2022-02-28  # Clamped!
+	2022-02-28  --(+1 month)-->  2022-03-28
+	2022-03-31  --(-1 month)-->  2022-02-28  # Clamped!
+<
+* `clamp = false, end_sensitive = true` のとき
+>
+	2022-01-30  --(+1 month)-->  2022-03-02
+	2022-01-31  --(+1 month)-->  2022-02-28  # Last day of the month!
+	2022-02-28  --(+1 month)-->  2022-03-31  # Last day of the month!
+	2022-03-31  --(-1 month)-->  2022-02-28  # Last day of the month!
+<
+* `clamp = true, end_sensitive = true` のとき
+>
+	2022-01-30  --(+1 month)-->  2022-02-28  # Clamped!
+	2022-01-31  --(+1 month)-->  2022-02-28  # Last day of the month!
+	2022-02-28  --(+1 month)-->  2022-03-31  # Last day of the month!
+	2022-03-31  --(-1 month)-->  2022-02-28  # Last day of the month!
+<
+
+										*dial-augends-date-aliases*
 `augend.date` には以下のエイリアスが用意されています。
 
 NOTE: 以下のエイリアスは、日付のフォーマットを指定するのが困難であった時代の名

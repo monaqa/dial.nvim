@@ -499,11 +499,11 @@ end
 ---@class AugendDate
 ---@implement Augend
 ---@field kind datekind
----@field config {pattern: string, default_kind: datekind, only_valid: boolean, word: boolean, custom_date_elements: dateelement}
+---@field config {pattern: string, default_kind: datekind, only_valid: boolean, word: boolean, clamp: boolean, end_sensitive: boolean, custom_date_elements: dateelement}
 ---@field date_format DateFormat
 local AugendDate = {}
 
----@param config {pattern: string, default_kind: datekind, only_valid?: boolean, word?: boolean, custom_date_elements?: table<string, dateelement>}
+---@param config {pattern: string, default_kind: datekind, only_valid?: boolean, word?: boolean, clamp?: boolean, end_sensitive?: boolean, custom_date_elements?: table<string, dateelement>}
 ---@return AugendDate
 function M.new(config)
     vim.validate {
@@ -511,11 +511,15 @@ function M.new(config)
         default_kind = { config.default_kind, "string" },
         only_valid = { config.only_valid, "boolean", true },
         word = { config.word, "boolean", true },
+        clamp = { config.clamp, "boolean", true },
+        end_sensitive = { config.end_sensitive, "boolean", true },
         custom_date_elements = { config.custom_date_elements, "table", true },
     }
 
     config.only_valid = util.unwrap_or(config.only_valid, false)
     config.word = util.unwrap_or(config.word, false)
+    config.clamp = util.unwrap_or(config.clamp, false)
+    config.end_sensitive = util.unwrap_or(config.end_sensitive, false)
 
     local date_format = DateFormat.new(config.pattern, config.default_kind, config.word, config.custom_date_elements)
 
@@ -558,6 +562,51 @@ function AugendDate:find_stateful(line, cursor)
     return find_result.range
 end
 
+---@param year integer
+---@param month integer
+---@return integer
+local function calc_end_day(year, month)
+    if month == 4 or month == 6 or month == 9 or month == 11 then
+        return 30
+    elseif month == 2 then
+        if year % 400 == 0 or (year % 4 == 0 and year % 100 ~= 0) then
+            return 29
+        else
+            return 28
+        end
+    else
+        return 31
+    end
+end
+
+---@param dt_info osdate
+---@param kind datekind
+---@param addend integer
+---@param clamp boolean
+---@param end_sensitive boolean
+---@return osdate
+local function update_dt_info(dt_info, kind, addend, clamp, end_sensitive)
+    if kind ~= "year" and kind ~= "month" then
+        dt_info[kind] = dt_info[kind] + addend
+        return dt_info
+    end
+
+    local end_day_before_add = calc_end_day(dt_info.year, dt_info.month)
+    local day_before_add = dt_info.day
+    dt_info.day = 1
+    dt_info[kind] = dt_info[kind] + addend
+    local end_day_after_add = calc_end_day(dt_info.year, dt_info.month)
+
+    if end_sensitive and end_day_before_add == day_before_add then
+        dt_info.day = end_day_after_add
+    elseif clamp and day_before_add > end_day_after_add then
+        dt_info.day = end_day_after_add
+    else
+        dt_info.day = day_before_add
+    end
+    return dt_info
+end
+
 ---@param text string
 ---@param addend integer
 ---@param cursor? integer
@@ -569,7 +618,8 @@ function AugendDate:add(text, addend, cursor)
     end
     local dt_info = find_result.dt_info
 
-    dt_info[self.kind] = dt_info[self.kind] + addend
+    dt_info = update_dt_info(dt_info, self.kind, addend, self.config.clamp, self.config.end_sensitive)
+    -- dt_info[self.kind] = dt_info[self.kind] + addend
     local time = os.time(dt_info)
 
     return self.date_format:strftime(time, self.kind)
