@@ -3,7 +3,7 @@ local common = require "dial.augend.common"
 
 ---@class AugendParen
 ---@implement Augend
----@field config { patterns: string[][],  }
+---@field config { patterns: string[][], escape_char?: string, cyclic: boolean, nested: boolean }
 ---@field find_pattern string
 local AugendParen = {}
 
@@ -41,7 +41,7 @@ local function find_nested_paren(line, open, close, nested, cursor_idx, escape_c
         --     escaped = escaped,
         -- }
 
-        -- idx が cursor_idx を超えた瞬間に paren_nested_level_at_cursor を記録
+        -- idx が cursor_idx を超えた瞬間に depth_at_cursor を記録
         if depth_at_cursor == nil and idx >= cursor_idx then
             -- util.dbg"cursor detected!"
             depth_at_cursor = #start_idx_stack
@@ -66,7 +66,7 @@ local function find_nested_paren(line, open, close, nested, cursor_idx, escape_c
                 idx = idx + #close
                 local close_end_idx = idx - 1
 
-                -- idx が cursor_idx を超えた瞬間に paren_nested_level_at_cursor を記録
+                -- idx が cursor_idx を超えた瞬間に depth_at_cursor を記録
                 if depth_at_cursor == nil and close_end_idx >= cursor_idx then
                     -- util.dbg"cursor detected!"
                     depth_at_cursor = #start_idx_stack
@@ -140,6 +140,9 @@ end
 function AugendParen:find(line, cursor)
     ---@type textrange?
     local tmp_range = nil
+    if cursor == nil then
+        cursor = 1
+    end
 
     for _, ptn in ipairs(self.config.patterns) do
         local open = ptn[1]
