@@ -34,7 +34,7 @@ local function preserve_case(word)
 end
 
 ---@param config { elements: string[], word?: boolean, cyclic?: boolean, pattern_regexp?: string, preserve_case?: boolean }
----@return AugendConstant
+---@return Augend
 function M.new(config)
     util.validate_list("config.elements", config.elements, "string")
 
