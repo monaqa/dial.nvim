@@ -504,7 +504,7 @@ end
 local AugendDate = {}
 
 ---@param config {pattern: string, default_kind: datekind, only_valid?: boolean, word?: boolean, clamp?: boolean, end_sensitive?: boolean, custom_date_elements?: table<string, dateelement>}
----@return AugendDate
+---@return Augend
 function M.new(config)
     vim.validate {
         pattern = { config.pattern, "string" },
