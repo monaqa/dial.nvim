@@ -427,6 +427,13 @@ function DateFormat:find(line, cursor)
     local scan_cursor = range.from - 1
     local flag_set_status = scan_cursor >= cursor
     local dt_info = os.date("*t", 0) --[[@as osdate]]
+
+    do
+        local now = os.date("*t", os.time()) --[[@as osdate]]
+        dt_info.month = now.month
+        dt_info.year = now.year
+    end
+
     local datekind = self.default_kind
 
     local match_idx = 2
