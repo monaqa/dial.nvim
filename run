@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+TESTS_INIT=tests/minimal_init.lua
+TESTS_DIR=tests/
+
+
+function test {
+
+	nvim \
+		--headless \
+		--noplugin \
+		-u ${TESTS_INIT} \
+		-c "PlenaryBustedDirectory ${TESTS_DIR} { minimal_init = '${TESTS_INIT}' }"
+}
+
+
+function help {
+    echo "$0 <task> <args>"
+    echo "Tasks:"
+    compgen -A function | cat -n
+}
+
+TIMEFORMAT="Task completed in %3lR"
+time ${@:-default}
