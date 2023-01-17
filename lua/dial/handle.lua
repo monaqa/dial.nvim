@@ -215,7 +215,7 @@ end
 ---@param selected_range {from: integer, to?: integer}
 ---@param direction direction
 ---@param tier integer
----@return {result?: string}
+---@return {line?: string}
 function Handler:operate_visual(line, selected_range, direction, tier)
     if self.active_augend == nil then
         return {}
