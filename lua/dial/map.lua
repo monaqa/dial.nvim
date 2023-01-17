@@ -3,63 +3,66 @@ local M = {}
 local command = require "dial.command"
 local util = require "dial.util"
 
----Sandwich input string between <Cmd> and <CR>.
----@param body string
-local function cmdcr(body)
-    local cmd_sequences = "<Cmd>"
-    local cr_sequences = "<CR>"
-    return cmd_sequences .. body .. cr_sequences
-end
 
----Output command sequence which provides dial operation.
 ---@param direction direction
 ---@param mode mode
----@param group_name? string
+---@param group_name? string|fun():string
+---@return fun():nil
 local function _cmd_sequence(direction, mode, group_name)
+  return function()
     local select
-    if group_name == nil then
-        select = cmdcr([[lua require"dial.command".select_augend_]] .. mode .. "()")
+    local name
+    if type(group_name) == "function" then
+      name = group_name()
     else
-        select = cmdcr([[lua require"dial.command".select_augend_]] .. mode .. [[("]] .. group_name .. [[")]])
+      name = group_name
     end
-    -- command.select_augend_normal(vim.v.count, group_name)
-    local setopfunc = cmdcr([[let &opfunc="dial#operator#]] .. direction .. "_" .. mode .. [["]])
-    local textobj = util.if_expr(mode == "normal", cmdcr [[lua require("dial.command").textobj()]], "")
-    return select .. setopfunc .. "g@" .. textobj
+
+    local selector =  require("dial.command")["select_augend_" .. mode]
+    selector(name)
+
+    vim.go.opfunc = ("dial#operator#%s_%s"):format(direction, mode)
+    vim.fn[vim.go.opfunc]("unused_type")  -- same as g@
+
+    if mode == "normal" then
+      require("dial.command").textobj()
+    end
+
+  end
 end
 
----@param group_name? string
----@return string
+---@param group_name? string|fun():string
+---@return fun():nil
 function M.inc_normal(group_name)
     return _cmd_sequence("increment", "normal", group_name)
 end
 
----@param group_name? string
----@return string
+---@param group_name? string|fun():string
+---@return fun():nil
 function M.dec_normal(group_name)
     return _cmd_sequence("decrement", "normal", group_name)
 end
 
----@param group_name? string
----@return string
+---@param group_name? string|fun():string
+---@return fun():nil
 function M.inc_visual(group_name)
     return _cmd_sequence("increment", "visual", group_name)
 end
 
----@param group_name? string
----@return string
+---@param group_name? string|fun():string
+---@return fun():nil
 function M.dec_visual(group_name)
     return _cmd_sequence("decrement", "visual", group_name)
 end
 
----@param group_name? string
----@return string
+---@param group_name? string|fun():string
+---@return fun():nil
 function M.inc_gvisual(group_name)
     return _cmd_sequence("increment", "gvisual", group_name)
 end
 
----@param group_name? string
----@return string
+---@param group_name? string|fun():string
+---@return fun():nil
 function M.dec_gvisual(group_name)
     return _cmd_sequence("decrement", "gvisual", group_name)
 end
