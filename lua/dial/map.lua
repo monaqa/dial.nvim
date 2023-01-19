@@ -1,9 +1,5 @@
 local M = {}
 
-local command = require "dial.command"
-local util = require "dial.util"
-
-
 ---@param direction direction
 ---@param mode mode
 ---@param group_name? string|fun():string
