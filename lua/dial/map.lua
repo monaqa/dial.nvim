@@ -10,7 +10,6 @@ local util = require "dial.util"
 ---@return fun():nil
 local function _cmd_sequence(direction, mode, group_name)
   return function()
-    local select
     local name
     if type(group_name) == "function" then
       name = group_name()
@@ -22,7 +21,8 @@ local function _cmd_sequence(direction, mode, group_name)
     selector(name)
 
     vim.go.opfunc = ("dial#operator#%s_%s"):format(direction, mode)
-    vim.fn[vim.go.opfunc]("unused_type")  -- same as g@
+
+    vim.api.nvim_feedkeys('g@l', 'n', false)
 
     if mode == "normal" then
       require("dial.command").textobj()
