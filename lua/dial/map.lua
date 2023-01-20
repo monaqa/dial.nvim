@@ -18,7 +18,11 @@ local function _cmd_sequence(direction, mode, group_name)
 
     vim.go.opfunc = ("dial#operator#%s_%s"):format(direction, mode)
 
-    vim.api.nvim_feedkeys('g@l', 'n', false)
+    do
+        local motion = ''
+        if mode == 'normal' then motion = 'l' end
+        vim.cmd.normal('g@'..motion)
+    end
 
     if mode == "normal" then
       require("dial.command").textobj()
