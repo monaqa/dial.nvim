@@ -12,12 +12,18 @@ VISUAL_BLOCK = string.char(22)
 ---Select the most appropriate augend from given augend group (in NORMAL mode).
 ---@param group_name? string
 function M.select_augend_normal(group_name)
-    if group_name == nil and vim.v.register == "=" then
+    local augends
+    if group_name ~= nil then
+        augends = config.augends.group[group_name]
+    elseif vim.v.register == "=" then
         group_name = vim.fn.getreg("=", 1)
+        augends = config.augends.group[group_name]
+    elseif config.augends.filetype[vim.bo.filetype] ~= nil then
+        augends = config.augends.filetype[vim.bo.filetype]
     else
-        group_name = util.unwrap_or(group_name, "default")
+        augends = config.augends.group["default"]
     end
-    local augends = config.augends.group[group_name]
+
     if augends == nil then
         error(("undefined augend group name: %s"):format(group_name))
     end

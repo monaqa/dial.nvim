@@ -30,6 +30,7 @@ M.augends = {
             augend.constant.alias.ja_weekday_full,
         },
     },
+    filetype = {},
 }
 
 ---新しいグループを登録する。
@@ -46,6 +47,27 @@ function M.augends:register_group(tbl)
         end
 
         self.group[name] = augends
+    end
+end
+
+---@param tbl table<string, Augend[]>
+function M.augends:on_filetype(tbl)
+    -- TODO: validate augends
+
+    for filetype, augends in pairs(tbl) do
+        local nil_keys = util.index_with_nil_value(augends)
+
+        if #nil_keys ~= 0 then
+            local str_nil_keys = table.concat(nil_keys, ", ")
+            error(
+                ("Failed to register augends on filetype '%s'. it contains nil at index %s."):format(
+                    filetype,
+                    str_nil_keys
+                )
+            )
+        end
+
+        self.filetype[filetype] = augends
     end
 end
 
