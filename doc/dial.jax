@@ -255,28 +255,31 @@ VISUAL モード用のグループを作成することで可能です。
 	)
 <
 
-特定のファイルタイプ限定のマッピング~
+特定のファイルタイプ限定のルール~
 
-特定のファイルタイプ用のグループを作成し、 |autocmd| でバッファごとにキーマッ
-ピングを設定することで実現できます。
-
+`augends:on_filetype()` 関数を使うことで、特定のファイルタイプのときに有効な被
+加数のルールを定義することができます。
 >
 	lua << EOF
 	local augend = require("dial.augend")
-	require("dial.config").augends:register_group{
+	require("dial.config").augends:on_filetype {
 	  typescript = {
 		augend.integer.alias.decimal,
 		augend.integer.alias.hex,
-		augend.constant.new{ elements = {"let", "const"} },
+		augend.constant.new { elements = { "true", "false" } },
+		augend.constant.new { elements = {"let", "const"} },
 	  },
+	  lua = {
+		augend.integer.alias.decimal,
+		augend.constant.new { elements = { "true", "false" } },
+	  },
+	  markdown = {
+		augend.integer.alias.decimal,
+		augend.misc.alias.markdown_header,
+	  }
 	}
 	EOF
-
-	" 特定のファイルタイプでのみ有効にする
-	autocmd FileType typescript nmap <C-a> "=typescript<CR><Plug>(dial-increment)
-	autocmd FileType typescript nmap <C-x> "=typescript<CR><Plug>(dial-decrement)
 <
-
 ------------------------------------------------------------------------------
 ALIASES									*dial-aliases*
 
@@ -1407,6 +1410,14 @@ require("dial.config").augends:register_group(tbl)
 
 	与えられた辞書形式のテーブルに基づいてグループを定義または上書きします。
 	関数の引数には、グループ名をキー、被加数のリストを値とする辞書を指定します。
+
+									*dial.config.augends:on_filetype()*
+require("dial.config").augends:on_filetype(tbl)
+
+	与えられた辞書形式のテーブルに基づいて、特定の filetype における被加数のル
+	ールを定めます。関数の引数には、filetype をキー、被加数のリストを値とする
+	辞書を指定します。
+
 
 									*dial.config.augends:get()*
 require("dial.config").augends:get(group_name)

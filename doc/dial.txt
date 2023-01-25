@@ -254,22 +254,28 @@ Augends Only Valid in VISUAL Mode~
 
 Augends Only Valid in Specific File Type~
 
+The `augends:on_filetype()` function can be used to change the augends used
+for a particular filetype.
 >
 	lua << EOF
 	local augend = require("dial.augend")
-	require("dial.config").augends:register_group{
+	require("dial.config").augends:on_filetype {
 	  typescript = {
 		augend.integer.alias.decimal,
 		augend.integer.alias.hex,
-		augend.constant.new{ elements = {"let", "const"} },
+		augend.constant.new { elements = { "true", "false" } },
+		augend.constant.new { elements = {"let", "const"} },
 	  },
+	  lua = {
+		augend.integer.alias.decimal,
+		augend.constant.new { elements = { "true", "false" } },
+	  },
+	  markdown = {
+		augend.integer.alias.decimal,
+		augend.misc.alias.markdown_header,
+	  }
 	}
 	EOF
-
-	" change augends in specific file type
-	autocmd FileType typescript nmap <C-a> "=typescript<CR><Plug>(dial-increment)
-	autocmd FileType typescript nmap <C-x> "=typescript<CR><Plug>(dial-decrement)
-<
 
 ------------------------------------------------------------------------------
 ALIASES									*dial-aliases*
@@ -1467,6 +1473,13 @@ require("dial.config").augends:register_group(tbl)
 	Defines or overrides a group based on a given table in the dictionary
 	format. The function argument is a dictionary whose keys are the group
 	names and whose values are the list of augends.
+
+									*dial.config.augends:on_filetype()*
+require("dial.config").augends:on_filetype(tbl)
+
+	Defines augends on particular filetype based on a given table in the
+	dictionary format. The function argument is a dictionary whose keys are
+	the filetype names and whose values are the list of augends.
 
 									*dial.config.augends:get()*
 require("dial.config").augends:get(group_name)
