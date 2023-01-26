@@ -16,12 +16,9 @@ end
 ---@param mode mode
 ---@param group_name? string
 local function _cmd_sequence(direction, mode, group_name)
-    local select
-    if group_name == nil then
-        select = cmdcr([[lua require"dial.command".select_augend_]] .. mode .. "()")
-    else
-        select = cmdcr([[lua require"dial.command".select_augend_]] .. mode .. [[(]] .. string(group_name) .. [[)]])
-    end
+    group_name = group_name ~= nil and tostring(group_name) or ""
+
+    local select = cmdcr([[lua require"dial.command".select_augend_]] .. mode .. [[(]] .. group_name .. [[)]])
     -- command.select_augend_normal(vim.v.count, group_name)
     local setopfunc = cmdcr([[let &opfunc="dial#operator#]] .. direction .. "_" .. mode .. [["]])
     local textobj = util.if_expr(mode == "normal", cmdcr [[lua require("dial.command").textobj()]], "")
