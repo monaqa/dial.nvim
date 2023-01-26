@@ -147,7 +147,6 @@ vim.keymap.set("v", "<C-x>", require("dial.map").dec_visual("visual"), { noremap
 EOF
 
 " enable only for specific FileType
-
 autocmd FileType typescript lua vim.api.nvim_buf_set_keymap(0, "n", "<C-a>", require("dial.map").inc_normal("typescript"), {noremap = true})
 autocmd FileType typescript lua vim.api.nvim_buf_set_keymap(0, "n", "<C-x>", require("dial.map").dec_normal("typescript"), {noremap = true})
 ```
