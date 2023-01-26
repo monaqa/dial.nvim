@@ -59,12 +59,24 @@ vmap g<C-x> g<Plug>(dial-decrement)
 Or you can configure it with Lua as follows:
 
 ```lua
-vim.api.nvim_set_keymap("n", "<C-a>", require("dial.map").inc_normal(), {noremap = true})
-vim.api.nvim_set_keymap("n", "<C-x>", require("dial.map").dec_normal(), {noremap = true})
-vim.api.nvim_set_keymap("v", "<C-a>", require("dial.map").inc_visual(), {noremap = true})
-vim.api.nvim_set_keymap("v", "<C-x>", require("dial.map").dec_visual(), {noremap = true})
-vim.api.nvim_set_keymap("v", "g<C-a>", require("dial.map").inc_gvisual(), {noremap = true})
-vim.api.nvim_set_keymap("v", "g<C-x>", require("dial.map").dec_gvisual(), {noremap = true})
+vim.keymap.set("n", "<C-a>", function()
+  require("dial.map").inc_normal()
+end, { noremap = true })
+vim.keymap.set("n", "<C-x>", function()
+  require("dial.map").dec_normal()
+end, { noremap = true })
+vim.keymap.set("v", "<C-a>", function()
+  require("dial.map").inc_visual()
+end, { noremap = true })
+vim.keymap.set("v", "<C-x>", function()
+  require("dial.map").dec_visual()
+end, { noremap = true })
+vim.keymap.set("v", "g<C-a>", function()
+  require("dial.map").inc_gvisual()
+end, { noremap = true })
+vim.keymap.set("v", "g<C-x>", function()
+  require("dial.map").dec_gvisual()
+end, { noremap = true })
 ```
 
 ## Configuration
@@ -111,7 +123,8 @@ nmap <Leader>a "=mygroup<CR><Plug>(dial-increment)
 Alternatively, you can set the same mapping without expression register:
 
 ```lua
-vim.api.nvim_set_keymap("n", "<Leader>a", require("dial.map").inc_normal("mygroup"), {noremap = true})
+vim.keymap.set("n", "<Leader>a", function() require("dial.map").inc_normal("mygroup")
+end, {noremap = true})
 ```
 
 When you don't specify any group name in the way described above, the addends in the `default` group is used instead.
@@ -142,12 +155,17 @@ require("dial.config").augends:register_group{
 }
 
 -- change augends in VISUAL mode
-vim.api.nvim_set_keymap("v", "<C-a>", require("dial.map").inc_normal("visual"), {noremap = true})
-vim.api.nvim_set_keymap("v", "<C-x>", require("dial.map").dec_normal("visual"), {noremap = true})
+vim.keymap.set("v", "<C-a>", function()
+  require("dial.map").inc_visual("visual")
+end, { noremap = true })
+vim.keymap.set("v", "<C-x>", function()
+  require("dial.map").dec_visual("visual")
+end, { noremap = true })
 EOF
 
 " enable only for specific FileType
-autocmd FileType typescript lua vim.api.nvim_buf_set_keymap(0, "n", "<C-a>", require("dial.map").inc_normal("typescript"), {noremap = true})
+autocmd FileType typescript lua vim.keymap.set("v", "<C-a>", function() require("dial.map").inc_visual("typescript") end, { noremap = true })
+autocmd FileType typescript lua vim.keymap.set("v", "<C-x>", function() require("dial.map").dec_visual("typescript") end, { noremap = true })
 ```
 
 ## List of Augends

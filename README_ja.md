@@ -62,12 +62,24 @@ vmap g<C-x> g<Plug>(dial-decrement)
 または Lua 上で以下のように設定することもできます。
 
 ```lua
-vim.api.nvim_set_keymap("n", "<C-a>", require("dial.map").inc_normal(), {noremap = true})
-vim.api.nvim_set_keymap("n", "<C-x>", require("dial.map").dec_normal(), {noremap = true})
-vim.api.nvim_set_keymap("v", "<C-a>", require("dial.map").inc_visual(), {noremap = true})
-vim.api.nvim_set_keymap("v", "<C-x>", require("dial.map").dec_visual(), {noremap = true})
-vim.api.nvim_set_keymap("v", "g<C-a>", require("dial.map").inc_gvisual(), {noremap = true})
-vim.api.nvim_set_keymap("v", "g<C-x>", require("dial.map").dec_gvisual(), {noremap = true})
+vim.keymap.set("n", "<C-a>", function()
+  require("dial.map").inc_normal()
+end, { noremap = true })
+vim.keymap.set("n", "<C-x>", function()
+  require("dial.map").dec_normal()
+end, { noremap = true })
+vim.keymap.set("v", "<C-a>", function()
+  require("dial.map").inc_visual()
+end, { noremap = true })
+vim.keymap.set("v", "<C-x>", function()
+  require("dial.map").dec_visual()
+end, { noremap = true })
+vim.keymap.set("v", "g<C-a>", function()
+  require("dial.map").inc_gvisual()
+end, { noremap = true })
+vim.keymap.set("v", "g<C-x>", function()
+  require("dial.map").dec_gvisual()
+end, { noremap = true })
 ```
 
 ## 設定方法
@@ -113,7 +125,9 @@ nmap <Leader>a "=mygroup<CR><Plug>(dial-increment)
 また、 Lua 上で以下のように記述すれば expression register を使わずにマッピングを設定できます。
 
 ```lua
-vim.api.nvim_set_keymap("n", "<Leader>a", require("dial.map").inc_normal("mygroup"), {noremap = true})
+vim.keymap.set("n", "<Leader>a", function()
+  require("dial.map").inc_normal("mygroup")
+end, {noremap = true})
 ```
 
 expression register などでグループ名を指定しなかった場合、`default` グループにある被加数がかわりに用いられます。
@@ -144,13 +158,17 @@ require("dial.config").augends:register_group{
 }
 
 -- VISUAL モードでの被加数を変更する
-vim.api.nvim_set_keymap("v", "<C-a>", require("dial.map").inc_normal("visual"), {noremap = true})
-vim.api.nvim_set_keymap("v", "<C-x>", require("dial.map").dec_normal("visual"), {noremap = true})
+vim.keymap.set("v", "<C-a>", function()
+  require("dial.map").inc_visual("visual")
+end, { noremap = true })
+vim.keymap.set("v", "<C-x>", function()
+  require("dial.map").dec_visual("visual")
+end, { noremap = true })
 EOF
 
 " 特定のファイルタイプでのみ有効にする
-autocmd FileType typescript lua vim.api.nvim_buf_set_keymap(0, "n", "<C-a>", require("dial.map").inc_normal("typescript"), {noremap = true})
-autocmd FileType typescript lua vim.api.nvim_buf_set_keymap(0, "n", "<C-x>", require("dial.map").dec_normal("typescript"), {noremap = true})
+autocmd FileType typescript lua vim.keymap.set("v", "<C-a>", function() require("dial.map").inc_visual("typescript") end, { noremap = true })
+autocmd FileType typescript lua vim.keymap.set("v", "<C-x>", function() require("dial.map").dec_visual("typescript") end, { noremap = true })
 ```
 
 ## 被加数の種類と一覧
