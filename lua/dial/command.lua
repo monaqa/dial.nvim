@@ -22,12 +22,7 @@ function M.select_augend_normal(group_name)
         error(("undefined augend group name: %s"):format(group_name))
     end
 
-    local count = vim.v.count
-    if count ~= 0 then
-        handler:set_count(count)
-    else
-        handler:set_count(1)
-    end
+    handler:set_count(vim.v.count1)
     local col = vim.fn.col "."
     local line = vim.fn.getline "."
     handler:select_augend(line, col, augends)
@@ -46,12 +41,7 @@ function M.select_augend_visual(group_name)
         error(("undefined augend group name: %s"):format(group_name))
     end
 
-    local count = vim.v.count
-    if count ~= 0 then
-        handler:set_count(count)
-    else
-        handler:set_count(1)
-    end
+    handler:set_count(vim.v.count1)
 
     local mode = vim.fn.mode(0)
     ---@type integer
@@ -176,10 +166,7 @@ end
 ---Call handler.findTextRange() to select a range based on the information in the current line.
 ---Also, for dot repeat, it receives the value of the specified counter and updates the addend.
 function M.textobj()
-    local count = vim.v.count
-    if count ~= 0 then
-        handler:set_count(count)
-    end
+    handler:set_count(vim.v.count1)
     local col = vim.fn.col "."
     local line = vim.fn.getline "."
 
