@@ -25,7 +25,7 @@ local function _cmd_sequence(direction, mode, group_name)
     -- command.select_augend_normal(vim.v.count, group_name)
     local setopfunc = cmdcr([[let &opfunc="dial#operator#]] .. direction .. "_" .. mode .. [["]])
     local textobj = util.if_expr(mode == "normal", cmdcr [[lua require("dial.command").textobj()]], "")
-    return vim.v.count1..select .. setopfunc .. "g@" .. textobj
+    return select .. setopfunc .. vim.v.count1 .. "g@" .. textobj
 end
 
 ---@param v string | nil | fun(): string | nil
