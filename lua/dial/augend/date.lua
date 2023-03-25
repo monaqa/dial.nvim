@@ -143,6 +143,10 @@ local date_elements = {
             date.year = 2000 + tonumber(text)
             return date
         end,
+        format = function(time)
+            local year = os.date("*t", time).year --[[ @as integer ]]
+            return tostring(year % 100)
+        end,
     },
     ["-m"] = {
         kind = "month",
@@ -753,7 +757,7 @@ M.alias["%H:%M:%S"] = M.new {
 
 M.alias["%H:%M"] = M.new {
     pattern = "%H:%M",
-    default_kind = "sec",
+    default_kind = "min",
     only_valid = true,
 }
 
