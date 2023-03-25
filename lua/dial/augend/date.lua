@@ -148,16 +148,28 @@ local date_elements = {
         kind = "month",
         regex = [[\d\{1,2\}]],
         update_date = simple_updater "month",
+        format = function(time)
+            local month = os.date("*t", time).month --[[ @as integer ]]
+            return tostring(month)
+        end,
     },
     ["-d"] = {
         kind = "day",
         regex = [[\d\{1,2\}]],
         update_date = simple_updater "day",
+        format = function(time)
+            local day = os.date("*t", time).day --[[ @as integer ]]
+            return tostring(day)
+        end,
     },
     ["-H"] = {
         kind = "hour",
         regex = [[\d\{1,2\}]],
         update_date = simple_updater "hour",
+        format = function(time)
+            local hour = os.date("*t", time).hour --[[ @as integer ]]
+            return tostring(hour)
+        end,
     },
     ["-I"] = {
         kind = "hour",
@@ -173,16 +185,31 @@ local date_elements = {
             end
             return date
         end,
+        format = function(time)
+            local hour = os.date("*t", time).hour --[[ @as integer ]]
+            -- 0 -> 12, 1 -> 1, 2 -> 2, ..., 12 -> 12, ...,  23 -> 11
+            return tostring((hour + 11) % 12 + 1)
+        end,
     },
     ["-M"] = {
         kind = "min",
         regex = [[\d\{1,2\}]],
         update_date = simple_updater "min",
+        format = function(time)
+            local min = os.date("*t", time).min --[[ @as integer ]]
+            -- 0 -> 12, 1 -> 1, 2 -> 2, ..., 12 -> 12, ...,  23 -> 11
+            return tostring((min + 11) % 12 + 1)
+        end,
     },
     ["-S"] = {
         kind = "sec",
         regex = [[\d\{1,2\}]],
         update_date = simple_updater "sec",
+        format = function(time)
+            local sec = os.date("*t", time).sec --[[ @as integer ]]
+            -- 0 -> 12, 1 -> 1, 2 -> 2, ..., 12 -> 12, ...,  23 -> 11
+            return tostring((sec + 11) % 12 + 1)
+        end,
     },
 
     -- names
