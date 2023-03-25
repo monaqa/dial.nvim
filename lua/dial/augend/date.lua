@@ -197,8 +197,7 @@ local date_elements = {
         update_date = simple_updater "min",
         format = function(time)
             local min = os.date("*t", time).min --[[ @as integer ]]
-            -- 0 -> 12, 1 -> 1, 2 -> 2, ..., 12 -> 12, ...,  23 -> 11
-            return tostring((min + 11) % 12 + 1)
+            return tostring(min)
         end,
     },
     ["-S"] = {
@@ -207,8 +206,7 @@ local date_elements = {
         update_date = simple_updater "sec",
         format = function(time)
             local sec = os.date("*t", time).sec --[[ @as integer ]]
-            -- 0 -> 12, 1 -> 1, 2 -> 2, ..., 12 -> 12, ...,  23 -> 11
-            return tostring((sec + 11) % 12 + 1)
+            return tostring(sec)
         end,
     },
 
