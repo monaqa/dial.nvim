@@ -106,26 +106,25 @@ plugin.
 
 Alternatively, you can configure with Lua as follows:
 >
-	vim.api.nvim_set_keymap(
-		"n", "<C-a>", require("dial.map").inc_normal(), {noremap = true}
-	)
-	vim.api.nvim_set_keymap(
-		"n", "<C-x>", require("dial.map").dec_normal(), {noremap = true}
-	)
-	vim.api.nvim_set_keymap(
-		"v", "<C-a>", require("dial.map").inc_visual(), {noremap = true}
-	)
-	vim.api.nvim_set_keymap(
-		"v", "<C-x>", require("dial.map").dec_visual(), {noremap = true}
-	)
-	vim.api.nvim_set_keymap(
-		"v", "g<C-a>", require("dial.map").inc_gvisual(), {noremap = true}
-	)
-	vim.api.nvim_set_keymap(
-		"v", "g<C-x>", require("dial.map").dec_gvisual(), {noremap = true}
-	)
+	vim.keymap.set("n", "<C-a>", function()
+		require("dial.map").manipulate("increment", "normal")
+	end)
+	vim.keymap.set("n", "<C-x>", function()
+		require("dial.map").manipulate("decrement", "normal")
+	end)
+	vim.keymap.set("v", "<C-a>", function()
+		require("dial.map").manipulate("increment", "visual")
+	end)
+	vim.keymap.set("v", "<C-x>", function()
+		require("dial.map").manipulate("decrement", "visual")
+	end)
+	vim.keymap.set("v", "g<C-a>", function()
+		require("dial.map").manipulate("increment", "gvisual")
+	end)
+	vim.keymap.set("v", "g<C-x>", function()
+		require("dial.map").manipulate("decrement", "gvisual")
+	end)
 <
-
 ==============================================================================
 CONFIGURATIONS							*dial-config*
 
@@ -1408,16 +1407,39 @@ LUA API									*dial-lua-api*
 
 A module that provides specific mappings.
 
+										*dial.map.manipulate()*
+require("dial.map").manipulate(direction, mode, [group_name, addend])
+
+	Perform the increment/decrement operation in a Lua keymapping function.
+	For example, the following configuration assigns dial-based increment to
+	<C-a>.
+>
+	vim.keymap.set("n", "<C-a>", function()
+		require("dial.map").manipulate("increment", "normal")
+	end)
+<
+	This function has two required arguments and two optional arguments.
+		direction (string, "increment" | "decrement"):
+			"increment" increases the value, while "decrement" decreases it.
+		mode (string, "normal" | "visual" | "gvisual"):
+			The mode in which the operation is performed.
+				normal: in NORMAL mode
+				visual: in VISUAL mode
+				gvisual: in VISUAL mode, with addends increasing by line
+		group_name (string?):
+			Group name. If omitted, `"default"` is used.
+		addend (integer?):
+			If you specify this argument explicitly, it must be a positive
+			integer. If omitted, it defaults to |v:count1|.
+
 										*dial.map.inc_normal()*
 require("dial.map").inc_normal([group_name])
 
 	Outputs a key sequence for incrementing based on the given `group_name` in
-	NORMAL mode. If `group_name` is omitted, it is equivalent to `default`. It
-	is expected to be used in combination with |vim.api| and |nvim_set_keymap|
-	or |nvim_buf_set_keymap| in the following way:
+	NORMAL mode. If `group_name` is omitted, it is equivalent to `default`. 
 >
-	vim.api.nvim_set_keymap(
-		"n", "<C-a>", require("dial.map").inc_normal(), {noremap = true}
+	vim.keymap.set(
+		"n", "<C-a>", require("dial.map").inc_normal()
 	)
 <
 
