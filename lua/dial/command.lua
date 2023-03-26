@@ -166,7 +166,10 @@ end
 ---Call handler.findTextRange() to select a range based on the information in the current line.
 ---Also, for dot repeat, it receives the value of the specified counter and updates the addend.
 function M.textobj()
-    handler:set_count(vim.v.count1)
+    local count = vim.v.count
+    if count ~= 0 then
+        handler:set_count(count)
+    end
     local col = vim.fn.col "."
     local line = vim.fn.getline "."
 
