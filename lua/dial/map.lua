@@ -28,43 +28,30 @@ local function _cmd_sequence(direction, mode, group_name)
     return select .. setopfunc .. vim.v.count1 .. "g@" .. textobj
 end
 
----@param v string | nil | fun(): string | nil
----@return string | nil
-local function apply_if_function(v)
-    if type(v) == "function" then
-        return v()
-    else
-        return v
-    end
-end
-
----@param group_name_or_fn? string | nil | fun(): string | nil
+---@param group_name? string
 ---@return fun(): nil
-function M.inc_normal(group_name_or_fn)
+function M.inc_normal(group_name)
     return function()
-        local group_name = apply_if_function(group_name_or_fn)
         vim.cmd.normal(
             vim.api.nvim_replace_termcodes(_cmd_sequence("increment", "normal", group_name), true, true, true)
         )
     end
 end
 
----@param group_name_or_fn? string | nil | fun(): string | nil
+---@param group_name? string
 ---@return fun(): nil
-function M.dec_normal(group_name_or_fn)
+function M.dec_normal(group_name)
     return function()
-        local group_name = apply_if_function(group_name_or_fn)
         vim.cmd.normal(
             vim.api.nvim_replace_termcodes(_cmd_sequence("decrement", "normal", group_name), true, true, true)
         )
     end
 end
 
----@param group_name_or_fn? string | nil | fun(): string | nil
+---@param group_name? string
 ---@return fun(): nil
-function M.inc_visual(group_name_or_fn)
+function M.inc_visual(group_name)
     return function()
-        local group_name = apply_if_function(group_name_or_fn)
         vim.pretty_print { _cmd_sequence("increment", "visual", group_name) }
         vim.cmd.normal(
             vim.api.nvim_replace_termcodes(_cmd_sequence("increment", "visual", group_name), true, true, true)
@@ -72,33 +59,30 @@ function M.inc_visual(group_name_or_fn)
     end
 end
 
----@param group_name_or_fn? string | nil | fun(): string | nil
+---@param group_name? string
 ---@return fun(): nil
-function M.dec_visual(group_name_or_fn)
+function M.dec_visual(group_name)
     return function()
-        local group_name = apply_if_function(group_name_or_fn)
         vim.cmd.normal(
             vim.api.nvim_replace_termcodes(_cmd_sequence("decrement", "visual", group_name), true, true, true)
         )
     end
 end
 
----@param group_name_or_fn? string | nil | fun(): string | nil
+---@param group_name? string
 ---@return fun(): nil
-function M.inc_gvisual(group_name_or_fn)
+function M.inc_gvisual(group_name)
     return function()
-        local group_name = apply_if_function(group_name_or_fn)
         vim.cmd.normal(
             vim.api.nvim_replace_termcodes(_cmd_sequence("increment", "gvisual", group_name), true, true, true)
         )
     end
 end
 
----@param group_name_or_fn? string | nil | fun(): string | nil
+---@param group_name? string
 ---@return fun(): nil
-function M.dec_gvisual(group_name_or_fn)
+function M.dec_gvisual(group_name)
     return function()
-        local group_name = apply_if_function(group_name_or_fn)
         vim.cmd.normal(
             vim.api.nvim_replace_termcodes(_cmd_sequence("decrement", "gvisual", group_name), true, true, true)
         )
