@@ -15,7 +15,8 @@ end
 ---@param direction direction
 ---@param mode mode
 ---@param group_name? string
-local function _cmd_sequence(direction, mode, group_name)
+---@param count? integer
+local function _cmd_sequence(direction, mode, group_name, count)
     local select
     if group_name == nil then
         select = cmdcr([[lua require"dial.command".select_augend_]] .. mode .. "()")
@@ -26,7 +27,25 @@ local function _cmd_sequence(direction, mode, group_name)
     -- command.select_augend_normal(vim.v.count, group_name)
     local setopfunc = cmdcr([[let &opfunc="dial#operator#]] .. direction .. "_" .. mode .. [["]])
     local textobj = util.if_expr(mode == "normal", cmdcr [[lua require("dial.command").textobj()]], "")
+    if count ~= nil then
+        if type(count) ~= "number" then
+            error "count must be a integer."
+        end
+        return select .. setopfunc .. count .. "g@" .. textobj
+    end
     return select .. setopfunc .. "g@" .. textobj
+end
+
+---Functional interface
+---@param direction direction
+---@param mode mode
+---@param group_name? string
+---@param count? integer
+function M.manipulate(direction, mode, group_name, count)
+    if count == nil then
+        count = vim.v.count1
+    end
+    vim.cmd.normal(vim.api.nvim_replace_termcodes(_cmd_sequence(direction, mode, group_name, count), true, true, true))
 end
 
 ---@param group_name? string

@@ -90,7 +90,7 @@ VISUAL mode での操作に対応~
 ==============================================================================
 USAGE									*dial-usage*
 
-|dial.nvim|自信はキーマップの設定および上書きを行わないため、プラグインを動作
+|dial.nvim|自身はキーマップの設定および上書きを行わないため、プラグインを動作
 させるために以下の設定を追加する必要があります。
 >
 	nmap  <C-a>  <Plug>(dial-increment)
@@ -102,28 +102,26 @@ USAGE									*dial-usage*
 <
 
 もしくは Lua 上で以下のように設定することもできます。
-
 >
-	vim.api.nvim_set_keymap(
-		"n", "<C-a>", require("dial.map").inc_normal(), {noremap = true}
-	)
-	vim.api.nvim_set_keymap(
-		"n", "<C-x>", require("dial.map").dec_normal(), {noremap = true}
-	)
-	vim.api.nvim_set_keymap(
-		"v", "<C-a>", require("dial.map").inc_visual(), {noremap = true}
-	)
-	vim.api.nvim_set_keymap(
-		"v", "<C-x>", require("dial.map").dec_visual(), {noremap = true}
-	)
-	vim.api.nvim_set_keymap(
-		"v", "g<C-a>", require("dial.map").inc_gvisual(), {noremap = true}
-	)
-	vim.api.nvim_set_keymap(
-		"v", "g<C-x>", require("dial.map").dec_gvisual(), {noremap = true}
-	)
+	vim.keymap.set("n", "<C-a>", function()
+		require("dial.map").manipulate("increment", "normal")
+	end)
+	vim.keymap.set("n", "<C-x>", function()
+		require("dial.map").manipulate("decrement", "normal")
+	end)
+	vim.keymap.set("v", "<C-a>", function()
+		require("dial.map").manipulate("increment", "visual")
+	end)
+	vim.keymap.set("v", "<C-x>", function()
+		require("dial.map").manipulate("decrement", "visual")
+	end)
+	vim.keymap.set("v", "g<C-a>", function()
+		require("dial.map").manipulate("increment", "gvisual")
+	end)
+	vim.keymap.set("v", "g<C-x>", function()
+		require("dial.map").manipulate("decrement", "gvisual")
+	end)
 <
-
 ==============================================================================
 CONFIGURATIONS							*dial-config*
 
@@ -1354,18 +1352,42 @@ LUA API									*dial-lua-api*
 										*dial-lua-api-map*
 "dial.map" module~
 
-|dial.nvim| 固有のマッピングを提供するモジュールです。
+|dial.nvim| 固有のマッピングに必要な関数を提供するモジュールです。
+
+										*dial.map.manipulate()*
+require("dial.map").manipulate(direction, mode, [group_name, addend])
+
+	キーマッピングの関数内で増減操作を実行します。例えば以下のように設定するこ
+	とで、<C-a> を押したとき dial.nvim に基づく増加が行われるようになります。
+>
+	vim.keymap.set("n", "<C-a>", function()
+		require("dial.map").manipulate("increment", "normal")
+	end)
+<
+	この関数は2種類の必須引数と2種類のオプション引数を持ちます。
+		direction (string, "increment" | "decrement"):
+			"increment" を指定すると値が増加し、逆に"decrement" では減少する。
+		mode (string, "normal" | "visual" | "gvisual"):
+			増減操作を実施する際のモード。
+				normal: NORMAL モードでの増減
+				visual: VISUAL モードでの増減
+				gvisual: VISUAL モードかつ、上から順に被加数が増加する
+		group_name (string?):
+			グループ名。省略した場合は `"default"` が用いられる。
+		addend (integer?):
+			加数。明示的に指定する場合は正の整数でなければならない。
+			省略した場合は |v:count1| の値が用いられる。
+			
 
 										*dial.map.inc_normal()*
 require("dial.map").inc_normal([group_name])
 
 	NORMAL モードにおいて与えられたグループ名をもとにインクリメントを行うため
-	のキーシーケンスを出力します。group_name は省略すると `default` と等価にな
-	ります。|vim.api| と|nvim_set_keymap| や |nvim_buf_set_keymap| を組み合わ
-	せて以下のような形で使用することが想定されています。
+	のキーシーケンスを表す文字列を出力します。group_name は省略すると
+	`default` と等価になります。
 >
-	vim.api.nvim_set_keymap(
-		"n", "<C-a>", require("dial.map").inc_normal(), {noremap = true}
+	vim.keymap.set(
+		"n", "<C-a>", require("dial.map").inc_normal()
 	)
 <
 
