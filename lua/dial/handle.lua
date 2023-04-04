@@ -95,12 +95,13 @@ end
 
 ---@class Handler
 ---@field count integer
+---@field cumsum integer
 ---@field range textrange?
 ---@field active_augend Augend?
 local Handler = {}
 
 function Handler.new()
-    return setmetatable({ count = 1, range = nil, active_augend = nil }, { __index = Handler })
+    return setmetatable({ count = 1, cumsum = 0, range = nil, active_augend = nil }, { __index = Handler })
 end
 
 ---Get addend value.
@@ -125,6 +126,9 @@ end
 ---@param cursor? integer
 ---@param augends Augend[]
 function Handler:select_augend(line, cursor, augends)
+    -- initialize
+    self.cumsum = 0
+
     local interim_augend = nil
     local interim_score = Score.new(3, 0, 0) -- score with the lowest priority
 
@@ -155,6 +159,9 @@ end
 ---@param cursor? integer
 ---@param augends Augend[]
 function Handler:select_augend_visual(lines, cursor, augends)
+    -- initialize
+    self.cumsum = 0
+
     local interim_augend = nil
     local interim_score = Score.new(3, 0, 0) -- 最も優先度の低いスコア
 
@@ -189,15 +196,16 @@ end
 ---@param line string
 ---@param cursor integer
 ---@param direction direction
+---@param additive? boolean
 ---@return {line?: string, cursor?: integer}
-function Handler:operate(line, cursor, direction)
+function Handler:operate(line, cursor, direction, additive)
     if self.range == nil or self.active_augend == nil then
         return {}
     end
 
     local text = line:sub(self.range.from, self.range.to)
     local addend = self:get_addend(direction)
-    local add_result = self.active_augend:add(text, addend, cursor)
+    local add_result = self.active_augend:add(text, addend * (self.cumsum + 1), cursor)
     local new_line = nil
     local new_cursor = nil
 
@@ -206,6 +214,10 @@ function Handler:operate(line, cursor, direction)
     end
     if add_result.cursor ~= nil then
         new_cursor = self.range.from - 1 + add_result.cursor
+    end
+
+    if additive then
+        self.cumsum = self.cumsum + 1
     end
 
     return { line = new_line, cursor = new_cursor }

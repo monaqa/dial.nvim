@@ -26,7 +26,8 @@ local function _cmd_sequence(direction, mode, group_name, count)
     end
     -- command.select_augend_normal(vim.v.count, group_name)
     local setopfunc = cmdcr([[let &opfunc="dial#operator#]] .. direction .. "_" .. mode .. [["]])
-    local textobj = util.if_expr(mode == "normal", cmdcr [[lua require("dial.command").textobj()]], "")
+    local textobj =
+        util.if_expr(mode == "normal" or mode == "gnormal", cmdcr [[lua require("dial.command").textobj()]], "")
     if count ~= nil then
         if type(count) ~= "number" then
             error "count must be a integer."
@@ -58,6 +59,18 @@ end
 ---@return string
 function M.dec_normal(group_name)
     return _cmd_sequence("decrement", "normal", group_name)
+end
+
+---@param group_name? string
+---@return string
+function M.inc_gnormal(group_name)
+    return _cmd_sequence("increment", "gnormal", group_name)
+end
+
+---@param group_name? string
+---@return string
+function M.dec_gnormal(group_name)
+    return _cmd_sequence("decrement", "gnormal", group_name)
 end
 
 ---@param group_name? string

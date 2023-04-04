@@ -6,6 +6,8 @@ set cpo&vim " reset them to defaults
 lua << EOF
 vim.api.nvim_set_keymap("n", "<Plug>(dial-increment)", require("dial.map").inc_normal(), {noremap = true})
 vim.api.nvim_set_keymap("n", "<Plug>(dial-decrement)", require("dial.map").dec_normal(), {noremap = true})
+vim.api.nvim_set_keymap("n", "g<Plug>(dial-increment)", require("dial.map").inc_gnormal(), {noremap = true})
+vim.api.nvim_set_keymap("n", "g<Plug>(dial-decrement)", require("dial.map").dec_gnormal(), {noremap = true})
 vim.api.nvim_set_keymap("v", "<Plug>(dial-increment)", require("dial.map").inc_visual() .. "gv", {noremap = true})
 vim.api.nvim_set_keymap("v", "<Plug>(dial-decrement)", require("dial.map").dec_visual() .. "gv", {noremap = true})
 vim.api.nvim_set_keymap("v", "g<Plug>(dial-increment)", require("dial.map").inc_gvisual() .. "gv", {noremap = true})

@@ -34,6 +34,10 @@ function M.select_augend_normal(group_name)
     handler:select_augend(line, col, augends)
 end
 
+function M.select_augend_gnormal(group_name)
+    return M.select_augend_normal(group_name)
+end
+
 ---Select the most appropriate augend from given augend group (in VISUAL mode).
 ---@param group_name? string
 function M.select_augend_visual(group_name)
@@ -102,12 +106,13 @@ end
 
 ---The process that runs when operator is called (in NORMAL mode).
 ---@param direction direction
-function M.operator_normal(direction)
+---@param additive? boolean
+function M.operator_normal(direction, additive)
     local col = vim.fn.col "."
     local line_num = vim.fn.line "."
     local line = vim.fn.getline "."
 
-    local result = handler:operate(line, col, direction)
+    local result = handler:operate(line, col, direction, additive)
 
     if result.line ~= nil then
         vim.fn.setline(".", result.line)
