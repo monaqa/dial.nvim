@@ -29,6 +29,7 @@ Configurations					|dial-config|
     User						|dial-augends-user|
 Advanced Usage					|dial-advanced-usage|
   Dot Repeating					|dial-dot-repeating|
+  Additive Dot Repeating		|dial-additive-dot-repeating|
 Interface						|dial-interface|
   Mapping						|dial-mapping|
   Command						|dial-command|
@@ -95,6 +96,8 @@ USAGE									*dial-usage*
 >
 	nmap  <C-a>  <Plug>(dial-increment)
 	nmap  <C-x>  <Plug>(dial-decrement)
+	nmap g<C-a> g<Plug>(dial-increment)
+	nmap g<C-x> g<Plug>(dial-decrement)
 	vmap  <C-a>  <Plug>(dial-increment)
 	vmap  <C-x>  <Plug>(dial-decrement)
 	vmap g<C-a> g<Plug>(dial-increment)
@@ -108,6 +111,12 @@ USAGE									*dial-usage*
 	end)
 	vim.keymap.set("n", "<C-x>", function()
 		require("dial.map").manipulate("decrement", "normal")
+	end)
+	vim.keymap.set("n", "g<C-a>", function()
+		require("dial.map").manipulate("increment", "gnormal")
+	end)
+	vim.keymap.set("n", "g<C-x>", function()
+		require("dial.map").manipulate("decrement", "gnormal")
 	end)
 	vim.keymap.set("v", "<C-a>", function()
 		require("dial.map").manipulate("increment", "visual")
@@ -1264,6 +1273,64 @@ DOT REPEATING							*dial-dot-repeating*
 したがって上の例では、ひとたび検索を行った後であれば `.n.n.` とするだけですべ
 ての期限を1ヶ月延ばすことができるのです。
 
+------------------------------------------------------------------------------
+ADDITIVE DOT REPEATING					*dial-additive-dot-repeating*
+
+Vim の便利な機能の1つに、VISUAL モードにおける g<C-a> があります
+（|v_g_CTRL-A| 参照）。これは加数を行ごとに1ずつ増やすことができる機能であり、
+番号付きの箇条書きなどを生成する際に重宝します。もちろん |dial.nvim| でも同等
+の機能を備えています (|v_g<Plug>(dial-increment)|)。この機能は便利ながら、増加
+対象が離れた場所にあると使いづらいという制限がありました。
+これを解決するため、|dial.nvim| ではノーマルモードの g<C-a> に相当する機能を提
+供しています。これを有効にするには、以下の設定を書いておく必要があります:
+>
+	nmap g<C-a> g<Plug>(dial-increment)
+	nmap g<C-x> g<Plug>(dial-decrement)
+<
+もしくは Lua 上で以下のように設定することもできます。
+>
+	vim.keymap.set("n", "g<C-a>", function()
+		require("dial.map").manipulate("increment", "gnormal")
+	end)
+	vim.keymap.set("n", "g<C-x>", function()
+		require("dial.map").manipulate("decrement", "gnormal")
+	end)
+
+ノーマルモード上での g<C-a> の動作は通常の <C-a> とほぼ同じですが、ドットリ
+ピートを実行したときの挙動のみが異なります。 <C-a> でドットリピートを実行した
+とき加数は [count] のままですが、 g<C-a> でドットリピートすると加数が [count]
+ずつ増えていきます。
+
+たとえば、以下のようなバッファを考えます。なにか適当な関数を定義し、同じものを
+2回コピーした場面です。このままでは関数名が衝突してしまうため、関数の数字を1つ
+ずつインクリメントして `test_foo_1`, `test_foo_2`, `test_foo_3` という名前に変
+更したいものとします。
+>
+	def test_foo_0():
+	    assert 100 + 100 == 200
+
+	def test_foo_0():
+	    assert 100 + 100 == 200
+
+	def test_foo_0():
+	    assert 100 + 100 == 200
+
+このような関数の命名が良いのかどうかはさておき、テキスト編集を行う上での直近の
+問題は編集対象の行が離れていることです。このままではビジュアルモードでの g<C-a>
+が使えません。
+しかし、ノーマルモードの g<C-a> であれば簡単に解決できます。
+
+1. `test_foo_0` を検索し、g<C-a> を押す。
+2. `n` で次の検索結果に移動し、 `.` を押す（ドットリピート）。
+3. `n` で次の検索結果に移動し、 `.` を押す（ドットリピート）。
+
+これだけで `test_foo_1`, `test_foo_2`, `test_foo_3` という関数名が得られたはず
+です。
+
+これだけ見ると被加数が延々と増加してしまうのではと感じたかもしれませんが、そん
+なことはありません。被加数が増加するのは g<C-a> でドットリピートを実行したとき
+だけであり、<C-a> や g<C-a> を改めて押せば数値はリセットされます。
+
 ==============================================================================
 INTERFACE								*dial-interface*
 
@@ -1331,6 +1398,14 @@ MAPPING									*dial-mapping*
 {VISUAL}["x]g<Plug>(dial-decrement)		*v_g<Plug>(dial-decrement)*
 	VISUAL モードにおける |v_g_CTRL-X| に相当する機能を提供します。
 
+["x]g<Plug>(dial-increment)				*g<Plug>(dial-increment)*
+	基本的に |<Plug>(dial-increment)| と同じですが、ドットリピートを実行したと
+	きの挙動が異なります。 |dial-additive-dot-repeating| 参照。
+
+["x]g<Plug>(dial-decrement)				*g<Plug>(dial-decrement)*
+	基本的に |<Plug>(dial-decrement)| と同じですが、ドットリピートを実行したと
+	きの挙動が異なります。 |dial-additive-dot-repeating| 参照。
+
 ------------------------------------------------------------------------------
 COMMAND									*dial-command*
 
@@ -1396,6 +1471,18 @@ require("dial.map").dec_normal([group_name])
 
 	NORMAL モードにおいて与えられたグループ名をもとにデクリメントを行うための
 	キーシーケンスを出力します。
+
+										*dial.map.inc_normal()*
+require("dial.map").inc_gnormal([group_name])
+
+	加算的なインクリメントを行うためのキーシーケンスを表す文字列を出力します。
+	|dial-additive-dot-repeating| 参照。
+
+										*dial.map.dec_normal()*
+require("dial.map").dec_gnormal([group_name])
+
+	加算的なデクリメントを行うためのキーシーケンスを表す文字列を出力します。
+	|dial-additive-dot-repeating| 参照。
 
 										*dial.map.inc_visual()*
 require("dial.map").inc_visual([group_name])
