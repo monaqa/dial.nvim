@@ -30,6 +30,7 @@ Configurations					|dial-config|
     User						|dial-augends-user|
 Advanced Usage					|dial-advanced-usage|
   Dot Repeating					|dial-dot-repeating|
+  Additive Dot Repeating		|dial-additive-dot-repeating|
 Interface						|dial-interface|
   Mapping						|dial-mapping|
   Command						|dial-command|
@@ -98,6 +99,8 @@ plugin.
 >
 	nmap  <C-a>  <Plug>(dial-increment)
 	nmap  <C-x>  <Plug>(dial-decrement)
+	nmap g<C-a> g<Plug>(dial-increment)
+	nmap g<C-x> g<Plug>(dial-decrement)
 	vmap  <C-a>  <Plug>(dial-increment)
 	vmap  <C-x>  <Plug>(dial-decrement)
 	vmap g<C-a> g<Plug>(dial-increment)
@@ -111,6 +114,12 @@ Alternatively, you can configure with Lua as follows:
 	end)
 	vim.keymap.set("n", "<C-x>", function()
 		require("dial.map").manipulate("decrement", "normal")
+	end)
+	vim.keymap.set("n", "g<C-a>", function()
+		require("dial.map").manipulate("increment", "gnormal")
+	end)
+	vim.keymap.set("n", "g<C-x>", function()
+		require("dial.map").manipulate("decrement", "gnormal")
 	end)
 	vim.keymap.set("v", "<C-a>", function()
 		require("dial.map").manipulate("increment", "visual")
@@ -1320,6 +1329,66 @@ the nearest "month" of the date and then the same increment operation is
 performed. Thus, in the above example, once you have done the search, you can
 extend all the due dates by one month just by typing `.n.n.`.
 
+------------------------------------------------------------------------------
+ADDITIVE DOT REPEATING					*dial-additive-dot-repeating*
+
+One convenient feature of Vim is g<C-a> in VISUAL mode (see |v_g_CTRL-A|).
+This allows you to increase the addend by one per line, which is useful for
+generating numbered list, etc. Of course, |dial.nvim| provides the same
+functionality (|v_g<Plug>(dial-increment)|). However, this feature had the
+limitation that it was difficult to use when the increase targets were located
+far away.
+To solve this, |dial.nvim| provides the equivalent of g<C-a> in normal mode.
+To enable it, the following configuration must be written: .
+>
+	nmap g<C-a> g<Plug>(dial-increment)
+	nmap g<C-x> g<Plug>(dial-decrement)
+
+Alternatively, you can configure with Lua as follows:
+>
+	vim.keymap.set("n", "g<C-a>", function()
+		require("dial.map").manipulate("increment", "gnormal")
+	end)
+	vim.keymap.set("n", "g<C-x>", function()
+		require("dial.map").manipulate("decrement", "gnormal")
+	end)
+
+The behavior of g<C-a> in normal mode is almost the same as normal <C-a>, but
+only the behavior during dot repeating is different. While the addend remains
+[count] in dot repeating of <C-a>, the addend is increased by [count] in dot
+repeating of g<C-a>.
+
+For example, consider the following buffer, where you have defined some
+function and copied it twice. Since the function names conflict, we want to
+rename the functions test_foo_1, test_foo_2, and test_foo_3 by incrementing
+the function number by one.
+
+>
+	def test_foo_0():
+	    assert 100 + 100 == 200
+
+	def test_foo_0():
+	    assert 100 + 100 == 200
+
+	def test_foo_0():
+	    assert 100 + 100 == 200
+
+We do not consider whether such function naming is a good idea. Anyway, the
+most immediate problem is that the lines to be edited are far apart. As it is,
+you cannot use g<C-a> in VISUAL mode.
+However, this can be easily resolved with g<C-a> in NORMAL mode.
+
+1. Search for `test_foo_0`, jump, and press g<C-a>.
+2. Press `n` to move to the next result and press `.` (dot repeat).
+3. Press `n` to move to the next result and press `.` (dot repeat).
+
+This should be enough to obtain the function names `test_foo_1`, `test_foo_2`,
+and `test_foo_3`.
+
+You may think that the number of addend will increase endlessly, but this is
+not true. The addend increases only when you execute a dot repeat, and the
+number is reset when you press <C-a> or g<C-a> again.
+
 ==============================================================================
 INTERFACE								*dial-interface*
 
@@ -1390,6 +1459,14 @@ MAPPING									*dial-mapping*
 {VISUAL}["x]g<Plug>(dial-decrement)		*v_g<Plug>(dial-decrement)*
 	An alternative to the existing |v_g_CTRL-X| command in VISUAL mode.
 
+["x]g<Plug>(dial-increment)				*g<Plug>(dial-increment)*
+	Almost the same as |<Plug>(dial-increment)|, but but the behavior differs
+	during dot repeating. See |dial-additive-dot-repeating|.
+
+["x]g<Plug>(dial-decrement)				*g<Plug>(dial-decrement)*
+	Almost the same as |<Plug>(dial-decrement)|, but but the behavior differs
+	during dot repeating. See |dial-additive-dot-repeating|.
+
 ------------------------------------------------------------------------------
 COMMAND									*dial-command*
 
@@ -1448,6 +1525,18 @@ require("dial.map").inc_normal([group_name])
 		"n", "<C-a>", require("dial.map").inc_normal()
 	)
 <
+
+										*dial.map.inc_normal()*
+require("dial.map").inc_gnormal([group_name])
+
+	Outputs a key sequence for additive incrementing. See
+	|dial-additive-dot-repeating|.
+
+										*dial.map.dec_normal()*
+require("dial.map").dec_gnormal([group_name])
+
+	Outputs a key sequence for additive decrementing. See
+	|dial-additive-dot-repeating|.
 
 										*dial.map.dec_normal()*
 require("dial.map").dec_normal([group_name])

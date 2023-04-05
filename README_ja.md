@@ -53,6 +53,8 @@
 ```vim
 nmap  <C-a>  <Plug>(dial-increment)
 nmap  <C-x>  <Plug>(dial-decrement)
+nmap g<C-a> g<Plug>(dial-increment)
+nmap g<C-x> g<Plug>(dial-decrement)
 vmap  <C-a>  <Plug>(dial-increment)
 vmap  <C-x>  <Plug>(dial-decrement)
 vmap g<C-a> g<Plug>(dial-increment)
@@ -64,6 +66,8 @@ vmap g<C-x> g<Plug>(dial-decrement)
 ```lua
 vim.keymap.set("n", "<C-a>", require("dial.map").inc_normal(), {noremap = true})
 vim.keymap.set("n", "<C-x>", require("dial.map").dec_normal(), {noremap = true})
+vim.keymap.set("n", "g<C-a>", require("dial.map").inc_gnormal(), {noremap = true})
+vim.keymap.set("n", "g<C-x>", require("dial.map").dec_gnormal(), {noremap = true})
 vim.keymap.set("v", "<C-a>", require("dial.map").inc_visual(), {noremap = true})
 vim.keymap.set("v", "<C-x>", require("dial.map").dec_visual(), {noremap = true})
 vim.keymap.set("v", "g<C-a>", require("dial.map").inc_gvisual(), {noremap = true})
