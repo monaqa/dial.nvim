@@ -1472,13 +1472,13 @@ require("dial.map").dec_normal([group_name])
 	NORMAL モードにおいて与えられたグループ名をもとにデクリメントを行うための
 	キーシーケンスを出力します。
 
-										*dial.map.inc_normal()*
+										*dial.map.inc_gnormal()*
 require("dial.map").inc_gnormal([group_name])
 
 	加算的なインクリメントを行うためのキーシーケンスを表す文字列を出力します。
 	|dial-additive-dot-repeating| 参照。
 
-										*dial.map.dec_normal()*
+										*dial.map.dec_gnormal()*
 require("dial.map").dec_gnormal([group_name])
 
 	加算的なデクリメントを行うためのキーシーケンスを表す文字列を出力します。

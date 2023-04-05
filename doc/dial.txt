@@ -1526,23 +1526,23 @@ require("dial.map").inc_normal([group_name])
 	)
 <
 
-										*dial.map.inc_normal()*
-require("dial.map").inc_gnormal([group_name])
-
-	Outputs a key sequence for additive incrementing. See
-	|dial-additive-dot-repeating|.
-
-										*dial.map.dec_normal()*
-require("dial.map").dec_gnormal([group_name])
-
-	Outputs a key sequence for additive decrementing. See
-	|dial-additive-dot-repeating|.
-
 										*dial.map.dec_normal()*
 require("dial.map").dec_normal([group_name])
 
 	Outputs a key sequence for decrementing based on the given `group_name` in
 	NORMAL mode.
+
+										*dial.map.inc_gnormal()*
+require("dial.map").inc_gnormal([group_name])
+
+	Outputs a key sequence for additive incrementing. See
+	|dial-additive-dot-repeating|.
+
+										*dial.map.dec_gnormal()*
+require("dial.map").dec_gnormal([group_name])
+
+	Outputs a key sequence for additive decrementing. See
+	|dial-additive-dot-repeating|.
 
 										*dial.map.inc_visual()*
 require("dial.map").inc_visual([group_name])
