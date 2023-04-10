@@ -32,7 +32,7 @@ local function _cmd_sequence(direction, mode, group_name, count)
         if type(count) ~= "number" then
             error "count must be a integer."
         end
-        return select .. setopfunc .. count .. "g@" .. textobj
+        return count .. select .. setopfunc .. "g@" .. textobj
     end
     return select .. setopfunc .. "g@" .. textobj
 end
