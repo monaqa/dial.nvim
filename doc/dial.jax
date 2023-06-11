@@ -20,6 +20,7 @@ Configurations					|dial-config|
   Augends						|dial-augends|
     Number						|dial-augends-number|
     Date						|dial-augends-date|
+    Decimal Fraction			|dial-augends-decimal-fraction|
     Constant					|dial-augends-constant|
     Case						|dial-augends-case|
     Hexcolor					|dial-augends-hexcolor|
@@ -867,6 +868,90 @@ augend.date.alias["%H:%M"]~
 
 がインクリメントされます。
 意図しないマッチを避けるため、存在しない時刻にはマッチしません。
+
+DECIMAL FRACTION						*dial-augends-decimal-fraction*
+----------------
+
+小数を増減します。
+`augend.decimal_fraction.new{ ...opts }` で使用できます。
+>
+	require("dial.config").augends:register_group{
+	  default = {
+		augend.decimal_fraction.new{
+			signed = false,
+			point_char = ".",
+		},
+	  },
+	}
+<
+
+以下のパラメータを有します。
+		signed (boolean, default: false)
+				true のとき、小数に前置されたマイナスを加味します。
+		point_char (string, default: `.`)
+				小数点を表す文字。1文字である必要があります。基本的には `.` か
+				`,` のどちらかです。
+
+decimal_fraction は `42.195` や `9.80665` といった小数を見つけたとき、カーソル
+が整数部分の前にあれば整数部分を、小数部分の前にあれば小数部分を増減します。
+
+たとえば
+>
+	42.195
+<
+という文字列の `4` にカーソルがある状態で |<Plug>(dial-increment)| を行うと
+>
+	43.195
+<
+となり、さらに`1` にカーソルがある状態で |<Plug>(dial-increment)| を行うと
+>
+	43.196
+<
+となります。カウンタを指定することもでき、小数部分にカーソルを当てて
+|100<Plug>(dial-increment)| を実行すれば
+>
+	43.296
+<
+となります。
+
+上記の挙動だけ見ると integer を指定したときの挙動とほとんど変わらないと感じら
+れるかも知れません。しかし、integer とは以下の2つの違いがあります。
+
+* 繰り上がりや繰り下がりが発生します。すなわち
+>
+	2.9
+<
+の小数部分にカーソルを当てて |<Plug>(dial-increment)| を行うと、
+>
+	3.0
+<
+となります（integer を指定したときは `2.10` となっていました）。
+これは減算でも同様です。 `signed = true` の設定で
+>
+	0.7
+<
+の整数部分にカーソルを当てて |<Plug>(dial-decrement)| を行うと、
+>
+	-0.3
+<
+となります (`0.7 - 1 = -0.3`)。
+
+* ドットリピートは「増減する実際の値」を記憶し、再現します。`2.8` の小数部分を
+  インクリメントして `2.9` にした直後なら、 `1.73` をドットリピートでインクリ
+  メントしたときの結果は `1.74` ではなく `1.83` となります。
+
+`augend.decimal_fraction` と `augend.integer` を両立することもできます。
+>
+	require("dial.config").augends:register_group{
+	  default = {
+		augend.integer.alias.decimal,
+		augend.decimal_fraction.new{ },
+	  },
+	}
+<
+
+この場合はカーソル下または直後にある数字が小数であるときに限り、
+decimal_fraction による増減ルールが適用されます。
 
 CONSTANT								*dial-augends-constant*
 --------
