@@ -21,6 +21,7 @@ Configurations					|dial-config|
   Augends						|dial-augends|
     Number						|dial-augends-number|
     Date						|dial-augends-date|
+    Decimal Fraction			|dial-augends-decimal-fraction|
     Constant					|dial-augends-constant|
     Case						|dial-augends-case|
     Hexcolor					|dial-augends-hexcolor|
@@ -903,6 +904,87 @@ target of the increment.
 
 The format matches times that do not exist in reality such as `52:99`, and
 the time is corrected to a date that actually exists when incrementing.
+
+DECIMAL FRACTION						*dial-augends-decimal-fraction*
+----------------
+
+Represents decimal fraction number, such as `42.195` and `-9.80665`.
+`augend.decimal_fraction.new{ ...opts }` で使用できます。
+>
+	require("dial.config").augends:register_group{
+	  default = {
+		augend.decimal_fraction.new{
+			signed = false,
+			point_char = ".",
+		},
+	  },
+	}
+<
+
+The argument table of `augend.decimal_fraction.new` can take the following
+keys:
+		signed (boolean, default: false)
+			If true, add the minus prefixed to the decimal.
+		point_char (string, default: `.`)
+			A decimal point character, which must be a single character.
+			Either "." or "," in most cases.
+
+When decimal_fraction augend finds a fraction such as `42.195` or `9.80665`,
+it increments/decrements:
+* the integer part if the cursor is on/before the integer part,
+* the fractional part if the cursor is on/before the fractional part.
+
+For instance, if you perform |<Plug>(dial-increment)| with the cursor at `4`
+of the following string:
+>
+	42.195
+<
+then you will get the following result.
+>
+	43.195
+<
+And if you perform |<Plug>(dial-increment)| with the cursor at `1` in
+succession, you will get the following result.
+>
+	43.196
+<
+You can specify the [count]. By performing |100<Plug>(dial-increment)| on the
+fractional part, you will get:
+>
+	43.296
+<
+
+You may feel that the behavior is almost the same as when an integer is
+specified. However, there are two important differences from integer:
+
+* the value is carried across the decimal point. e.g., if you perform
+  |<Plug>(dial-increment)| on the fractional part of the following:
+>
+	2.9
+<
+you will get:
+>
+	3.0
+<
+If you had specified `integer` augend, you would have got `2.10`.
+
+* Dot repeat remembers and reproduces the "actual value to be increased or
+  decreased." Immediately after incrementing the decimal portion of `2.8`
+  to `2.9,` the result of dot repeat incrementing `1.73` would be `1.83`,
+  not `1.74`.
+
+You can also use both `augend.decimal_fraction` and `augend.integer`:
+>
+	require("dial.config").augends:register_group{
+	  default = {
+		augend.integer.alias.decimal,
+		augend.decimal_fraction.new{ },
+	  },
+	}
+<
+
+In this case, the increment/decrement rule by `decimal_fraction` is applied
+only when the number after/on the cursor is a decimal fraction number.
 
 CONSTANT								*dial-augends-constant*
 --------
