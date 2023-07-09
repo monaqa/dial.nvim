@@ -16,35 +16,191 @@ local AugendInteger = {}
 
 local M = {}
 
----convert integer with given prefix
----@param n integer
+---@class BigInt
+---@field sign 1|-1
+---@field digits table<integer>
+---@field radix integer
+---@field plus fun(self:BigInt, value:BigInt, natural:boolean):BigInt `value` must be positive
+---@field minus fun(self:BigInt, value:BigInt, natural:boolean):BigInt `value` must be positive
+---@field to_string fun(self:BigInt, case:'"upper"'|'"lower"'):string
+local BigInt = {}
+
+---@param n string|integer
 ---@param radix integer
----@param case '"upper"' | '"lower"'
----@return string
-local function tostring_with_radix(n, radix, case)
-    local floor, insert = math.floor, table.insert
-    n = floor(n)
-    if not radix or radix == 10 then
-        return tostring(n)
+---@return BigInt
+function BigInt.new(n, radix)
+    local self = {
+        sign = 1,
+        digits = {},
+        radix = radix,
+    }
+
+    local base_len = 8
+    local base = self.radix ^ base_len
+
+    local remove_top_0 = function(digits)
+        for i = #digits, 2, -1 do
+            if digits[i] == 0 then
+                digits[i] = nil
+            else
+                return
+            end
+        end
     end
 
-    local digits = "0123456789abcdefghijklmnopqrstuvwxyz"
-    if case == "upper" then
-        digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    if type(n) == 'string' then
+        if n:sub(1, 1) == '-' then
+            self.sign = -1
+            n = n:sub(2)
+        end
+        local n_length = n:len()
+        for i = n_length, 1, -base_len do
+            local splited = n:sub(math.max(1, i - base_len + 1), i)
+            table.insert(self.digits, tonumber(splited, radix))
+        end
+        remove_top_0(self.digits)
+    else
+        if n < 0 then
+            self.sign = -1
+            n = -n
+        end
+        repeat
+            table.insert(self.digits, n % base)
+            n = math.floor(n / base)
+        until n == 0
     end
 
-    local t = {}
-    local sign = ""
-    if n < 0 then
-        sign = "-"
-        n = -n
+    -- Define methods
+
+    ---@param value BigInt must be positive
+    ---@param natural boolean
+    ---@return BigInt
+    function self:plus(value, natural)
+        if self.sign == -1 then
+            -- -self + value = value - self
+            self.sign = 1
+            return value:minus(self, natural)
+        end
+
+        -- For now, self and value is positive
+        -- Calculate self + value
+
+        local max_digits
+        if #self.digits < #value.digits then
+            max_digits = #value.digits
+            self, value = value, self
+        else
+            max_digits = #self.digits
+        end
+
+        local carry = 0
+        for i = 1, max_digits, 1 do
+            local sum = (self.digits[i] or 0) + (value.digits[i] or 0) + carry
+            if sum >= base then
+                carry = 1
+                sum = sum - base
+            else
+                carry = 0
+            end
+            self.digits[i] = sum
+        end
+        if carry == 1 then
+            table.insert(self.digits, 1)
+        end
+
+        return self
     end
-    repeat
-        local d = (n % radix) + 1
-        n = floor(n / radix)
-        insert(t, 1, digits:sub(d, d))
-    until n == 0
-    return sign .. table.concat(t, "")
+
+    ---@param value BigInt must be positive
+    ---@param natural boolean
+    ---@return BigInt
+    function self:minus(value, natural)
+        if self.sign == -1 then
+            -- -self - value = -(self + value)
+            self.sign = 1
+            self = self:plus(value, natural)
+            self.sign = -1
+            return self
+        end
+
+        -- For now, self and value is positive
+        -- Calculate self - value
+
+        local value_is_large = (
+            #self.digits < #value.digits or
+            (#self.digits == #value.digits and self.digits[#self.digits] < value.digits[#value.digits])
+        )
+        if natural and value_is_large then
+            self.digits = { 0 }
+            return self
+        end
+
+        local max_digits
+        if value_is_large then
+            max_digits = #value.digits
+            self, value = value, self
+            self.sign = -1
+        else
+            max_digits = #self.digits
+        end
+
+        local borrow = 0
+        for i = 1, max_digits, 1 do
+            local diff = (self.digits[i] or 0) - (value.digits[i] or 0) - borrow
+            if diff < 0 then
+                borrow = 1
+                diff = diff + base
+            else
+                borrow = 0
+            end
+            self.digits[i] = diff
+        end
+        if borrow == 1 then
+            self.digits[#self.digits] = self.digits[#self.digits] - 1
+        end
+
+        remove_top_0(self.digits)
+        return self
+    end
+
+    ---@param case '"upper"' | '"lower"'
+    ---@return string
+    function self:to_string(case)
+        local digits
+        if case == "upper" then
+            digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        else
+            digits = "0123456789abcdefghijklmnopqrstuvwxyz"
+        end
+
+        local ret = ""
+        if self.sign == -1 then
+            ret = "-"
+        end
+
+        local d = self.digits[#self.digits]
+        local s = ""
+        repeat
+            local r = d % self.radix
+            d = math.floor(d / self.radix)
+            s = digits:sub(r + 1, r + 1) .. s
+        until d == 0
+        ret = ret .. s
+        for i = #self.digits - 1, 1, -1 do
+            d = self.digits[i]
+            s = ""
+            for _ = 1, base_len, 1 do
+                local r = d % self.radix
+                d = math.floor(d / self.radix)
+                s = digits:sub(r + 1, r + 1) .. s
+            end
+            ret = ret .. s
+        end
+
+        return ret
+    end
+
+    return self
 end
 
 ---デリミタを挟んだ数字を出力する。
@@ -141,29 +297,32 @@ function AugendInteger:add(text, addend, cursor)
         end
         subtext = text:gsub(ptn, "")
     end
-    local n = tonumber(subtext, self.radix)
+
+    local n = BigInt.new(subtext, self.radix)
     local n_string_digit = subtext:len()
-    -- local n_actual_digit = tostring(n):len()
-    local n_actual_digit = tostring_with_radix(n, self.radix, self.case):len()
-    n = n + addend
-    if self.natural and n < 0 then
-        n = 0
+    local n_actual_digit = n:to_string(self.case):len()
+    if addend >= 0 then
+        n = n:plus(BigInt.new(addend, self.radix), self.natural)
+    else
+        n = n:minus(BigInt.new(-addend, self.radix), self.natural)
     end
+
     local digits
     if n_string_digit == n_actual_digit then
         -- 増減前の数字が0か0始まりでない数字だったら
         -- text = ("%d"):format(n)
-        digits = tostring_with_radix(n, self.radix, self.case)
+        digits = n:to_string(self.case)
     else
         -- 増減前の数字が0始まりの正の数だったら
         -- text = ("%0" .. n_string_digit .. "d"):format(n)
-        local num_string = tostring_with_radix(n, self.radix, self.case)
+        local num_string = n:to_string(self.case)
         local pad = ("0"):rep(math.max(n_string_digit - num_string:len(), 0))
         digits = pad .. num_string
     end
     if self.delimiter ~= "" then
         digits = add_delimiter(digits, self.delimiter, self.delimiter_digits)
     end
+
     text = self.prefix .. digits
     cursor = #text
     return { text = text, cursor = cursor }
