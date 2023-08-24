@@ -158,6 +158,22 @@ describe([[Test of date with format "%Y年%-m月%-d日(%ja)":]], function()
     end)
 end)
 
+describe([[Test of date with format %H:%M:]], function()
+    local augend = date.alias["%H:%M"]
+    describe("find function", function()
+        it("can find dates in a given format with Time Zones", function()
+            assert.are.same(augend:find_stateful("date: 11:50", 1), { from = 7, to = 11 })
+            assert.are.same(augend.kind, "min")
+            assert.are.same(augend:find_stateful("date: 11:50", 6), { from = 7, to = 11 })
+            assert.are.same(augend.kind, "min")
+            assert.are.same(augend:find_stateful("date: 11:50", 7), { from = 7, to = 11 })
+            assert.are.same(augend.kind, "hour")
+            assert.are.same(augend:find_stateful("date: 11:50", 10), { from = 7, to = 11 })
+            assert.are.same(augend.kind, "min")
+        end)
+    end)
+end)
+
 describe([[Test of clamp & end_sensitive option:]], function()
     describe("{clamp = false and end_sensitive = false}", function()
         local augend = date.new {

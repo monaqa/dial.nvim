@@ -461,6 +461,7 @@ function DateFormat:find(line, cursor)
         local now = os.date("*t", os.time()) --[[@as osdate]]
         dt_info.month = now.month
         dt_info.year = now.year
+        dt_info.isdst = now.isdst
     end
 
     local datekind = self.default_kind
