@@ -1,16 +1,56 @@
 #!/usr/bin/env bash
 
 TESTS_INIT=tests/minimal_init.lua
-TESTS_DIR=tests/
+TESTS_DIR=tests
 
-
-function test {
-
+function _test_tz {
+	# DST always in effect
+	echo "Checking with $1 time zone (DST always enable)"
+	TZ=$1
+	export TZ
 	nvim \
 		--headless \
 		--noplugin \
 		-u ${TESTS_INIT} \
-		-c "PlenaryBustedDirectory ${TESTS_DIR} { minimal_init = '${TESTS_INIT}' }"
+		-c "PlenaryBustedDirectory ${TESTS_DIR}/dial/augend/date_spec.lua \
+	    { minimal_init = '${TESTS_INIT}' }"
+}
+
+function test {
+
+	# Force TimeZone to ensure consistent behavior of os.date regarding Daylight
+	# Saving Time
+
+	# Standard case (No DST)
+	# Full test case
+	TZ='GMT+0'
+	export TZ
+	nvim \
+		--headless \
+		--noplugin \
+		-u ${TESTS_INIT} \
+		-c "PlenaryBustedDirectory ${TESTS_DIR} \
+	   { minimal_init = '${TESTS_INIT}' }" ||
+		return 1
+
+	# permanent DST: os.date always returns `isdst == false`
+	_test_tz "Asia/Tokyo" || return 1
+
+	# Check standard DST. Since the date is not controlled, we might have
+	# periods of time without any timezone with `isdst == true`.
+	# Therefore, select timezones that overlap so that DST is actually
+	# tested.
+
+	# DST in Northern hemisphere
+	# Start: Second Sunday in March at 2:00
+	# End: First Sunday in November at 2:00
+	_test_tz "America/New_York" || return 1
+
+	# DST in Southern hemisphere
+	# Start: First Sunday in October at 2:00
+	# End: First Sunday in April at 3:00
+	_test_tz "Australia/Sidney" || return 1
+
 }
 
 
