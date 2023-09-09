@@ -189,11 +189,12 @@ Lua 上で以下のように記述すれば expression register を使わずマ�
 きます。
 
 >
-	vim.api.nvim_set_keymap(
+	vim.keymap.set(
 		"n",
 		"<Leader>a",
-		require("dial.map").inc_normal("mygroup"),
-		{noremap = true}
+		function()
+			require("dial.map").manipulate("increment", "normal", "mygroup")
+		end
 	)
 <
 
@@ -255,11 +256,19 @@ VISUAL モード用のグループを作成することで可能です。
 	}
 
 	-- VISUAL モードでの被加数を変更する
-	vim.api.nvim_set_keymap(
-		"v", "<C-a>", require("dial.map").inc_normal("visual"), {noremap = true}
+	vim.keymap.set(
+		"v",
+		"<C-a>",
+		function()
+			require("dial.map").manipulate("increment", "visual", "visual")
+		end
 	)
-	vim.api.nvim_set_keymap(
-		"v", "<C-x>", require("dial.map").dec_normal("visual"), {noremap = true}
+	vim.keymap.set(
+		"v",
+		"<C-x>",
+		function()
+			require("dial.map").manipulate("decrement", "visual", "visual")
+		end
 	)
 <
 
