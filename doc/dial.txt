@@ -189,11 +189,12 @@ decrease, you can "map" it:
 
 Alternatively, you can set the same mapping without expression register:
 >
-	vim.api.nvim_set_keymap(
+	vim.keymap.set(
 		"n",
 		"<Leader>a",
-		require("dial.map").inc_normal("mygroup"),
-		{noremap = true}
+		function()
+			require("dial.map").manipulate("increment", "normal", "mygroup")
+		end
 	)
 <
 
@@ -253,11 +254,19 @@ Augends Only Valid in VISUAL Mode~
 	}
 
 	-- change augends in VISUAL mode
-	vim.api.nvim_set_keymap(
-		"v", "<C-a>", require("dial.map").inc_normal("visual"), {noremap = true}
+	vim.keymap.set(
+		"v",
+		"<C-a>",
+		function()
+			require("dial.map").manipulate("increment", "visual", "visual")
+		end
 	)
-	vim.api.nvim_set_keymap(
-		"v", "<C-x>", require("dial.map").dec_normal("visual"), {noremap = true}
+	vim.keymap.set(
+		"v",
+		"<C-x>",
+		function()
+			require("dial.map").manipulate("decrement", "visual", "visual")
+		end
 	)
 <
 
