@@ -59,7 +59,7 @@ function AugendDecimalFraction:find(line, cursor)
             end
             idx = idx_frac_end + 1
             -- decimal fraction before the cursor
-            if idx_frac_end < cursor then
+            if cursor ~= nil and idx_frac_end < cursor then
                 return -- continue while loop
             end
 
