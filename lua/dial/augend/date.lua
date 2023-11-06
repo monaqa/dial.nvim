@@ -708,6 +708,12 @@ M.alias["%Y-%m-%d"] = M.new {
     only_valid = false,
 }
 
+M.alias["%m-%d"] = M.new {
+    pattern = "%m-%d",
+    default_kind = "day",
+    only_valid = true,
+}
+
 M.alias["%-m/%-d"] = M.new {
     pattern = "%-m/%-d",
     default_kind = "day",
