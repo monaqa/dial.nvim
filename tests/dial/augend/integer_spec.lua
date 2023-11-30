@@ -199,3 +199,24 @@ describe([[Test of integer.new {delimiter = ",", delimiter_digits = 4}:]], funct
         end)
     end)
 end)
+describe([[Test of delimited binary number:]], function()
+    local augend = integer.new {
+        radix = 2,
+        prefix = "0b",
+        delimiter = "_",
+        delimiter_digits = 4,
+    }
+
+    describe("find function", function()
+        it("can find comma-separated integer", function()
+            assert.are.same(augend:find("0b1010_0101", 1), { from = 1, to = 11 })
+        end)
+    end)
+
+    describe("add function", function()
+        it("separates numbers by four digits", function()
+            assert.are.same(augend:add("0b1010_0101", 1, 1), { text = "0b1010_0110", cursor = 11 })
+            assert.are.same(augend:add("0b1010_1111", 1, 1), { text = "0b1011_0000", cursor = 11 })
+        end)
+    end)
+end)
