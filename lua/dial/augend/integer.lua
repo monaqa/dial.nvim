@@ -48,8 +48,8 @@ function BigInt.new(n, radix)
         end
     end
 
-    if type(n) == 'string' then
-        if n:sub(1, 1) == '-' then
+    if type(n) == "string" then
+        if n:sub(1, 1) == "-" then
             self.sign = -1
             n = n:sub(2)
         end
@@ -127,8 +127,8 @@ function BigInt.new(n, radix)
         -- Calculate self - value
 
         local value_is_large = (
-            #self.digits < #value.digits or
-            (#self.digits == #value.digits and self.digits[#self.digits] < value.digits[#value.digits])
+            #self.digits < #value.digits
+            or (#self.digits == #value.digits and self.digits[#self.digits] < value.digits[#value.digits])
         )
         if natural and value_is_large then
             self.digits = { 0 }
@@ -295,7 +295,7 @@ function AugendInteger:add(text, addend, cursor)
         if ptn == "." or ptn == "%" or ptn == "^" or ptn == "$" then
             ptn = "%" .. ptn
         end
-        subtext = text:gsub(ptn, "")
+        subtext = subtext:gsub(ptn, "")
     end
 
     local n = BigInt.new(subtext, self.radix)
