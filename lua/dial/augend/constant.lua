@@ -131,6 +131,7 @@ end
 
 M.alias = {
     bool = M.new { elements = { "true", "false" } },
+    yes_no = M.new { elements = { "yes", "no" } },
     alpha = M.new {
         elements = {
             "a",
