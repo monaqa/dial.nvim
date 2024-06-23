@@ -119,8 +119,15 @@ function M.operator_normal(direction, additive)
 
     local result = handler:operate(line, col, direction, additive)
 
-    if result.line ~= nil then
-        vim.fn.setline(".", result.line)
+    if result.text ~= nil then
+        vim.api.nvim_buf_set_text(
+            0,
+            line_num - 1,
+            result.range.from - 1,
+            line_num - 1,
+            result.range.to,
+            { result.text }
+        )
     end
     if result.cursor ~= nil then
         vim.fn.cursor { line_num, result.cursor }
@@ -141,8 +148,8 @@ function M.operator_visual(direction, stairlike)
     local function operate_line(lnum, range)
         local line = vim.fn.getline(lnum)
         local result = handler:operate_visual(line, range, direction, tier)
-        if result.line ~= nil then
-            vim.fn.setline(lnum, result.line)
+        if result.text ~= nil then
+            vim.api.nvim_buf_set_text(0, lnum - 1, result.range.from - 1, lnum - 1, result.range.to, { result.text })
             if stairlike then
                 tier = tier + 1
             end
@@ -217,8 +224,8 @@ function M.command(direction, line_range, groups)
     local function operate_line(lnum, range)
         local line = vim.fn.getline(lnum)
         local result = handler:operate_visual(line, range, direction, 1)
-        if result.line ~= nil then
-            vim.fn.setline(lnum, result.line)
+        if result.text ~= nil then
+            vim.api.nvim_buf_set_text(0, lnum - 1, result.range.from - 1, lnum - 1, result.range.to, { result.text })
         end
     end
 

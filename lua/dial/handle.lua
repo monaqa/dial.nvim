@@ -197,7 +197,7 @@ end
 ---@param cursor integer
 ---@param direction direction
 ---@param additive? boolean
----@return {line?: string, cursor?: integer}
+---@return {range?: textrange, text?: string, cursor?: integer}
 function Handler:operate(line, cursor, direction, additive)
     if self.range == nil or self.active_augend == nil then
         return {}
@@ -206,12 +206,8 @@ function Handler:operate(line, cursor, direction, additive)
     local text = line:sub(self.range.from, self.range.to)
     local addend = self:get_addend(direction)
     local add_result = self.active_augend:add(text, addend * (self.cumsum + 1), cursor)
-    local new_line = nil
     local new_cursor = nil
 
-    if add_result.text ~= nil then
-        new_line = line:sub(1, self.range.from - 1) .. add_result.text .. line:sub(self.range.to + 1)
-    end
     if add_result.cursor ~= nil then
         new_cursor = self.range.from - 1 + add_result.cursor
     end
@@ -220,14 +216,14 @@ function Handler:operate(line, cursor, direction, additive)
         self.cumsum = self.cumsum + 1
     end
 
-    return { line = new_line, cursor = new_cursor }
+    return { range = self.range, text = add_result.text, cursor = new_cursor }
 end
 
 ---The process that runs when operator is called (in VISUAL mode).
 ---@param selected_range {from: integer, to?: integer}
 ---@param direction direction
 ---@param tier integer
----@return {result?: string}
+---@return {range?: textrange, text?: string}
 function Handler:operate_visual(line, selected_range, direction, tier)
     if self.active_augend == nil then
         return {}
@@ -243,11 +239,7 @@ function Handler:operate_visual(line, selected_range, direction, tier)
     local to = selected_range.from + range.to - 1
     local text = line:sub(from, to)
     local add_result = self.active_augend:add(text, addend * tier)
-    local newline = nil
-    if add_result.text ~= nil then
-        newline = line:sub(1, from - 1) .. add_result.text .. line:sub(to + 1)
-    end
-    return { line = newline }
+    return { range = { from = from, to = to }, text = add_result.text }
 end
 
 ---Set self.range to the target range of the currently active augend (without side effects).
