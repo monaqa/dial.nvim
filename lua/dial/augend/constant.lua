@@ -1,7 +1,7 @@
 local util = require "dial.util"
 local common = require "dial.augend.common"
 
----@alias AugendConstantConfig { elements: string[], cyclic: boolean, pattern_regexp: string, preserve_case: boolean }
+---@alias AugendConstantConfig { elements: string[], cyclic: boolean, pattern_regexp: string, preserve_case: boolean, match_before_cursor: boolean }
 
 ---@class AugendConstant
 ---@implement Augend
@@ -33,7 +33,7 @@ local function preserve_case(word)
     return nil
 end
 
----@param config { elements: string[], word?: boolean, cyclic?: boolean, pattern_regexp?: string, preserve_case?: boolean }
+---@param config { elements: string[], word?: boolean, cyclic?: boolean, pattern_regexp?: string, preserve_case?: boolean, match_before_cursor?: boolean }
 ---@return Augend
 function M.new(config)
     util.validate_list("config.elements", config.elements, "string")
@@ -43,9 +43,13 @@ function M.new(config)
         cyclic = { config.cyclic, "boolean", true },
         pattern_regexp = { config.pattern_regexp, "string", true },
         preserve_case = { config.preserve_case, "boolean", true },
+        match_before_cursor = { config.match_before_cursor, "boolean", true },
     }
     if config.preserve_case == nil then
         config.preserve_case = false
+    end
+    if config.match_before_cursor == nil then
+        config.match_before_cursor = false
     end
     if config.pattern_regexp == nil then
         local case_sensitive_flag = util.if_expr(config.preserve_case, [[\c]], [[\C]])
@@ -70,7 +74,7 @@ function AugendConstant:find(line, cursor)
         return vim.fn.escape(e, [[/\]])
     end, self.config.elements)
     local vim_regex_ptn = self.config.pattern_regexp:format(table.concat(escaped_elements, [[\|]]))
-    return common.find_pattern_regex(vim_regex_ptn)(line, cursor)
+    return common.find_pattern_regex(vim_regex_ptn, self.config.match_before_cursor)(line, cursor)
 end
 
 ---@param text string
