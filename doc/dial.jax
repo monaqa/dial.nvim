@@ -981,6 +981,10 @@ CONSTANT								*dial-augends-constant*
 		  word = false,
 		  cyclic = true,
 		},
+		augend.constant.new{
+		  elements = {"let", "const"},
+		  match_before_cursor = true,
+		},
 	  },
 	}
 <
@@ -999,6 +1003,10 @@ CONSTANT								*dial-augends-constant*
 		pattern_regexp (string, default: `\C\V\<\(%s\)\>`)
 				文字列検索を行う際の正規表現。 elements に指定した文字列を
 				`%s` に指定します。
+		match_before_cursor (boolean, default: false)
+				true のとき、カーソルが対象の単語より後ろにある場合でもマッチ
+				します。ただし、カーソル上またはカーソルの後に他の有効な被加数が
+				存在すればそちらが優先されます。
 
 注意: `&&` と `||` のように、記号からなる文字列を相互変換するときは `cyclic`
 を false にしてください。

@@ -1014,6 +1014,10 @@ Predefined sequence of strings. You can use this rule with
 		  word = false,
 		  cyclic = true,
 		},
+		augend.constant.new{
+		  elements = {"let", "const"},
+		  match_before_cursor = true,
+		},
 	  },
 	}
 <
@@ -1033,6 +1037,10 @@ The argument table of `augend.constant.new` can take the following keys:
 		pattern_regexp (string, default: `\C\V\<\(%s\)\>`)
 				A regular expression used in search. `%s` represents the string
 				specified in `elements.`
+		match_before_cursor (boolean, default: false)
+				If true, it matches even when the cursor is positioned after
+				the target word. In that case, however, any other valid augend
+				on or after the cursor will take precedence.
 
 NOTE: Set `cyclic` to false when cross-converting strings consisting of
 symbols, such as `&&` and `||`.
