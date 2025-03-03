@@ -4,6 +4,7 @@
 
 ### New Features
 
+* add `{ case = "keep" }` option (new default) to augend `hexcolor`
 * add options to augend 'date'
     * `custom_date_elements`
     * `clamp`

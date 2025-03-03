@@ -1,4 +1,3 @@
-local util = require "dial.util"
 local common = require "dial.augend.common"
 
 local function cast_u8(n)
@@ -11,23 +10,26 @@ local function cast_u8(n)
     return n
 end
 
----@alias colorcase '"upper"' | '"lower"'
+---@alias colorcase '"keep"' | '"upper"' | '"lower"'
 ---@alias colorkind '"r"' | '"g"' | '"b"' | '"all"'
 
 ---@class AugendHexColor
 ---@implement Augend
----@field datefmt datefmt
+---@field config { case: colorcase }
 ---@field kind colorkind
 local AugendHexColor = {}
 
 local M = {}
 
----@param config { case: colorcase }
----@return Augend
+---@param config? { case: colorcase }
+---@return AugendHexColor
 function M.new(config)
-    vim.validate {
-        case = { config.case, "string", true },
-    }
+    config = config or { case = "keep" }
+
+    vim.validate { case = { config.case, "string", true } }
+    if config.case ~= nil and config.case ~= "keep" and config.case ~= "upper" and config.case ~= "lower" then
+        error("invalid case: " .. config.case)
+    end
 
     return setmetatable({ config = config, kind = "all" }, { __index = AugendHexColor })
 end
@@ -87,7 +89,21 @@ function AugendHexColor:add(text, addend, cursor)
         b = cast_u8(b + addend)
         cursor = 7
     end
+    local has_upper = text:match "[A-F]" ~= nil
+    local has_lower = text:match "[a-f]" ~= nil
     text = "#" .. string.format("%02x", r) .. string.format("%02x", g) .. string.format("%02x", b)
+    if self.config.case == "upper" then
+        text = text:upper()
+    elseif self.config.case == "lower" then
+        text = text:lower()
+    else
+        -- "keep"
+        if has_upper and not has_lower then
+            text = text:upper()
+        elseif has_lower and not has_upper then
+            text = text:lower()
+        end
+    end
     return { text = text, cursor = cursor }
 end
 
