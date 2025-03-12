@@ -276,7 +276,7 @@ require("dial.config").augends:register_group{
   default = {
     -- hex colors (e.g. #1A1A1A, #EEFEFE, etc.)
     augend.hexcolor.new{
-      case = "upper", -- can be "upper", "lower", or "keep", see below
+      case = "upper", -- or "lower", "prefer_upper", "prefer_lower", see below
     },
   },
 }
@@ -286,11 +286,16 @@ Supported options for `case` are:
 
 * `upper`: use uppercase letters `A`-`F`
 * `lower`: use lowercase letters `a`-`f`
-* `keep`: try to keep the case of the original hex color string
-  * `#0a1bfe` will be incremented to `#0b1cff`
-  * `#0A1BFE` will be incremented to `#0B1CFF`
-  * `#059799` will be incremented to `#0a9c9e` (use lower case when no letter
-    present in the original hex color string)
+* `prefer_upper`: try to keep the case, use uppercase as fallback
+  * `#0a1bfe` will be incremented to `#0b1cff` (keep existing case)
+  * `#0A1BFE` will be incremented to `#0B1CFF` (keep existing case)
+  * `#059799` will be incremented to `#06989A` (no letter, use uppercase)
+  * `#0a1BFf` will be incremented to `#0B1CFF` (mixed casing, use uppercase)
+* `prefer_lower`: try to keep the case, use lowercase as fallback
+  * `#0a1bfe` will be incremented to `#0b1cff` (keep existing case)
+  * `#0A1BFE` will be incremented to `#0B1CFF` (keep existing case)
+  * `#059799` will be incremented to `#06989a` (no letter, use lowercase)
+  * `#0a1BFf` will be incremented to `#0b1cff` (mixed casing, use lowercase)
 
 ### `semver`
 
