@@ -1,44 +1,53 @@
 local hexcolor = require("dial.augend").hexcolor
 
+---@return AugendHexColor
+local function create_augend(case)
+    if case == nil then
+        return hexcolor.new() --[[@as AugendHexColor]]
+    end
+
+    ---@diagnostic disable-next-line: missing-fields
+    return hexcolor.new { case = case } --[[@as AugendHexColor]]
+end
+
 describe("Test of hex colors", function()
     describe("config", function()
         describe("case", function()
             it('"prefer_lower" is the default', function()
-                local augend = hexcolor.new()
+                local augend = create_augend()
                 assert.are.same(augend.config, { case = "prefer_lower" })
             end)
 
             it('"upper" is accepted', function()
-                local augend = hexcolor.new { case = "upper" }
+                local augend = create_augend "upper"
                 assert.are.same(augend.config, { case = "upper" })
             end)
 
             it('"lower" is accepted', function()
-                local augend = hexcolor.new { case = "lower" }
+                local augend = create_augend "lower"
                 assert.are.same(augend.config, { case = "lower" })
             end)
 
             it('"prefer_upper" is accepted', function()
-                local augend = hexcolor.new { case = "prefer_upper" }
+                local augend = create_augend "prefer_upper"
                 assert.are.same(augend.config, { case = "prefer_upper" })
             end)
 
             it('"prefer_lower" is accepted', function()
-                local augend = hexcolor.new { case = "prefer_lower" }
+                local augend = create_augend "prefer_lower"
                 assert.are.same(augend.config, { case = "prefer_lower" })
             end)
 
             it("rejects other values", function()
                 assert.has_error(function()
-                    ---@diagnostic disable-next-line: assign-type-mismatch
-                    hexcolor.new { case = "invalid" }
+                    create_augend "invalid"
                 end)
             end)
         end)
     end)
 
     describe("find_stateful", function()
-        local augend = hexcolor.new()
+        local augend = create_augend()
 
         it("can find hex colors", function()
             --            123456789012
@@ -98,7 +107,7 @@ describe("Test of hex colors", function()
 
     describe("add", function()
         describe("case = upper", function()
-            local augend = hexcolor.new { case = "upper" }
+            local augend = create_augend "upper"
 
             it("can increment the red hex value", function()
                 augend.kind = "r"
@@ -146,7 +155,7 @@ describe("Test of hex colors", function()
         end)
 
         describe("case = lower", function()
-            local augend = hexcolor.new { case = "lower" }
+            local augend = create_augend "lower"
 
             it("can increment the red hex value", function()
                 augend.kind = "r"
@@ -194,7 +203,7 @@ describe("Test of hex colors", function()
         end)
 
         describe("case = prefer_upper", function()
-            local augend = hexcolor.new { case = "prefer_upper" }
+            local augend = create_augend "prefer_upper"
 
             it("can increment the red hex value", function()
                 augend.kind = "r"
@@ -251,7 +260,7 @@ describe("Test of hex colors", function()
         end)
 
         describe("case = prefer_lower", function()
-            local augend = hexcolor.new { case = "prefer_lower" }
+            local augend = create_augend "prefer_lower"
 
             it("can increment the red hex value", function()
                 augend.kind = "r"
