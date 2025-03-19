@@ -4,6 +4,9 @@
 
 ### New Features
 
+* add new `case` options to augend 'hexcolor'
+    * `"prefer_upper"`
+    * `"prefer_lower"`
 * add options to augend 'date'
     * `custom_date_elements`
     * `clamp`

@@ -274,13 +274,28 @@ RGB color code such as `#000000` and `#ffffff`.
 ```lua
 require("dial.config").augends:register_group{
   default = {
-    -- uppercase hex number (0x1A1A, 0xEEFE, etc.)
+    -- hex colors (e.g. #1A1A1A, #EEFEFE, etc.)
     augend.hexcolor.new{
-      case = "lower",
+      case = "upper", -- or "lower", "prefer_upper", "prefer_lower", see below
     },
   },
 }
 ```
+
+Supported options for `case` are:
+
+* `upper`: use uppercase letters `A`-`F`
+* `lower`: use lowercase letters `a`-`f`
+* `prefer_upper`: try to keep the case, use uppercase as fallback
+  * `#0a1bfe` will be incremented to `#0b1cff` (keep existing case)
+  * `#0A1BFE` will be incremented to `#0B1CFF` (keep existing case)
+  * `#059799` will be incremented to `#06989A` (no letter, use uppercase)
+  * `#0a1BFf` will be incremented to `#0B1CFF` (mixed casing, use uppercase)
+* `prefer_lower`: try to keep the case, use lowercase as fallback
+  * `#0a1bfe` will be incremented to `#0b1cff` (keep existing case)
+  * `#0A1BFE` will be incremented to `#0B1CFF` (keep existing case)
+  * `#059799` will be incremented to `#06989a` (no letter, use lowercase)
+  * `#0a1BFf` will be incremented to `#0b1cff` (mixed casing, use lowercase)
 
 ### `semver`
 

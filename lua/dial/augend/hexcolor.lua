@@ -1,4 +1,3 @@
-local util = require "dial.util"
 local common = require "dial.augend.common"
 
 local function cast_u8(n)
@@ -11,25 +10,35 @@ local function cast_u8(n)
     return n
 end
 
----@alias colorcase '"upper"' | '"lower"'
+---@alias colorcase '"upper"' | '"lower"' | '"prefer_upper"' | '"prefer_lower"'
 ---@alias colorkind '"r"' | '"g"' | '"b"' | '"all"'
 
 ---@class AugendHexColor
 ---@implement Augend
----@field datefmt datefmt
+---@field config { case: colorcase }
 ---@field kind colorkind
 local AugendHexColor = {}
 
 local M = {}
 
----@param config { case: colorcase }
+---@param config? { case: colorcase }
 ---@return Augend
 function M.new(config)
-    vim.validate {
-        case = { config.case, "string", true },
-    }
+    config = config or { case = "prefer_lower" }
 
-    return setmetatable({ config = config, kind = "all" }, { __index = AugendHexColor })
+    if
+        config.case ~= "upper"
+        and config.case ~= "lower"
+        and config.case ~= "prefer_upper"
+        and config.case ~= "prefer_lower"
+    then
+        error("invalid case: " .. config.case)
+    end
+
+    return setmetatable({
+        config = config,
+        kind = "all",
+    }, { __index = AugendHexColor }) --[[@as Augend]]
 end
 
 ---@param line string
@@ -68,9 +77,12 @@ function AugendHexColor:add(text, addend, cursor)
     local r = tonumber(text:sub(2, 3), 16)
     local g = tonumber(text:sub(4, 5), 16)
     local b = tonumber(text:sub(6, 7), 16)
+
     if cursor == nil then
         cursor = 1
-    end -- default: all
+    end
+
+    -- default: all
     if self.kind == "all" then
         -- increment all
         r = cast_u8(r + addend)
@@ -87,7 +99,29 @@ function AugendHexColor:add(text, addend, cursor)
         b = cast_u8(b + addend)
         cursor = 7
     end
+
+    local has_upper = text:match "[A-F]" ~= nil
+    local has_lower = text:match "[a-f]" ~= nil
+    local is_mixed_case = has_upper and has_lower
+
     text = "#" .. string.format("%02x", r) .. string.format("%02x", g) .. string.format("%02x", b)
+
+    if self.config.case == "upper" then
+        text = text:upper()
+    elseif self.config.case == "lower" then
+        text = text:lower()
+    elseif self.config.case == "prefer_upper" then
+        if not has_lower or is_mixed_case then
+            text = text:upper()
+        end
+    elseif self.config.case == "prefer_lower" then
+        if has_upper and not has_lower then
+            text = text:upper()
+        else
+            text = text:lower()
+        end
+    end
+
     return { text = text, cursor = cursor }
 end
 
