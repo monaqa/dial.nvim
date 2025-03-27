@@ -225,6 +225,19 @@ M.alias = {
         word = true,
         cyclic = true,
     },
+    en_weekday_full = M.new {
+        elements = {
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday",
+        },
+        word = true,
+        cyclic = true,
+    },
 }
 
 return M
