@@ -126,9 +126,8 @@ function M.new(config)
     if config.cyclic == nil then
         config.cyclic = true
     end
-    vim.validate {
-        cyclic = { config.cyclic, "boolean" },
-    }
+    vim.validate("cyclic", config.cyclic, "boolean")
+
     util.validate_list("patterns", config.patterns, "table")
 
     return setmetatable({ config = config }, { __index = AugendParen })

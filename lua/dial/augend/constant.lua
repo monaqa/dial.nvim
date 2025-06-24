@@ -38,13 +38,12 @@ end
 function M.new(config)
     util.validate_list("config.elements", config.elements, "string")
 
-    vim.validate {
-        word = { config.word, "boolean", true },
-        cyclic = { config.cyclic, "boolean", true },
-        pattern_regexp = { config.pattern_regexp, "string", true },
-        preserve_case = { config.preserve_case, "boolean", true },
-        match_before_cursor = { config.match_before_cursor, "boolean", true },
-    }
+    vim.validate("word", config.word, "boolean", true)
+    vim.validate("cyclic", config.cyclic, "boolean", true)
+    vim.validate("pattern_regexp", config.pattern_regexp, "string", true)
+    vim.validate("preserve_case", config.preserve_case, "boolean", true)
+    vim.validate("match_before_cursor", config.match_before_cursor, "boolean", true)
+
     if config.preserve_case == nil then
         config.preserve_case = false
     end

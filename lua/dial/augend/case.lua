@@ -178,9 +178,8 @@ M.case_patterns["SCREAMING_SNAKE_CASE"] = {
 ---@param config { types: casetype[], cyclic?: boolean }
 ---@return Augend
 function M.new(config)
-    vim.validate {
-        cyclic = { config.cyclic, "boolean", true },
-    }
+    vim.validate("cyclic", config.cyclic, "boolean", true)
+
     if config.cyclic == nil then
         config.cyclic = true
     end

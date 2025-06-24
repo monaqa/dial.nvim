@@ -21,7 +21,7 @@ local M = {}
 ---@param config {}
 ---@return Augend
 function M.new(config)
-    vim.validate {}
+    vim.validate("kind", config.kind, "string", true)
 
     return setmetatable({ kind = "patch" }, { __index = AugendSemver })
 end

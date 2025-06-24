@@ -12,10 +12,8 @@ local M = {}
 ---@param config { signed?: boolean, point_char?: string }
 ---@return Augend
 function M.new(config)
-    vim.validate {
-        signed = { config.signed, "boolean", true },
-        point_char = { config.point_char, "string", true },
-    }
+    vim.validate("signed", config.signed, "boolean", true)
+    vim.validate("point_char", config.point_char, "string", true)
 
     local signed = util.unwrap_or(config.signed, false)
     local point_char = util.unwrap_or(config.point_char, ".")
