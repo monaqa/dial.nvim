@@ -241,14 +241,13 @@ end
 ---@param config { radix?: integer, prefix?: string, natural?: boolean, case?: '"upper"' | '"lower"', delimiter?: string, delimiter_digits?: number }
 ---@return Augend
 function M.new(config)
-    vim.validate {
-        radix = { config.radix, "number", true },
-        prefix = { config.prefix, "string", true },
-        natural = { config.natural, "boolean", true },
-        case = { config.case, "string", true },
-        delimiter = { config.delimiter, "string", true },
-        delimiter_digits = { config.delimiter_digits, "number", true },
-    }
+    vim.validate("radix", config.radix, "number", true)
+    vim.validate("prefix", config.prefix, "string", true)
+    vim.validate("natural", config.natural, "boolean", true)
+    vim.validate("case", config.case, "string", true)
+    vim.validate("delimiter", config.delimiter, "string", true)
+    vim.validate("delimiter_digits", config.delimiter_digits, "number", true)
+
     local radix = util.unwrap_or(config.radix, 10)
     local prefix = util.unwrap_or(config.prefix, "")
     local natural = util.unwrap_or(config.natural, true)

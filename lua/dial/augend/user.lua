@@ -11,10 +11,8 @@ local AugendUser = {}
 ---@param config AugendUserConfig
 ---@return Augend
 function AugendUser.new(config)
-    vim.validate {
-        find = { config.find, "function" },
-        add = { config.add, "function" },
-    }
+    vim.validate("find", config.find, "function")
+    vim.validate("add", config.add, "function")
 
     return setmetatable({ config = config }, { __index = AugendUser })
 end

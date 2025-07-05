@@ -543,15 +543,13 @@ local AugendDate = {}
 ---@param config {pattern: string, default_kind: datekind, only_valid?: boolean, word?: boolean, clamp?: boolean, end_sensitive?: boolean, custom_date_elements?: table<string, dateelement>}
 ---@return Augend
 function M.new(config)
-    vim.validate {
-        pattern = { config.pattern, "string" },
-        default_kind = { config.default_kind, "string" },
-        only_valid = { config.only_valid, "boolean", true },
-        word = { config.word, "boolean", true },
-        clamp = { config.clamp, "boolean", true },
-        end_sensitive = { config.end_sensitive, "boolean", true },
-        custom_date_elements = { config.custom_date_elements, "table", true },
-    }
+    vim.validate("pattern", config.pattern, "string")
+    vim.validate("default_kind", config.default_kind, "string")
+    vim.validate("only_valid", config.only_valid, "boolean", true)
+    vim.validate("word", config.word, "boolean", true)
+    vim.validate("clamp", config.clamp, "boolean", true)
+    vim.validate("end_sensitive", config.end_sensitive, "boolean", true)
+    vim.validate("custom_date_elements", config.custom_date_elements, "table", true)
 
     config.only_valid = util.unwrap_or(config.only_valid, false)
     config.word = util.unwrap_or(config.word, false)
