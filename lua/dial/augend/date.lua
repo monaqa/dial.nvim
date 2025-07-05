@@ -3,14 +3,24 @@ local common = require "dial.augend.common"
 
 local M = {}
 
+---@class dial.osdate:osdate
+---@field year  integer
+---@field month integer
+---@field day   integer
+---@field hour  integer
+---@field min   integer
+---@field sec   integer
+---@field wday  integer
+---@field yday  integer
+
 ---@alias datekind '"year"' | '"month"' | '"day"' | '"hour"' | '"min"' | '"sec"'
 ---@alias dttable table<datekind, integer>
----@alias dateparser fun(string, osdate): osdate
----@alias dateformatter fun(osdate): string
+---@alias dateparser fun(text: string, date: dial.osdate): dial.osdate
+---@alias dateformatter fun(date: integer): string
 ---@alias dateelement {kind?: datekind, regex: string, update_date: dateparser, format?: dateformatter}
 
 ---@param datekind datekind | nil
----@return fun(string, osdate): osdate
+---@return dateparser
 local function simple_updater(datekind)
     if datekind == nil then
         return function(_, date)
@@ -18,6 +28,7 @@ local function simple_updater(datekind)
         end
     end
     return function(text, date)
+        ---@type integer
         date[datekind] = tonumber(text)
         return date
     end
@@ -113,7 +124,7 @@ local date_elements = {
         kind = "hour",
         regex = [[\d\d]],
         update_date = function(text, date)
-            local hour = tonumber(text)
+            local hour = assert(tonumber(text))
             if date.hour < 12 and hour >= 12 then
                 date.hour = hour - 12
             elseif date.hour >= 12 and hour < 12 then
@@ -179,7 +190,7 @@ local date_elements = {
         kind = "hour",
         regex = [[\d\{1,2\}]],
         update_date = function(text, date)
-            local hour = tonumber(text)
+            local hour = assert(tonumber(text))
             if date.hour < 12 and hour >= 12 then
                 date.hour = hour - 12
             elseif date.hour >= 12 and hour < 12 then
@@ -440,7 +451,7 @@ end
 
 ---@param line string
 ---@param cursor? integer
----@return {range: textrange, dt_info: osdate, kind: datekind}?
+---@return {range: textrange, dt_info: dial.osdate, kind: datekind}?
 function DateFormat:find(line, cursor)
     local range = common.find_pattern_regex(self:regex())(line, cursor)
     if range == nil then
@@ -452,13 +463,14 @@ function DateFormat:find(line, cursor)
         cursor = 0
     end
 
+    ---@type string[]
     local matchlist = vim.fn.matchlist(line:sub(range.from, range.to), self:regex())
     local scan_cursor = range.from - 1
     local flag_set_status = scan_cursor >= cursor
-    local dt_info = os.date("*t", 0) --[[@as osdate]]
+    local dt_info = os.date("*t", 0) --[[@as dial.osdate]]
 
     do
-        local now = os.date("*t", os.time()) --[[@as osdate]]
+        local now = os.date("*t", os.time()) --[[@as dial.osdate]]
         dt_info.month = now.month
         dt_info.year = now.year
         dt_info.isdst = now.isdst
@@ -488,7 +500,7 @@ end
 
 ---@param line string
 ---@param cursor? integer
----@return {range: textrange, dt_info: osdate, kind: datekind}?
+---@return {range: textrange, dt_info: dial.osdate, kind: datekind}?
 function DateFormat:find_with_validity_check(line, cursor)
     local find_result = self:find(line, cursor)
     if find_result == nil then
@@ -510,7 +522,7 @@ end
 ---@return addresult
 function DateFormat:strftime(time, datekind)
     local text = ""
-    local cursor
+    local cursor ---@type integer?
     for _, pattern in ipairs(self.sequences) do
         if pattern ~= "%" and vim.startswith(pattern, "%") then
             local date_element = self:get_date_elements(pattern)
@@ -533,15 +545,14 @@ function DateFormat:strftime(time, datekind)
     end
 end
 
----@class AugendDate
----@implement Augend
+---@class AugendDate: Augend
 ---@field kind datekind
 ---@field config {pattern: string, default_kind: datekind, only_valid: boolean, word: boolean, clamp: boolean, end_sensitive: boolean, custom_date_elements: dateelement}
 ---@field date_format DateFormat
 local AugendDate = {}
 
 ---@param config {pattern: string, default_kind: datekind, only_valid?: boolean, word?: boolean, clamp?: boolean, end_sensitive?: boolean, custom_date_elements?: table<string, dateelement>}
----@return Augend
+---@return AugendDate
 function M.new(config)
     vim.validate("pattern", config.pattern, "string")
     vim.validate("default_kind", config.default_kind, "string")
@@ -568,7 +579,7 @@ end
 ---@param cursor? integer
 ---@return textrange?
 function AugendDate:find(line, cursor)
-    local find_result
+    local find_result ---@type {range: textrange, dt_info: dial.osdate, kind: datekind}?
     if self.config.only_valid then
         find_result = self.date_format:find_with_validity_check(line, cursor)
     else
@@ -584,12 +595,8 @@ end
 ---@param cursor? integer
 ---@return textrange?
 function AugendDate:find_stateful(line, cursor)
-    local find_result
-    if self.config.only_valid then
-        find_result = self.date_format:find_with_validity_check(line, cursor)
-    else
-        find_result = self.date_format:find(line, cursor)
-    end
+    local find_result = self.config.only_valid and self.date_format:find_with_validity_check(line, cursor)
+        or self.date_format:find(line, cursor)
     if find_result == nil then
         return nil
     end
@@ -614,14 +621,15 @@ local function calc_end_day(year, month)
     end
 end
 
----@param dt_info osdate
+---@param dt_info dial.osdate
 ---@param kind datekind
 ---@param addend integer
 ---@param clamp boolean
 ---@param end_sensitive boolean
----@return osdate
+---@return dial.osdate
 local function update_dt_info(dt_info, kind, addend, clamp, end_sensitive)
     if kind ~= "year" and kind ~= "month" then
+        ---@type integer
         dt_info[kind] = dt_info[kind] + addend
         return dt_info
     end
@@ -629,9 +637,10 @@ local function update_dt_info(dt_info, kind, addend, clamp, end_sensitive)
     local end_day_before_add = calc_end_day(dt_info.year, dt_info.month)
     local day_before_add = dt_info.day
     dt_info.day = 1
+    ---@type integer
     dt_info[kind] = dt_info[kind] + addend
     -- update date information to existent one
-    dt_info = os.date("*t", os.time(dt_info)) --[[@as osdate]]
+    dt_info = os.date("*t", os.time(dt_info)) --[[@as dial.osdate]]
     local end_day_after_add = calc_end_day(dt_info.year, dt_info.month)
 
     if end_sensitive and end_day_before_add == day_before_add then
@@ -646,9 +655,9 @@ end
 
 ---@param text string
 ---@param addend integer
----@param cursor? integer
----@return { text?: string, cursor?: integer }
-function AugendDate:add(text, addend, cursor)
+---@param _cursor? integer
+---@return addresult
+function AugendDate:add(text, addend, _cursor)
     local find_result = self.date_format:find(text)
     if find_result == nil or self.kind == nil then
         return {}
@@ -662,6 +671,7 @@ function AugendDate:add(text, addend, cursor)
     return self.date_format:strftime(time, self.kind)
 end
 
+---@type table<string, AugendDate>
 M.alias = {}
 
 M.alias["%Y/%m/%d"] = M.new {

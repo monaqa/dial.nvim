@@ -1,5 +1,3 @@
-local util = require "dial.util"
-local common = require "dial.augend.common"
 local user = require "dial.augend.user"
 
 local M = {}
@@ -8,9 +6,9 @@ M.alias = {}
 
 M.alias.markdown_header = user.new {
     ---@param line string
-    ---@param cursor? integer
+    ---@param _cursor? integer
     ---@return textrange?
-    find = function(line, cursor)
+    find = function(line, _cursor)
         local header_mark_s, header_mark_e = line:find "^#+"
         if header_mark_s == nil or header_mark_e >= 7 then
             return nil
@@ -20,9 +18,9 @@ M.alias.markdown_header = user.new {
 
     ---@param text string
     ---@param addend integer
-    ---@param cursor? integer
-    ---@return { text?: string, cursor?: integer }
-    add = function(text, addend, cursor)
+    ---@param _cursor? integer
+    ---@return addresult
+    add = function(text, addend, _cursor)
         local n = #text
         n = n + addend
         if n < 1 then
@@ -32,8 +30,7 @@ M.alias.markdown_header = user.new {
             n = 6
         end
         text = ("#"):rep(n)
-        cursor = 1
-        return { text = text, cursor = cursor }
+        return { text = text, cursor = 1 }
     end,
 }
 

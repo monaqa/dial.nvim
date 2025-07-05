@@ -1,15 +1,11 @@
-local util = require "dial.util"
-local common = require "dial.augend.common"
-
 ---@alias AugendUserConfig { find: findf, add: addf }
 
----@class AugendUser
----@implement Augend
+---@class AugendUser: Augend
 ---@field config AugendUserConfig
 local AugendUser = {}
 
 ---@param config AugendUserConfig
----@return Augend
+---@return AugendUser
 function AugendUser.new(config)
     vim.validate("find", config.find, "function")
     vim.validate("add", config.add, "function")
@@ -27,7 +23,7 @@ end
 ---@param text string
 ---@param addend integer
 ---@param cursor? integer
----@return { text?: string, cursor?: integer }
+---@return addresult?
 function AugendUser:add(text, addend, cursor)
     return self.config.add(text, addend, cursor)
 end

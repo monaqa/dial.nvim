@@ -4,12 +4,11 @@ local util = require "dial.util"
 local M = {}
 
 ---@alias casetype '"PascalCase"' | '"camelCase"' | '"snake_case"' | '"kebab-case"' | '"SCREAMING_SNAKE_CASE"'
----@alias extractf fun(word: string) -> string[] | nil
----@alias constractf fun(terms: string[]) -> string
+---@alias extractf fun(word: string): string[]|nil
+---@alias constractf fun(terms: string[]): string
 ---@alias casepattern { word_regex: string, extract: extractf, constract: constractf }
 
----@class AugendCase
----@implement Augend
+---@class AugendCase: Augend
 ---@field config { types: casetype[], cyclic: boolean }
 ---@field patterns casepattern[]
 local AugendCase = {}
@@ -27,7 +26,7 @@ M.case_patterns["camelCase"] = {
         local ptr = 1
         for i = 1, word:len(), 1 do
             local char = word:sub(i, i)
-            if not (char == char:lower()) then
+            if char ~= char:lower() then
                 -- i 番目の文字が大文字の場合は直前で切る
                 -- 小文字や数字などは切らない
                 if i == 1 then
@@ -39,9 +38,7 @@ M.case_patterns["camelCase"] = {
             end
         end
         table.insert(subwords, word:sub(ptr, word:len()))
-        return vim.tbl_map(function(s)
-            return s:lower()
-        end, subwords)
+        return vim.tbl_map(string.lower, subwords)
     end,
 
     ---@param terms string[]
@@ -70,7 +67,7 @@ M.case_patterns["PascalCase"] = {
         local ptr = 1
         for i = 2, word:len(), 1 do
             local char = word:sub(i, i)
-            if not (char == char:lower()) then
+            if char ~= char:lower() then
                 -- i 番目の文字が大文字の場合は直前で切る
                 -- 小文字や数字などは切らない
                 table.insert(subwords, word:sub(ptr, i - 1))
@@ -78,9 +75,7 @@ M.case_patterns["PascalCase"] = {
             end
         end
         table.insert(subwords, word:sub(ptr, word:len()))
-        return vim.tbl_map(function(s)
-            return s:lower()
-        end, subwords)
+        return vim.tbl_map(string.lower, subwords)
     end,
 
     ---@param terms string[]
@@ -163,9 +158,7 @@ M.case_patterns["SCREAMING_SNAKE_CASE"] = {
             end
         end
         table.insert(subwords, word:sub(ptr, word:len()))
-        return vim.tbl_map(function(s)
-            return s:lower()
-        end, subwords)
+        return vim.tbl_map(string.lower, subwords)
     end,
 
     ---@param terms string[]
@@ -176,7 +169,7 @@ M.case_patterns["SCREAMING_SNAKE_CASE"] = {
 }
 
 ---@param config { types: casetype[], cyclic?: boolean }
----@return Augend
+---@return AugendCase
 function M.new(config)
     vim.validate("cyclic", config.cyclic, "boolean", true)
 
@@ -195,10 +188,16 @@ function M.new(config)
         end
         return false
     end)
-    local patterns = vim.tbl_map(function(type)
-        return M.case_patterns[type]
-    end, config.types)
 
+    local patterns = vim.tbl_map(
+        ---@overload fun(type: casetype): casepattern
+        function(type)
+            return M.case_patterns[type]
+        end,
+        config.types
+    )
+
+    -- luacheck: ignore
     -- local query = prefix .. util.if_expr(natural, "", "-?") .. "[" .. radix_to_query_character(radix) .. delimiter .. "]+"
     return setmetatable({
         patterns = patterns,
@@ -214,7 +213,7 @@ function AugendCase:find(line, cursor)
     local most_front_range = nil
 
     for _, caseptn in ipairs(self.patterns) do
-        ---@type textrange
+        ---@type textrange?
         local range = common.find_pattern_regex(caseptn.word_regex)(line, cursor)
         if range ~= nil then
             if most_front_range == nil or range.from < most_front_range.from then
@@ -227,9 +226,9 @@ end
 
 ---@param text string
 ---@param addend integer
----@param cursor? integer
----@return { text?: string, cursor?: integer }
-function AugendCase:add(text, addend, cursor)
+---@param _cursor? integer
+---@return addresult
+function AugendCase:add(text, addend, _cursor)
     local len_patterns = #self.patterns
     ---@type integer
     local index
@@ -243,7 +242,7 @@ function AugendCase:add(text, addend, cursor)
 
     local terms = self.patterns[index].extract(text)
 
-    local new_index
+    local new_index ---@type integer
     if self.config.cyclic then
         new_index = (len_patterns + (index - 1 + addend) % len_patterns) % len_patterns + 1
     else
@@ -258,7 +257,7 @@ function AugendCase:add(text, addend, cursor)
     if new_index == index then
         return { cursor = text:len() }
     end
-    text = self.patterns[new_index].constract(terms)
+    text = self.patterns[new_index].constract(assert(terms))
     return { text = text, cursor = text:len() }
 end
 

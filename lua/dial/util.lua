@@ -2,7 +2,8 @@
 local M = {}
 
 -- NOTE: Needed until compatibility with Neovim 0.9 is dropped
-local islist = vim.fn.has('nvim-0.10') == 1 and vim.islist or vim.tbl_islist
+---@diagnostic disable-next-line: deprecated
+local islist = vim.fn.has "nvim-0.10" == 1 and vim.islist or vim.tbl_islist
 
 ---@generic T
 ---@param cond boolean
@@ -27,8 +28,14 @@ function M.unwrap_or(x, default)
     return x
 end
 
+---@generic T
+---@param list T[]
+---@return { [T]: boolean }
 function M.Set(list)
+    ---@generic T
+    ---@type T[]
     local set = {}
+    ---@diagnostic disable-next-line: no-unknown
     for _, l in ipairs(list) do
         set[l] = true
     end
@@ -38,7 +45,7 @@ end
 -- Check if the argument is a valid list (which does not contain nil).
 ---@param name string
 ---@param list any[]
----@param arg1 string | function
+---@param arg1 string | fun(v:any):boolean, string?
 ---@param arg2? string
 function M.validate_list(name, list, arg1, arg2)
     if not islist(list) then
@@ -79,7 +86,8 @@ end
 
 ---Returns the indices with the value nil.
 ---returns an index array
----@param tbl array
+---@generic T
+---@param tbl T[]
 ---@return integer[]
 function M.index_with_nil_value(tbl)
     -- local maxn, k = 0, nil
@@ -131,6 +139,11 @@ function M.filter_map_zip(fn, ary)
     return a
 end
 
+---@param n integer
+---@param b integer?
+---@param wid integer?
+---@param pad string?
+---@return string
 function M.tostring_with_base(n, b, wid, pad)
     n = math.floor(n)
     if not b or b == 10 then
@@ -162,6 +175,9 @@ end
 
 -- util.try_get_keys({foo = "bar", hoge = "fuga", teka = "pika"}, ["teka", "foo"])
 -- -> ["pika", "bar"]
+---@param tbl string[]
+---@param keylst string[]
+---@return string[] | nil, string?
 function M.try_get_keys(tbl, keylst)
     if not islist(keylst) then
         return nil, "the 2nd argument is not list."

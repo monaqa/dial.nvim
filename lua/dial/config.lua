@@ -4,6 +4,7 @@ local M = {}
 
 ---@class augends
 ---@field group table<string, Augend[]>
+---@field filetype table<string, Augend[]>
 M.augends = {
     group = {
         default = {
@@ -73,6 +74,7 @@ end
 
 ---グループを取得する。
 ---@param group_name string
+---@return Augend[]
 function M.augends:get(group_name)
     return self.group[group_name]
 end

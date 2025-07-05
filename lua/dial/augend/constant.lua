@@ -3,8 +3,7 @@ local common = require "dial.augend.common"
 
 ---@alias AugendConstantConfig { elements: string[], cyclic: boolean, pattern_regexp: string, preserve_case: boolean, match_before_cursor: boolean }
 
----@class AugendConstant
----@implement Augend
+---@class AugendConstant: Augend
 ---@field config AugendConstantConfig
 local AugendConstant = {}
 
@@ -34,7 +33,7 @@ local function preserve_case(word)
 end
 
 ---@param config { elements: string[], word?: boolean, cyclic?: boolean, pattern_regexp?: string, preserve_case?: boolean, match_before_cursor?: boolean }
----@return Augend
+---@return AugendConstant
 function M.new(config)
     util.validate_list("config.elements", config.elements, "string")
 
@@ -69,22 +68,28 @@ end
 ---@param cursor? integer
 ---@return textrange?
 function AugendConstant:find(line, cursor)
-    local escaped_elements = vim.tbl_map(function(e)
-        return vim.fn.escape(e, [[/\]])
-    end, self.config.elements)
+    local escaped_elements = vim.tbl_map(
+        ---@param e string
+        ---@return string
+        function(e)
+            return vim.fn.escape(e, [[/\]])
+        end,
+        self.config.elements
+    )
     local vim_regex_ptn = self.config.pattern_regexp:format(table.concat(escaped_elements, [[\|]]))
     return common.find_pattern_regex(vim_regex_ptn, self.config.match_before_cursor)(line, cursor)
 end
 
 ---@param text string
 ---@param addend integer
----@param cursor? integer
----@return { text?: string, cursor?: integer }
-function AugendConstant:add(text, addend, cursor)
+---@param _cursor? integer
+---@return addresult
+function AugendConstant:add(text, addend, _cursor)
     local elements = self.config.elements
     local n_patterns = #elements
     local n = 1
 
+    ---@type fun(elem: string): boolean
     local query
     if self.config.preserve_case then
         query = function(elem)
@@ -128,8 +133,7 @@ function AugendConstant:add(text, addend, cursor)
         text = new_text
     end
 
-    cursor = #text
-    return { text = text, cursor = cursor }
+    return { text = text, cursor = #text }
 end
 
 M.alias = {
