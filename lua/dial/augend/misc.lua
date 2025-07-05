@@ -18,9 +18,9 @@ M.alias.markdown_header = user.new {
 
     ---@param text string
     ---@param addend integer
-    ---@param cursor? integer
+    ---@param _cursor? integer
     ---@return addresult
-    add = function(text, addend, cursor)
+    add = function(text, addend, _cursor)
         local n = #text
         n = n + addend
         if n < 1 then
@@ -30,8 +30,7 @@ M.alias.markdown_header = user.new {
             n = 6
         end
         text = ("#"):rep(n)
-        cursor = 1
-        return { text = text, cursor = cursor }
+        return { text = text, cursor = 1 }
     end,
 }
 

@@ -90,9 +90,9 @@ end
 
 ---@param text string
 ---@param addend integer
----@param cursor? integer
+---@param _cursor? integer
 ---@return addresult
-function AugendDecimalFraction:add(text, addend, cursor)
+function AugendDecimalFraction:add(text, addend, _cursor)
     local point_pos = text:find(self.point_char, 1, true)
 
     local int_part = text:sub(1, point_pos - 1)
@@ -126,6 +126,7 @@ function AugendDecimalFraction:add(text, addend, cursor)
     local new_dec_part = str_num:sub(#str_num - #frac_part + 1)
 
     text = new_int_part .. "." .. new_dec_part
+    local cursor ---@type integer
     if self.digits_to_add == 0 then
         -- incremented integer part
         cursor = #new_int_part

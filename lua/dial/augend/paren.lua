@@ -169,9 +169,9 @@ end
 
 ---@param text string
 ---@param addend integer
----@param cursor? integer
+---@param _cursor? integer
 ---@return addresult
-function AugendParen:add(text, addend, cursor)
+function AugendParen:add(text, addend, _cursor)
     local n_patterns = #self.config.patterns
     local n = 1
     for i, elem in ipairs(self.config.patterns) do
@@ -201,8 +201,7 @@ function AugendParen:add(text, addend, cursor)
     local new_paren_close = new_paren_pair[2]
 
     text = new_paren_open .. text_inner .. new_paren_close
-    cursor = #text
-    return { text = text, cursor = cursor }
+    return { text = text, cursor = #text }
 end
 
 M.alias = {

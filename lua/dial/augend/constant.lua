@@ -82,9 +82,9 @@ end
 
 ---@param text string
 ---@param addend integer
----@param cursor? integer
+---@param _cursor? integer
 ---@return addresult
-function AugendConstant:add(text, addend, cursor)
+function AugendConstant:add(text, addend, _cursor)
     local elements = self.config.elements
     local n_patterns = #elements
     local n = 1
@@ -133,8 +133,7 @@ function AugendConstant:add(text, addend, cursor)
         text = new_text
     end
 
-    cursor = #text
-    return { text = text, cursor = cursor }
+    return { text = text, cursor = #text }
 end
 
 M.alias = {

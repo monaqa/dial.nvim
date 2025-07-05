@@ -280,9 +280,9 @@ end
 
 ---@param text string
 ---@param addend integer
----@param cursor? integer
+---@param _cursor? integer
 ---@return addresult
-function AugendInteger:add(text, addend, cursor)
+function AugendInteger:add(text, addend, _cursor)
     local n_prefix = #self.prefix
     local subtext = text:sub(n_prefix + 1)
     if self.delimiter ~= "" then
@@ -319,8 +319,7 @@ function AugendInteger:add(text, addend, cursor)
     end
 
     text = self.prefix .. digits
-    cursor = #text
-    return { text = text, cursor = cursor }
+    return { text = text, cursor = #text }
 end
 
 M.alias = {

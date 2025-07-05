@@ -26,7 +26,7 @@ M.case_patterns["camelCase"] = {
         local ptr = 1
         for i = 1, word:len(), 1 do
             local char = word:sub(i, i)
-            if not (char == char:lower()) then
+            if char ~= char:lower() then
                 -- i 番目の文字が大文字の場合は直前で切る
                 -- 小文字や数字などは切らない
                 if i == 1 then
@@ -67,7 +67,7 @@ M.case_patterns["PascalCase"] = {
         local ptr = 1
         for i = 2, word:len(), 1 do
             local char = word:sub(i, i)
-            if not (char == char:lower()) then
+            if char ~= char:lower() then
                 -- i 番目の文字が大文字の場合は直前で切る
                 -- 小文字や数字などは切らない
                 table.insert(subwords, word:sub(ptr, i - 1))
@@ -197,6 +197,7 @@ function M.new(config)
         config.types
     )
 
+    -- luacheck: ignore
     -- local query = prefix .. util.if_expr(natural, "", "-?") .. "[" .. radix_to_query_character(radix) .. delimiter .. "]+"
     return setmetatable({
         patterns = patterns,
