@@ -3,8 +3,7 @@ local util = require "dial.util"
 
 ---@alias AugendIntegerConfig {}
 
----@class AugendInteger
----@implement Augend
+---@class AugendInteger: Augend
 ---@field radix integer
 ---@field prefix string
 ---@field natural boolean
@@ -18,7 +17,7 @@ local M = {}
 
 ---@class BigInt
 ---@field sign 1|-1
----@field digits table<integer>
+---@field digits integer[]
 ---@field radix integer
 ---@field plus fun(self:BigInt, value:BigInt, natural:boolean):BigInt `value` must be positive
 ---@field minus fun(self:BigInt, value:BigInt, natural:boolean):BigInt `value` must be positive
@@ -38,6 +37,7 @@ function BigInt.new(n, radix)
     local base_len = 8
     local base = self.radix ^ base_len
 
+    ---@param digits integer[]
     local remove_top_0 = function(digits)
         for i = #digits, 2, -1 do
             if digits[i] == 0 then
@@ -85,10 +85,10 @@ function BigInt.new(n, radix)
         -- For now, self and value is positive
         -- Calculate self + value
 
-        local max_digits
+        local max_digits ---@type integer
         if #self.digits < #value.digits then
             max_digits = #value.digits
-            self, value = value, self
+            self, value = value, self ---@type BigInt, BigInt
         else
             max_digits = #self.digits
         end
@@ -135,10 +135,10 @@ function BigInt.new(n, radix)
             return self
         end
 
-        local max_digits
+        local max_digits ---@type integer
         if value_is_large then
             max_digits = #value.digits
-            self, value = value, self
+            self, value = value, self ---@type BigInt, BigInt
             self.sign = -1
         else
             max_digits = #self.digits
@@ -166,12 +166,8 @@ function BigInt.new(n, radix)
     ---@param case '"upper"' | '"lower"'
     ---@return string
     function self:to_string(case)
-        local digits
-        if case == "upper" then
-            digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        else
-            digits = "0123456789abcdefghijklmnopqrstuvwxyz"
-        end
+        local digits = case == "upper" and "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            or "0123456789abcdefghijklmnopqrstuvwxyz"
 
         local ret = ""
         if self.sign == -1 then
@@ -239,7 +235,7 @@ local function radix_to_query_character(radix)
 end
 
 ---@param config { radix?: integer, prefix?: string, natural?: boolean, case?: '"upper"' | '"lower"', delimiter?: string, delimiter_digits?: number }
----@return Augend
+---@return AugendInteger
 function M.new(config)
     vim.validate("radix", config.radix, "number", true)
     vim.validate("prefix", config.prefix, "string", true)
@@ -285,7 +281,7 @@ end
 ---@param text string
 ---@param addend integer
 ---@param cursor? integer
----@return { text?: string, cursor?: integer }
+---@return addresult
 function AugendInteger:add(text, addend, cursor)
     local n_prefix = #self.prefix
     local subtext = text:sub(n_prefix + 1)
@@ -306,7 +302,7 @@ function AugendInteger:add(text, addend, cursor)
         n = n:minus(BigInt.new(-addend, self.radix), self.natural)
     end
 
-    local digits
+    local digits ---@type string
     if n_string_digit == n_actual_digit then
         -- 増減前の数字が0か0始まりでない数字だったら
         -- text = ("%d"):format(n)

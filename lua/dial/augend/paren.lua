@@ -1,8 +1,6 @@
 local util = require "dial.util"
-local common = require "dial.augend.common"
 
----@class AugendParen
----@implement Augend
+---@class AugendParen: Augend
 ---@field config { patterns: string[][], escape_char?: string, cyclic: boolean, nested: boolean }
 ---@field find_pattern string
 local AugendParen = {}
@@ -50,6 +48,7 @@ local function find_nested_paren(line, open, close, nested, cursor_idx, escape_c
         -- idx を増やしつつ走査。
         -- 括弧の open, close または escape char に当たったら特別処理を入れる。
         -- open と close が同じパターン列の場合は close を優先。
+        ---@type integer?, integer?
         local from, to = (function()
             -- escape 文字: escaped のトグルを行う
             if escape_char ~= nil and precedes(line, escape_char, idx) then
@@ -171,7 +170,7 @@ end
 ---@param text string
 ---@param addend integer
 ---@param cursor? integer
----@return { text?: string, cursor?: integer }
+---@return addresult
 function AugendParen:add(text, addend, cursor)
     local n_patterns = #self.config.patterns
     local n = 1

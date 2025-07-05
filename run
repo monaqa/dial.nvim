@@ -2,6 +2,7 @@
 
 TESTS_INIT=tests/minimal_init.lua
 TESTS_DIR=tests
+VIMRUNTIME="$(nvim --clean --headless +'echo $VIMRUNTIME' +q 2>&1)"
 
 function _test_tz {
 	# DST always in effect
@@ -53,12 +54,19 @@ function test {
 
 }
 
-
 function help {
-    echo "$0 <task> <args>"
-    echo "Tasks:"
-    compgen -A function | cat -n
+	echo "$0 <task> <args>"
+	echo "Tasks:"
+	compgen -A function | cat -n
+}
+
+function format {
+	stylua lua/ tests/
+}
+
+function lint {
+	VIMRUNTIME=$VIMRUNTIME lua-language-server --configpath=../.luarc.jsonc --check=./
 }
 
 TIMEFORMAT="Task completed in %3lR"
-time ${@:-default}
+time "${@:-default}"

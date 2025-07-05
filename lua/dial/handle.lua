@@ -47,7 +47,7 @@ end
 ---@param cursor? integer
 ---@return {cursor_loc: integer, start_pos: integer, neg_end_pos: integer}
 local function calc_score(s, e, cursor)
-    local cursor_loc
+    local cursor_loc ---@type integer
     if (cursor or 0) > e then
         cursor_loc = 2
     elseif (cursor or 0) < s then
@@ -71,6 +71,7 @@ end
 ---Compare the score.
 ---If and only if `self` has the higher priority than `rhs`, returns true.
 ---@param rhs Score
+---@return boolean
 function Score.cmp(self, rhs)
     if self.cursor_loc < rhs.cursor_loc then
         return true
@@ -220,10 +221,11 @@ function Handler:operate(line, cursor, direction, additive)
 end
 
 ---The process that runs when operator is called (in VISUAL mode).
----@param selected_range {from: integer, to?: integer}
+---@param line string
+---@param selected_range {from: integer, to: integer?}
 ---@param direction direction
 ---@param tier integer
----@return {range?: textrange, text?: string}
+---@return {range: textrange, text?: string}
 function Handler:operate_visual(line, selected_range, direction, tier)
     if self.active_augend == nil then
         return {}

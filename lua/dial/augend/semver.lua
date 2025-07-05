@@ -1,6 +1,6 @@
-local util = require "dial.util"
 local common = require "dial.augend.common"
 
+---@diagnostic disable-next-line: unused-local, unused-function
 local function cast_u8(n)
     if n <= 0 then
         return 0
@@ -11,15 +11,14 @@ local function cast_u8(n)
     return n
 end
 
----@class AugendSemver
----@implement Augend
+---@class AugendSemver: Augend
 ---@field kind '"major"' | '"minor"' | '"patch"'
 local AugendSemver = {}
 
 local M = {}
 
 ---@param config {}
----@return Augend
+---@return AugendSemver
 function M.new(config)
     vim.validate("kind", config.kind, "string", true)
 
@@ -68,7 +67,7 @@ end
 ---@param text string
 ---@param addend integer
 ---@param cursor? integer
----@return { text?: string, cursor?: integer }
+---@return addresult
 function AugendSemver:add(text, addend, cursor)
     local iterator = text:gmatch "%d+"
     local major = tonumber(iterator())

@@ -12,7 +12,7 @@ VISUAL_BLOCK = string.char(22)
 ---Select the most appropriate augend from given augend group (in NORMAL mode).
 ---@param group_name? string
 function M.select_augend_normal(group_name)
-    local augends
+    local augends ---@type Augend[]
     if group_name ~= nil then
         augends = config.augends.group[group_name]
     elseif vim.v.register == "=" then
@@ -41,7 +41,7 @@ end
 ---Select the most appropriate augend from given augend group (in VISUAL mode).
 ---@param group_name? string
 function M.select_augend_visual(group_name)
-    local augends
+    local augends ---@type Augend[]
     if group_name ~= nil then
         augends = config.augends.group[group_name]
     elseif vim.v.register == "=" then
@@ -79,7 +79,7 @@ function M.select_augend_visual(group_name)
         local line_min = math.min(line1, line2)
         local line_max = math.max(line1, line2)
         local col_min = math.min(col1, col2)
-        local col_max = math.max(col1, col2)
+        local _col_max = math.max(col1, col2)
         local lines = {}
         for line_num = line_min, line_max, 1 do
             local line = vim.fn.getline(line_num)
@@ -95,7 +95,7 @@ function M.select_augend_visual(group_name)
         local text = vim.fn.getline(line_min)
         if line1 == line2 then
             local col_max = math.max(col1, col2)
-            text = text:sub(col_min, col_max)
+            text = text:sub(col_min, col_max) ---@type string
         else
             text = text:sub(col_min)
         end
@@ -138,13 +138,13 @@ end
 ---@param direction direction
 ---@param stairlike boolean
 function M.operator_visual(direction, stairlike)
-    local mode = vim.fn.visualmode(0)
+    local mode = vim.fn.visualmode()
     local _, line1, col1, _ = unpack(vim.fn.getpos "'[")
     local _, line2, col2, _ = unpack(vim.fn.getpos "']")
     local tier = 1
 
     ---@param lnum integer
-    ---@param range {from: integer, to?: integer}
+    ---@param range {from: integer, to: integer?}
     local function operate_line(lnum, range)
         local line = vim.fn.getline(lnum)
         local result = handler:operate_visual(line, range, direction, tier)
@@ -199,6 +199,9 @@ function M.textobj()
     handler:find_text_range(line, col)
 end
 
+---@param direction direction
+---@param line_range {from: integer, to: integer?}
+---@param groups string[]
 function M.command(direction, line_range, groups)
     local group_name = groups[1]
     if group_name == nil and vim.v.register == "=" then

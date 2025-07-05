@@ -1,10 +1,10 @@
 local M = {}
 
-local command = require "dial.command"
 local util = require "dial.util"
 
 ---Sandwich input string between <Cmd> and <CR>.
 ---@param body string
+---@return string
 local function cmdcr(body)
     local cmd_sequences = "<Cmd>"
     local cr_sequences = "<CR>"
@@ -16,8 +16,9 @@ end
 ---@param mode mode
 ---@param group_name? string
 ---@param count? integer
+---@return string
 local function _cmd_sequence(direction, mode, group_name, count)
-    local select
+    local select ---@type string
     if group_name == nil then
         select = cmdcr([[lua require"dial.command".select_augend_]] .. mode .. "()")
     else

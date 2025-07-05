@@ -1,8 +1,6 @@
-local common = require "dial.augend.common"
 local util = require "dial.util"
 
----@class AugendDecimalFraction
----@implement Augend
+---@class AugendDecimalFraction: Augend
 ---@field signed boolean
 ---@field point_char string
 local AugendDecimalFraction = {}
@@ -10,7 +8,7 @@ local AugendDecimalFraction = {}
 local M = {}
 
 ---@param config { signed?: boolean, point_char?: string }
----@return Augend
+---@return AugendDecimalFraction
 function M.new(config)
     vim.validate("signed", config.signed, "boolean", true)
     vim.validate("point_char", config.point_char, "string", true)
@@ -31,12 +29,7 @@ end
 ---@return textrange?
 function AugendDecimalFraction:find(line, cursor)
     local idx = 1
-    local integer_pattern
-    if self.signed then
-        integer_pattern = "%-?%d+"
-    else
-        integer_pattern = "%d+"
-    end
+    local integer_pattern = self.signed and "%-?%d+" or "%d+"
     while idx <= #line do
         local idx_integer_start, idx_integer_end = line:find(integer_pattern, idx)
         if idx_integer_start == nil then
@@ -98,7 +91,7 @@ end
 ---@param text string
 ---@param addend integer
 ---@param cursor? integer
----@return { text?: string, cursor?: integer }
+---@return addresult
 function AugendDecimalFraction:add(text, addend, cursor)
     local point_pos = text:find(self.point_char, 1, true)
 
