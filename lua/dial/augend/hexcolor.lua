@@ -13,8 +13,7 @@ end
 ---@alias colorcase '"upper"' | '"lower"' | '"prefer_upper"' | '"prefer_lower"'
 ---@alias colorkind '"r"' | '"g"' | '"b"' | '"all"'
 
----@class AugendHexColor
----@implement Augend
+---@class AugendHexColor: Augend
 ---@field config { case: colorcase }
 ---@field kind colorkind
 local AugendHexColor = {}
@@ -22,7 +21,7 @@ local AugendHexColor = {}
 local M = {}
 
 ---@param config? { case: colorcase }
----@return Augend
+---@return AugendHexColor
 function M.new(config)
     config = config or { case = "prefer_lower" }
 
@@ -38,7 +37,7 @@ function M.new(config)
     return setmetatable({
         config = config,
         kind = "all",
-    }, { __index = AugendHexColor }) --[[@as Augend]]
+    }, { __index = AugendHexColor })
 end
 
 ---@param line string
@@ -72,7 +71,7 @@ end
 ---@param text string
 ---@param addend integer
 ---@param cursor? integer
----@return { text?: string, cursor?: integer }
+---@return addresult
 function AugendHexColor:add(text, addend, cursor)
     local r = tonumber(text:sub(2, 3), 16)
     local g = tonumber(text:sub(4, 5), 16)
@@ -107,7 +106,7 @@ function AugendHexColor:add(text, addend, cursor)
     text = "#" .. string.format("%02x", r) .. string.format("%02x", g) .. string.format("%02x", b)
 
     if self.config.case == "upper" then
-        text = text:upper()
+        text = text:upper() ---@type string
     elseif self.config.case == "lower" then
         text = text:lower()
     elseif self.config.case == "prefer_upper" then

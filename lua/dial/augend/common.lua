@@ -1,7 +1,5 @@
 -- augend で共通して用いられる関数。
 
-local util = require "dial.util"
-
 local M = {}
 
 ---augend の find field を簡単に実装する。
@@ -55,7 +53,9 @@ function M.find_pattern_regex(ptn, allow_match_before_cursor)
             local s, e = vim.regex(ptn):match_str(line:sub(idx_start))
 
             if s then
+                ---@type integer
                 s = s + idx_start -- 上で得られた s は相対位置なので
+                ---@type integer
                 e = e + idx_start - 1 -- 上で得られた s は相対位置なので
 
                 -- 検索結果があったら
@@ -81,6 +81,7 @@ function M.find_pattern_regex(ptn, allow_match_before_cursor)
 end
 
 ---@param elems string[]
+---@return string
 function M.enum_to_regex(elems)
     return table.concat(elems, [[\|]])
 end

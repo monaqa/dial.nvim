@@ -1,5 +1,6 @@
 local hexcolor = require("dial.augend").hexcolor
 
+---@param case colorcase?
 ---@return AugendHexColor
 local function create_augend(case)
     if case == nil then
@@ -40,6 +41,7 @@ describe("Test of hex colors", function()
 
             it("rejects other values", function()
                 assert.has_error(function()
+                    ---@diagnostic disable-next-line: param-type-mismatch
                     create_augend "invalid"
                 end)
             end)
