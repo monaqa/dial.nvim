@@ -61,8 +61,6 @@ vmap g<C-a> g<Plug>(dial-increment)
 vmap g<C-x> g<Plug>(dial-decrement)
 ```
 
-注意: `g<Plug>(dial-increment)` や `g<Plug>(dial-decrement)` を右辺で用いる場合は remap を有効にする必要があります。
-
 または Lua 上で以下のように設定することもできます。
 
 ```lua
