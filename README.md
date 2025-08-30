@@ -1,12 +1,5 @@
 # dial.nvim
 
-**NOTICE: This plugin is work-in-progress yet. User interface is subject to change without notice.**
-
-## FOR USERS OF THE PREVIOUS VERSION (v0.2.0)
-
-This plugin was released v0.3.0 on 2022/02/20 and is no longer compatible with the old interface.
-If you have configured the settings for previous versions, please refer to [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) and reconfigure them.
-
 ## Abstract
 
 Extended increment/decrement plugin for [Neovim](https://github.com/neovim/neovim). Written in Lua.
@@ -17,6 +10,7 @@ Extended increment/decrement plugin for [Neovim](https://github.com/neovim/neovi
 
 * Increment/decrement based on various type of rules
   * n-ary (`2 <= n <= 36`) integers
+  * decimal Fractions
   * date and time
   * constants (an ordered set of specific strings, such as a keyword or operator)
     * `true` ⇄ `false`
@@ -73,16 +67,16 @@ end)
 vim.keymap.set("n", "g<C-x>", function()
     require("dial.map").manipulate("decrement", "gnormal")
 end)
-vim.keymap.set("v", "<C-a>", function()
+vim.keymap.set("x", "<C-a>", function()
     require("dial.map").manipulate("increment", "visual")
 end)
-vim.keymap.set("v", "<C-x>", function()
+vim.keymap.set("x", "<C-x>", function()
     require("dial.map").manipulate("decrement", "visual")
 end)
-vim.keymap.set("v", "g<C-a>", function()
+vim.keymap.set("x", "g<C-a>", function()
     require("dial.map").manipulate("increment", "gvisual")
 end)
-vim.keymap.set("v", "g<C-x>", function()
+vim.keymap.set("x", "g<C-x>", function()
     require("dial.map").manipulate("decrement", "gvisual")
 end)
 ```
@@ -131,15 +125,14 @@ nmap <Leader>a "=mygroup<CR><Plug>(dial-increment)
 Alternatively, you can set the same mapping without expression register:
 
 ```lua
-vim.keymap.set("n", "<Leader>a", require("dial.map").inc_normal("mygroup"), {noremap = true})
+vim.keymap.set("n", "<Leader>a", require("dial.map").inc_normal("mygroup"))
 ```
 
 When you don't specify any group name in the way described above, the addends in the `default` group is used instead.
 
 ### Example Configuration
 
-```vim
-lua << EOF
+```lua
 local augend = require("dial.augend")
 require("dial.config").augends:register_group{
   default = {
@@ -147,12 +140,7 @@ require("dial.config").augends:register_group{
     augend.integer.alias.hex,
     augend.date.alias["%Y/%m/%d"],
   },
-  typescript = {
-    augend.integer.alias.decimal,
-    augend.integer.alias.hex,
-    augend.constant.new{ elements = {"let", "const"} },
-  },
-  visual = {
+  only_in_visual = {
     augend.integer.alias.decimal,
     augend.integer.alias.hex,
     augend.date.alias["%Y/%m/%d"],
@@ -161,14 +149,21 @@ require("dial.config").augends:register_group{
   },
 }
 
--- change augends in VISUAL mode
-vim.keymap.set("v", "<C-a>", require("dial.map").inc_visual("visual"), {noremap = true})
-vim.keymap.set("v", "<C-x>", require("dial.map").dec_visual("visual"), {noremap = true})
-EOF
+-- Use `only_in_visual` group only in VISUAL <C-a> / <C-x>
+vim.keymap.set("x", "<C-a>", function()
+    require("dial.map").manipulate("increment", "visual", "only_in_visual")
+end)
+vim.keymap.set("x", "<C-x>", function()
+    require("dial.map").manipulate("decrement", "visual", "only_in_visual")
+end)
 
-" enable only for specific FileType
-autocmd FileType typescript lua vim.api.nvim_buf_set_keymap(0, "n", "<C-a>", require("dial.map").inc_normal("typescript"), {noremap = true})
-autocmd FileType typescript lua vim.api.nvim_buf_set_keymap(0, "n", "<C-x>", require("dial.map").dec_normal("typescript"), {noremap = true})
+require("dial.config").augends:on_filetype {
+  typescript = {
+    augend.integer.alias.decimal,
+    augend.integer.alias.hex,
+    augend.constant.new{ elements = {"let", "const"} },
+  },
+}
 ```
 
 ## List of Augends
