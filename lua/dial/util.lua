@@ -1,9 +1,6 @@
 -- utils
 local M = {}
 
--- NOTE: Needed until compatibility with Neovim 0.9 is dropped
-local islist = vim.fn.has('nvim-0.10') == 1 and vim.islist or vim.tbl_islist
-
 ---@generic T
 ---@param cond boolean
 ---@param branch_true T
@@ -41,7 +38,7 @@ end
 ---@param arg1 string | function
 ---@param arg2? string
 function M.validate_list(name, list, arg1, arg2)
-    if not islist(list) then
+    if not vim.islist(list) then
         error(("%s is not list."):format(name))
     end
 
@@ -163,7 +160,7 @@ end
 -- util.try_get_keys({foo = "bar", hoge = "fuga", teka = "pika"}, ["teka", "foo"])
 -- -> ["pika", "bar"]
 function M.try_get_keys(tbl, keylst)
-    if not islist(keylst) then
+    if not vim.islist(keylst) then
         return nil, "the 2nd argument is not list."
     end
 

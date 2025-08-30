@@ -39,7 +39,7 @@ Extended increment/decrement plugin for [Neovim](https://github.com/neovim/neovi
 
 ## Installation
 
-`dial.nvim` requires Neovim `>=0.5.0` (`>=0.6.1` is recommended).
+`dial.nvim` requires Neovim `>=0.11.0`.
 You can install `dial.nvim` by following the instructions of your favorite package manager.
 
 ## Usage
