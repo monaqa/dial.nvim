@@ -39,7 +39,7 @@ Interface						|dial-interface|
 ==============================================================================
 REQUIREMENTS							*dial-requirements*
 
-* Neovim 0.6.1 or later（0.5.0 以降なら動くと考えられますが保証はしません）
+* Neovim 0.11.0 or later
 
 ==============================================================================
 INTRODUCTION							*dial-introduction*
@@ -95,14 +95,14 @@ USAGE									*dial-usage*
 |dial.nvim|自身はキーマップの設定および上書きを行わないため、プラグインを動作
 させるために以下の設定を追加する必要があります。
 >
-	nmap  <C-a>  <Plug>(dial-increment)
-	nmap  <C-x>  <Plug>(dial-decrement)
-	nmap g<C-a> g<Plug>(dial-increment)
-	nmap g<C-x> g<Plug>(dial-decrement)
-	vmap  <C-a>  <Plug>(dial-increment)
-	vmap  <C-x>  <Plug>(dial-decrement)
-	vmap g<C-a> g<Plug>(dial-increment)
-	vmap g<C-x> g<Plug>(dial-decrement)
+	nnoremap  <C-a> <Plug>(dial-increment)
+	nnoremap  <C-x> <Plug>(dial-decrement)
+	nnoremap g<C-a> <Plug>(dial-g-increment)
+	nnoremap g<C-x> <Plug>(dial-g-decrement)
+	xnoremap  <C-a> <Plug>(dial-increment)
+	xnoremap  <C-x> <Plug>(dial-decrement)
+	xnoremap g<C-a> <Plug>(dial-g-increment)
+	xnoremap g<C-x> <Plug>(dial-g-decrement)
 <
 
 もしくは Lua 上で以下のように設定することもできます。
@@ -1381,13 +1381,13 @@ ADDITIVE DOT REPEATING					*dial-additive-dot-repeating*
 Vim の便利な機能の1つに、VISUAL モードにおける g<C-a> があります
 （|v_g_CTRL-A| 参照）。これは加数を行ごとに1ずつ増やすことができる機能であり、
 番号付きの箇条書きなどを生成する際に重宝します。もちろん |dial.nvim| でも同等
-の機能を備えています (|v_g<Plug>(dial-increment)|)。この機能は便利ながら、増加
+の機能を備えています (|v_<Plug>(dial-g-increment)|)。この機能は便利ながら、増加
 対象が離れた場所にあると使いづらいという制限がありました。
 これを解決するため、|dial.nvim| ではノーマルモードの g<C-a> に相当する機能を提
 供しています。これを有効にするには、以下の設定を書いておく必要があります:
 >
-	nmap g<C-a> g<Plug>(dial-increment)
-	nmap g<C-x> g<Plug>(dial-decrement)
+	nmap g<C-a> <Plug>(dial-g-increment)
+	nmap g<C-x> <Plug>(dial-g-decrement)
 <
 もしくは Lua 上で以下のように設定することもできます。
 >
@@ -1475,7 +1475,7 @@ MAPPING									*dial-mapping*
 {VISUAL}["x]<Plug>(dial-decrement)		*v_<Plug>(dial-decrement)*
 	VISUAL モードにおける CTRL-X に相当する機能を提供します。
 
-{VISUAL}["x]g<Plug>(dial-increment)		*v_g<Plug>(dial-increment)*
+{VISUAL}["x]<Plug>(dial-g-increment)	*v_<Plug>(dial-g-increment)*
 	VISUAL モードにおける |v_g_CTRL-A| に相当する機能を提供します。
 
 	使用方法は|v_<Plug>(dial-increment)| と似ているものの、上から数えてn行目に
@@ -1497,14 +1497,14 @@ MAPPING									*dial-mapping*
 <
 	のように、1週間ごとの日付が得られます（日付の被加数が有効のときに限る）。
 
-{VISUAL}["x]g<Plug>(dial-decrement)		*v_g<Plug>(dial-decrement)*
+{VISUAL}["x]<Plug>(dial-g-decrement)	*v_<Plug>(dial-g-decrement)*
 	VISUAL モードにおける |v_g_CTRL-X| に相当する機能を提供します。
 
-["x]g<Plug>(dial-increment)				*g<Plug>(dial-increment)*
+["x]<Plug>(dial-g-increment)			*<Plug>(dial-g-increment)*
 	基本的に |<Plug>(dial-increment)| と同じですが、ドットリピートを実行したと
 	きの挙動が異なります。 |dial-additive-dot-repeating| 参照。
 
-["x]g<Plug>(dial-decrement)				*g<Plug>(dial-decrement)*
+["x]<Plug>(dial-g-decrement)			*<Plug>(dial-g-decrement)*
 	基本的に |<Plug>(dial-decrement)| と同じですが、ドットリピートを実行したと
 	きの挙動が異なります。 |dial-additive-dot-repeating| 参照。
 

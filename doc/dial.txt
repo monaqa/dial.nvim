@@ -40,8 +40,7 @@ Interface						|dial-interface|
 ==============================================================================
 REQUIREMENTS							*dial-requirements*
 
-* Neovim 0.6.1 or later
-  (0.5.0 or later will probably work, but not guaranteed)
+* Neovim 0.11.0 or later
 
 ==============================================================================
 INTRODUCTION							*dial-introduction*
@@ -98,14 +97,14 @@ Since this plugin does not replace the default key-mapping, you need to add
 the following description to the configuration file after installing the
 plugin.
 >
-	nmap  <C-a>  <Plug>(dial-increment)
-	nmap  <C-x>  <Plug>(dial-decrement)
-	nmap g<C-a> g<Plug>(dial-increment)
-	nmap g<C-x> g<Plug>(dial-decrement)
-	vmap  <C-a>  <Plug>(dial-increment)
-	vmap  <C-x>  <Plug>(dial-decrement)
-	vmap g<C-a> g<Plug>(dial-increment)
-	vmap g<C-x> g<Plug>(dial-decrement)
+	nnoremap  <C-a> <Plug>(dial-increment)
+	nnoremap  <C-x> <Plug>(dial-decrement)
+	nnoremap g<C-a> <Plug>(dial-g-increment)
+	nnoremap g<C-x> <Plug>(dial-g-decrement)
+	xnoremap  <C-a> <Plug>(dial-increment)
+	xnoremap  <C-x> <Plug>(dial-decrement)
+	xnoremap g<C-a> <Plug>(dial-g-increment)
+	xnoremap g<C-x> <Plug>(dial-g-decrement)
 <
 
 Alternatively, you can configure with Lua as follows:
@@ -122,16 +121,16 @@ Alternatively, you can configure with Lua as follows:
 	vim.keymap.set("n", "g<C-x>", function()
 		require("dial.map").manipulate("decrement", "gnormal")
 	end)
-	vim.keymap.set("v", "<C-a>", function()
+	vim.keymap.set("x", "<C-a>", function()
 		require("dial.map").manipulate("increment", "visual")
 	end)
-	vim.keymap.set("v", "<C-x>", function()
+	vim.keymap.set("x", "<C-x>", function()
 		require("dial.map").manipulate("decrement", "visual")
 	end)
-	vim.keymap.set("v", "g<C-a>", function()
+	vim.keymap.set("x", "g<C-a>", function()
 		require("dial.map").manipulate("increment", "gvisual")
 	end)
-	vim.keymap.set("v", "g<C-x>", function()
+	vim.keymap.set("x", "g<C-x>", function()
 		require("dial.map").manipulate("decrement", "gvisual")
 	end)
 <
@@ -1434,14 +1433,14 @@ ADDITIVE DOT REPEATING					*dial-additive-dot-repeating*
 One convenient feature of Vim is g<C-a> in VISUAL mode (see |v_g_CTRL-A|).
 This allows you to increase the addend by one per line, which is useful for
 generating numbered list, etc. Of course, |dial.nvim| provides the same
-functionality (|v_g<Plug>(dial-increment)|). However, this feature had the
+functionality (|v_<Plug>(dial-g-increment)|). However, this feature had the
 limitation that it was difficult to use when the increase targets were located
 far away.
 To solve this, |dial.nvim| provides the equivalent of g<C-a> in normal mode.
 To enable it, the following configuration must be written: .
 >
-	nmap g<C-a> g<Plug>(dial-increment)
-	nmap g<C-x> g<Plug>(dial-decrement)
+	nmap g<C-a> <Plug>(dial-g-increment)
+	nmap g<C-x> <Plug>(dial-g-decrement)
 
 Alternatively, you can configure with Lua as follows:
 >
@@ -1533,7 +1532,7 @@ MAPPING									*dial-mapping*
 {VISUAL}["x]<Plug>(dial-decrement)		*v_<Plug>(dial-decrement)*
 	An alternative to the existing CTRL-X command in VISUAL mode.
 
-{VISUAL}["x]g<Plug>(dial-increment)		*v_g<Plug>(dial-increment)*
+{VISUAL}["x]<Plug>(dial-g-increment)	*v_<Plug>(dial-g-increment)*
 	An alternative to the existing |v_g_CTRL-A| command in VISUAL mode.
 	Its usage is similar to |v_<Plug>(dial-increment)|, but the number of
 	addends on line n, counting from the top, is increased by n * [count]. It
@@ -1555,14 +1554,14 @@ MAPPING									*dial-mapping*
 		10/03
 <
 
-{VISUAL}["x]g<Plug>(dial-decrement)		*v_g<Plug>(dial-decrement)*
+{VISUAL}["x]<Plug>(dial-g-decrement)	*v_<Plug>(dial-g-decrement)*
 	An alternative to the existing |v_g_CTRL-X| command in VISUAL mode.
 
-["x]g<Plug>(dial-increment)				*g<Plug>(dial-increment)*
+["x]<Plug>(dial-g-increment)			*<Plug>(dial-g-increment)*
 	Almost the same as |<Plug>(dial-increment)|, but but the behavior differs
 	during dot repeating. See |dial-additive-dot-repeating|.
 
-["x]g<Plug>(dial-decrement)				*g<Plug>(dial-decrement)*
+["x]<Plug>(dial-g-decrement)			*<Plug>(dial-g-decrement)*
 	Almost the same as |<Plug>(dial-decrement)|, but but the behavior differs
 	during dot repeating. See |dial-additive-dot-repeating|.
 

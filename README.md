@@ -1,12 +1,5 @@
 # dial.nvim
 
-**NOTICE: This plugin is work-in-progress yet. User interface is subject to change without notice.**
-
-## FOR USERS OF THE PREVIOUS VERSION (v0.2.0)
-
-This plugin was released v0.3.0 on 2022/02/20 and is no longer compatible with the old interface.
-If you have configured the settings for previous versions, please refer to [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) and reconfigure them.
-
 ## Abstract
 
 Extended increment/decrement plugin for [Neovim](https://github.com/neovim/neovim). Written in Lua.
@@ -17,6 +10,7 @@ Extended increment/decrement plugin for [Neovim](https://github.com/neovim/neovi
 
 * Increment/decrement based on various type of rules
   * n-ary (`2 <= n <= 36`) integers
+  * decimal Fractions
   * date and time
   * constants (an ordered set of specific strings, such as a keyword or operator)
     * `true` ⇄ `false`
@@ -39,7 +33,7 @@ Extended increment/decrement plugin for [Neovim](https://github.com/neovim/neovi
 
 ## Installation
 
-`dial.nvim` requires Neovim `>=0.5.0` (`>=0.6.1` is recommended).
+`dial.nvim` requires Neovim `>=0.11.0`.
 You can install `dial.nvim` by following the instructions of your favorite package manager.
 
 ## Usage
@@ -48,17 +42,15 @@ This plugin does not provide or override any default key-mappings.
 To use this plugin, you need to assign the plugin key-mapping to the key you like, as shown below:
 
 ```vim
-nmap  <C-a>  <Plug>(dial-increment)
-nmap  <C-x>  <Plug>(dial-decrement)
-nmap g<C-a> g<Plug>(dial-increment)
-nmap g<C-x> g<Plug>(dial-decrement)
-vmap  <C-a>  <Plug>(dial-increment)
-vmap  <C-x>  <Plug>(dial-decrement)
-vmap g<C-a> g<Plug>(dial-increment)
-vmap g<C-x> g<Plug>(dial-decrement)
+nnoremap  <C-a> <Plug>(dial-increment)
+nnoremap  <C-x> <Plug>(dial-decrement)
+nnoremap g<C-a> <Plug>(dial-g-increment)
+nnoremap g<C-x> <Plug>(dial-g-decrement)
+xnoremap  <C-a> <Plug>(dial-increment)
+xnoremap  <C-x> <Plug>(dial-decrement)
+xnoremap g<C-a> <Plug>(dial-g-increment)
+xnoremap g<C-x> <Plug>(dial-g-decrement)
 ```
-
-Note: When you use "g<Plug>(dial-increment)" or "g<Plug>(dial-decrement)" on the right side, `remap` option must be enabled.
 
 Or you can configure it with Lua as follows:
 
@@ -75,16 +67,16 @@ end)
 vim.keymap.set("n", "g<C-x>", function()
     require("dial.map").manipulate("decrement", "gnormal")
 end)
-vim.keymap.set("v", "<C-a>", function()
+vim.keymap.set("x", "<C-a>", function()
     require("dial.map").manipulate("increment", "visual")
 end)
-vim.keymap.set("v", "<C-x>", function()
+vim.keymap.set("x", "<C-x>", function()
     require("dial.map").manipulate("decrement", "visual")
 end)
-vim.keymap.set("v", "g<C-a>", function()
+vim.keymap.set("x", "g<C-a>", function()
     require("dial.map").manipulate("increment", "gvisual")
 end)
-vim.keymap.set("v", "g<C-x>", function()
+vim.keymap.set("x", "g<C-x>", function()
     require("dial.map").manipulate("decrement", "gvisual")
 end)
 ```
@@ -133,15 +125,14 @@ nmap <Leader>a "=mygroup<CR><Plug>(dial-increment)
 Alternatively, you can set the same mapping without expression register:
 
 ```lua
-vim.keymap.set("n", "<Leader>a", require("dial.map").inc_normal("mygroup"), {noremap = true})
+vim.keymap.set("n", "<Leader>a", require("dial.map").inc_normal("mygroup"))
 ```
 
 When you don't specify any group name in the way described above, the addends in the `default` group is used instead.
 
 ### Example Configuration
 
-```vim
-lua << EOF
+```lua
 local augend = require("dial.augend")
 require("dial.config").augends:register_group{
   default = {
@@ -149,12 +140,7 @@ require("dial.config").augends:register_group{
     augend.integer.alias.hex,
     augend.date.alias["%Y/%m/%d"],
   },
-  typescript = {
-    augend.integer.alias.decimal,
-    augend.integer.alias.hex,
-    augend.constant.new{ elements = {"let", "const"} },
-  },
-  visual = {
+  only_in_visual = {
     augend.integer.alias.decimal,
     augend.integer.alias.hex,
     augend.date.alias["%Y/%m/%d"],
@@ -163,14 +149,21 @@ require("dial.config").augends:register_group{
   },
 }
 
--- change augends in VISUAL mode
-vim.keymap.set("v", "<C-a>", require("dial.map").inc_visual("visual"), {noremap = true})
-vim.keymap.set("v", "<C-x>", require("dial.map").dec_visual("visual"), {noremap = true})
-EOF
+-- Use `only_in_visual` group only in VISUAL <C-a> / <C-x>
+vim.keymap.set("x", "<C-a>", function()
+    require("dial.map").manipulate("increment", "visual", "only_in_visual")
+end)
+vim.keymap.set("x", "<C-x>", function()
+    require("dial.map").manipulate("decrement", "visual", "only_in_visual")
+end)
 
-" enable only for specific FileType
-autocmd FileType typescript lua vim.api.nvim_buf_set_keymap(0, "n", "<C-a>", require("dial.map").inc_normal("typescript"), {noremap = true})
-autocmd FileType typescript lua vim.api.nvim_buf_set_keymap(0, "n", "<C-x>", require("dial.map").dec_normal("typescript"), {noremap = true})
+require("dial.config").augends:on_filetype {
+  typescript = {
+    augend.integer.alias.decimal,
+    augend.integer.alias.hex,
+    augend.constant.new{ elements = {"let", "const"} },
+  },
+}
 ```
 
 ## List of Augends

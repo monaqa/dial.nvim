@@ -1,12 +1,5 @@
 # dial.nvim
 
-**NOTICE: 本プラグインはまだ開発段階であり、事前告知なくインターフェースが変更となることがあります。**
-
-## 旧バージョン (v0.2.0) を使っていた人へ
-
-2022/02/20 に v0.3.0 がリリースされ、既存のインターフェースとの互換性がなくなりました。
-以前のバージョン向けの設定を行っていた方は、[TROUBLESHOOTING.md](./TROUBLESHOOTING_ja.md) を参考に再設定を行ってください。
-
 ## 概要
 
 [Neovim](https://github.com/neovim/neovim) の数値増減機能を拡張する Lua 製プラグイン。
@@ -18,6 +11,7 @@
 
 * 数値をはじめとする様々なものの増減
   * n 進数 (`2 <= n <= 36`) の整数
+  * 小数
   * 日付・時刻
   * キーワードや演算子など、所定文字列のトグル
     * `true` ⇄ `false`
@@ -41,8 +35,7 @@
 
 ## インストール
 
-本プラグインには Neovim 0.5.0 以上が必要です（Neovim 0.6.1 以降を推奨）。
-
+本プラグインには Neovim 0.11.0 以上が必要です。
 好きなパッケージマネージャの指示に従うことでインストールできます。
 
 ## 使用方法
@@ -51,17 +44,15 @@
 本プラグインを有効にするには、いずれかのキーに以下のような割り当てを行う必要があります。
 
 ```vim
-nmap  <C-a>  <Plug>(dial-increment)
-nmap  <C-x>  <Plug>(dial-decrement)
-nmap g<C-a> g<Plug>(dial-increment)
-nmap g<C-x> g<Plug>(dial-decrement)
-vmap  <C-a>  <Plug>(dial-increment)
-vmap  <C-x>  <Plug>(dial-decrement)
-vmap g<C-a> g<Plug>(dial-increment)
-vmap g<C-x> g<Plug>(dial-decrement)
+nnoremap  <C-a> <Plug>(dial-increment)
+nnoremap  <C-x> <Plug>(dial-decrement)
+nnoremap g<C-a> <Plug>(dial-g-increment)
+nnoremap g<C-x> <Plug>(dial-g-decrement)
+xnoremap  <C-a> <Plug>(dial-increment)
+xnoremap  <C-x> <Plug>(dial-decrement)
+xnoremap g<C-a> <Plug>(dial-g-increment)
+xnoremap g<C-x> <Plug>(dial-g-decrement)
 ```
-
-注意: `g<Plug>(dial-increment)` や `g<Plug>(dial-decrement)` を右辺で用いる場合は remap を有効にする必要があります。
 
 または Lua 上で以下のように設定することもできます。
 
@@ -78,16 +69,16 @@ end)
 vim.keymap.set("n", "g<C-x>", function()
     require("dial.map").manipulate("decrement", "gnormal")
 end)
-vim.keymap.set("v", "<C-a>", function()
+vim.keymap.set("x", "<C-a>", function()
     require("dial.map").manipulate("increment", "visual")
 end)
-vim.keymap.set("v", "<C-x>", function()
+vim.keymap.set("x", "<C-x>", function()
     require("dial.map").manipulate("decrement", "visual")
 end)
-vim.keymap.set("v", "g<C-a>", function()
+vim.keymap.set("x", "g<C-a>", function()
     require("dial.map").manipulate("increment", "gvisual")
 end)
-vim.keymap.set("v", "g<C-x>", function()
+vim.keymap.set("x", "g<C-x>", function()
     require("dial.map").manipulate("decrement", "gvisual")
 end)
 ```
@@ -135,15 +126,14 @@ nmap <Leader>a "=mygroup<CR><Plug>(dial-increment)
 また、 Lua 上で以下のように記述すれば expression register を使わずにマッピングを設定できます。
 
 ```lua
-vim.keymap.set("n", "<Leader>a", require("dial.map").inc_normal("mygroup"), {noremap = true})
+vim.keymap.set("n", "<Leader>a", require("dial.map").inc_normal("mygroup"))
 ```
 
 expression register などでグループ名を指定しなかった場合、`default` グループにある被加数がかわりに用いられます。
 
 ### 設定例
 
-```vim
-lua << EOF
+```lua
 local augend = require("dial.augend")
 require("dial.config").augends:register_group{
   default = {
@@ -151,12 +141,7 @@ require("dial.config").augends:register_group{
     augend.integer.alias.hex,
     augend.date.alias["%Y/%m/%d"],
   },
-  typescript = {
-    augend.integer.alias.decimal,
-    augend.integer.alias.hex,
-    augend.constant.new{ elements = {"let", "const"} },
-  },
-  visual = {
+  only_in_visual = {
     augend.integer.alias.decimal,
     augend.integer.alias.hex,
     augend.date.alias["%Y/%m/%d"],
@@ -165,14 +150,21 @@ require("dial.config").augends:register_group{
   },
 }
 
--- VISUAL モードでの被加数を変更する
-vim.keymap.set("v", "<C-a>", require("dial.map").inc_visual("visual"), {noremap = true})
-vim.keymap.set("v", "<C-x>", require("dial.map").dec_visual("visual"), {noremap = true})
-EOF
+-- Use `only_in_visual` group only in VISUAL <C-a> / <C-x>
+vim.keymap.set("x", "<C-a>", function()
+    require("dial.map").manipulate("increment", "visual", "only_in_visual")
+end)
+vim.keymap.set("x", "<C-x>", function()
+    require("dial.map").manipulate("decrement", "visual", "only_in_visual")
+end)
 
-" 特定のファイルタイプでのみ有効にする
-autocmd FileType typescript lua vim.api.nvim_buf_set_keymap(0, "n", "<C-a>", require("dial.map").inc_normal("typescript"), {noremap = true})
-autocmd FileType typescript lua vim.api.nvim_buf_set_keymap(0, "n", "<C-x>", require("dial.map").dec_normal("typescript"), {noremap = true})
+require("dial.config").augends:on_filetype {
+  typescript = {
+    augend.integer.alias.decimal,
+    augend.integer.alias.hex,
+    augend.constant.new{ elements = {"let", "const"} },
+  },
+}
 ```
 
 ## 被加数の種類と一覧
