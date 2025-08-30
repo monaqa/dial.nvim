@@ -48,17 +48,15 @@ This plugin does not provide or override any default key-mappings.
 To use this plugin, you need to assign the plugin key-mapping to the key you like, as shown below:
 
 ```vim
-nmap  <C-a>  <Plug>(dial-increment)
-nmap  <C-x>  <Plug>(dial-decrement)
-nmap g<C-a> g<Plug>(dial-increment)
-nmap g<C-x> g<Plug>(dial-decrement)
-vmap  <C-a>  <Plug>(dial-increment)
-vmap  <C-x>  <Plug>(dial-decrement)
-vmap g<C-a> g<Plug>(dial-increment)
-vmap g<C-x> g<Plug>(dial-decrement)
+nnoremap  <C-a> <Plug>(dial-increment)
+nnoremap  <C-x> <Plug>(dial-decrement)
+nnoremap g<C-a> <Plug>(dial-g-increment)
+nnoremap g<C-x> <Plug>(dial-g-decrement)
+xnoremap  <C-a> <Plug>(dial-increment)
+xnoremap  <C-x> <Plug>(dial-decrement)
+xnoremap g<C-a> <Plug>(dial-g-increment)
+xnoremap g<C-x> <Plug>(dial-g-decrement)
 ```
-
-Note: When you use "g<Plug>(dial-increment)" or "g<Plug>(dial-decrement)" on the right side, `remap` option must be enabled.
 
 Or you can configure it with Lua as follows:
 
