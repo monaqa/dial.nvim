@@ -1,4 +1,4 @@
-if vim.fn.exists "g:loaded_dial" then
+if vim.fn.exists "g:loaded_dial" == 1 then
     return
 end
 
