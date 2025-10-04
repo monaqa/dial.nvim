@@ -134,6 +134,7 @@ end
 
 M.alias = {
     bool = M.new { elements = { "true", "false" } },
+    Bool = M.new { elements = { "True", "False" } },
     alpha = M.new {
         elements = {
             "a",

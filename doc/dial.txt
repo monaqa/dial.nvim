@@ -324,6 +324,7 @@ The following aliases are provided by default (See |dial-augends| for detail):
 		`augend.constant.alias.ja_weekday`
 		`augend.constant.alias.ja_weekday_full`
 		`augend.constant.alias.bool`
+		`augend.constant.alias.Bool`
 		`augend.constant.alias.alpha`
 		`augend.constant.alias.Alpha`
 
