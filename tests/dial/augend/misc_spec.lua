@@ -67,11 +67,17 @@ describe("Test of misc.alias.ordinals:", function()
 
             assert.are.same(augend:find("-100th", 1), { from = 1, to = 6 })
             assert.are.same(augend:find("-1000th", 1), { from = 1, to = 7 })
+
+            assert.are.same(augend:find("1001st", 4), { from = 1, to = 6 })
+            assert.are.same(augend:find("test the 2nd", 1), { from = 10, to = 12 })
+            assert.are.same(augend:find("1st 2nd 3rd", 9), { from = 9, to = 11 })
         end)
         it("ignores non-ordinal elements", function()
             assert.are.same(augend:find("1standard", 1), nil)
             assert.are.same(augend:find("3rdev", 1), nil)
             assert.are.same(augend:find("10thousand", 1), nil)
+
+            assert.are.same(augend:find("5thousand 2nd", 1), { from = 11, to = 13 })
         end)
     end)
 
