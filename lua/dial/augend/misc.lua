@@ -42,14 +42,24 @@ M.alias.ordinals = user.new {
     ---@param cursor? integer
     ---@return textrange?
     find = function(line, cursor)
-        local mark_start, mark_end = line:find "-?%d+%a%a"
-        local _, check_end = line:find "-?%d+%a+"
+        local idx_start = 1
 
-        if mark_start == nil or check_end ~= mark_end then
-            return nil
+        while idx_start <= #line do
+            local mark_start, mark_end = line:find("-?%d+%a%a", idx_start)
+            local _, check_end = line:find("-?%d+%a+", idx_start)
+
+            if mark_start then
+                if (cursor == nil or cursor <= mark_end) and check_end == mark_end then
+                    return { from = mark_start, to = mark_end }
+                else
+                    idx_start = mark_end + 1
+                end
+            else
+                break
+            end
         end
 
-        return { from = mark_start, to = mark_end }
+        return nil
     end,
     ---@param text string
     ---@param addend integer
