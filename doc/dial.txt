@@ -1083,6 +1083,34 @@ Unlike |augend.constant.alias.ja_weekday|, this simply matches a string (not a
 |word|), so even if you have a series of kanji characters, such as `毎週火曜日
 `, it will match.
 
+augend.constant.alias.en_weekday~
+
+Matches English day names:
+>
+	Mon
+	Tue
+	Wed
+	Thu
+	Fri
+	Sat
+	Sun
+<
+Each of these matches a |word| in the Vim sense.
+
+augend.constant.alias.en_weekday_full~
+
+Matches English day names:
+>
+	Monday
+	Tuesday
+	Wednesday
+	Thursday
+	Friday
+	Saturday
+	Sunday
+<
+Each of these matches a |word| in the Vim sense.
+
 augend.constant.alias.de_weekday~
 
 Matches German day names:
