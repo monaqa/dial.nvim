@@ -367,8 +367,9 @@ require("dial.config").augends:register_group{
 |`augend.constant.alias.alpha`             |Lowercase alphabet letter (word)                 |`a`, `b`, `c`, ..., `z`             |
 |`augend.constant.alias.Alpha`             |Uppercase alphabet letter (word)                 |`A`, `B`, `C`, ..., `Z`             |
 |`augend.semver.alias.semver`              |Semantic version                                 |`0.3.0`, `1.22.1`, `3.9.1`, ...     |
+|`augend.ordinal.alias.en`                 |English shortform ordinal numbers                |`0th`, `1st`, `2nd`, `3rd`, `4th`, ... |
+|`augend.ordinal.alias.en_neg`             |English shortform ordinal numbers including negatives |..., `-1st`, `0th`, `1st`, `2nd`, `3rd`, `4th`, ... |
 |`augend.misc.alias.markdown_header`       |ATX-Style markdown headings                      |`# This is a title`, `### Notes` |
-|`augend.misc.alias.ordinals`              |Shortform ordinal numbers                        |..., `-1st`, `0th`, `1st`, `2nd`, `3rd`, `4th`, ,,, |
 
 
 If you don't specify any settings, the following augends is set as the value of the `default` group.
