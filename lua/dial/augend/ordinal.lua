@@ -1,84 +1,28 @@
+local common = require "dial.augend.common"
 local util = require "dial.util"
 
----@alias AugendOrdinalConfig {}
+---@alias ordinalSuffix { default: string, special?: string[] }
 
----@class AugendOrdinal
----@implement Augend
+---@alias AugendOrdinalConfig { natural?: boolean, suffix?: ordinalSuffix }
+
+---@class AugendOrdinal: Augend
 ---@field natural boolean
+---@field suffix ordinalSuffix
 ---@field query string
----@field suffix { default: string, special?: string[] }
----@field case '"lower"' | '"upper"' | '"prefer_lower"' | '"prefer_upper"'
+---@field check_query? string
 local AugendOrdinal = {}
-
-local M = {}
-
----@param config { natural?: boolean, suffix?: table, case?: '"lower"' | '"upper"' | '"prefer_lower"' | '"prefer_upper"' }
----@return Augend
-function M.new(config)
-    vim.validate("natural", config.natural, "boolean", true)
-    vim.validate("suffix", config.suffix, "table", true)
-    vim.validate("case", config.case, "string", true)
-
-    local natural = util.unwrap_or(config.natural, true)
-    local case = util.unwrap_or(config.case, "lower")
-
-    local suffix = util.unwrap_or(config.suffix, {
-        default = "th",
-        special = {
-            "st",
-            "nd",
-            "rd",
-        },
-    })
-
-    local query = "%d+" .. string.rep("%a", #suffix.default)
-
-    if not natural then
-        query = "-?" .. query
-    end
-
-    return setmetatable({
-        natural = natural,
-        query = query,
-        suffix = suffix,
-        case = case,
-    }, { __index = AugendOrdinal })
-end
 
 ---@param line string
 ---@param cursor? integer
 ---@return textrange?
 function AugendOrdinal:find(line, cursor)
-    local idx_start = 1
-
-    local check_query = "%d+%a+"
-
-    if not self.natural then
-        check_query = "-?" .. check_query
-    end
-
-    while idx_start <= #line do
-        local mark_start, mark_end = line:find(self.query, idx_start)
-        local _, check_end = line:find(check_query, idx_start)
-
-        if mark_start then
-            if (cursor == nil or cursor <= mark_end) and check_end == mark_end then
-                return { from = mark_start, to = mark_end }
-            else
-                idx_start = mark_end + 1
-            end
-        else
-            break
-        end
-    end
-
-    return nil
+    return common.find_pattern_regex(self.query, false, self.check_query)(line, cursor)
 end
 
 ---@param text string
 ---@param addend integer
 ---@param cursor? integer
----@return { text?: string, cursor?: integer }
+---@return addresult
 function AugendOrdinal:add(text, addend, cursor)
     local ordinal_query = "%d+"
 
@@ -99,13 +43,43 @@ function AugendOrdinal:add(text, addend, cursor)
         local suffix = not vim.tbl_contains({ 11, 12, 13 }, remainder) and self.suffix.special[remainder % 10]
             or self.suffix.default
 
-        -- TODO: make use of `case` to changing final casing of suffix
         text = cardinal .. suffix
     end
 
     cursor = 1
 
     return { text = text, cursor = cursor }
+end
+
+local M = {}
+
+---@param config AugendOrdinalConfig
+---@return Augend
+function M.new(config)
+    vim.validate("natural", config.natural, "boolean", true)
+    vim.validate("suffix", config.suffix, "table", true)
+
+    local natural = util.unwrap_or(config.natural, true)
+
+    local suffix = util.unwrap_or(config.suffix, {
+        default = "th",
+        special = {
+            "st",
+            "nd",
+            "rd",
+        },
+    })
+
+    -- WARN: the following queries only work for the english language
+    local query = ([[\V%s\d\+\a\{1,2}]]):format(util.if_expr(natural, "", [[-\?]]))
+    local check_query = ([[\V%s\d\+\a\+]]):format(util.if_expr(natural, "", [[-\?]]))
+
+    return setmetatable({
+        natural = natural,
+        suffix = suffix,
+        query = query,
+        check_query = check_query,
+    }, { __index = AugendOrdinal })
 end
 
 M.alias = {
