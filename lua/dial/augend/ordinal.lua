@@ -85,6 +85,16 @@ end
 M.alias = {
     en = M.new {},
     en_neg = M.new { natural = false },
+    en_old = M.new {
+        suffix = {
+            default = "th",
+            special = {
+                "st",
+                "d",
+                "d",
+            },
+        },
+    },
 }
 
 return M
