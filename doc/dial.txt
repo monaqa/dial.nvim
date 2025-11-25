@@ -289,6 +289,7 @@ for a particular filetype.
 	  },
 	  markdown = {
 		augend.integer.alias.decimal,
+		augend.ordinal.alias.en,
 		augend.misc.alias.markdown_header,
 	  }
 	}
@@ -336,6 +337,11 @@ The following aliases are provided by default (See |dial-augends| for detail):
 		`augend.paren.alias.brackets`
 		`augend.paren.alias.lua_str_literal`
 		`augend.paren.alias.rust_str_literal`
+
+	ordinal:
+		`augend.ordinal.alias.en`
+		`augend.ordinal.alias.en_neg`
+		`augend.ordinal.alias.en_old`
 
 	misc:
 		`augend.misc.alias.markdown_header`
