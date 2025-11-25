@@ -222,3 +222,107 @@ describe("Test of ordinal.alias.en_neg:", function()
         end)
     end)
 end)
+
+describe("Test of ordinal.alias.en_old:", function()
+    local augend = ordinal.alias.en_old
+
+    describe("find function", function()
+        it("can find ordinals", function()
+            assert.are.same(augend:find("1st", 1), { from = 1, to = 3 })
+            assert.are.same(augend:find("2d", 1), { from = 1, to = 2 })
+            assert.are.same(augend:find("3d", 1), { from = 1, to = 2 })
+            assert.are.same(augend:find("4th", 1), { from = 1, to = 3 })
+            assert.are.same(augend:find("0th", 1), { from = 1, to = 3 })
+
+            assert.are.same(augend:find("10th", 1), { from = 1, to = 4 })
+            assert.are.same(augend:find("11th", 1), { from = 1, to = 4 })
+            assert.are.same(augend:find("12th", 1), { from = 1, to = 4 })
+            assert.are.same(augend:find("13th", 1), { from = 1, to = 4 })
+
+            assert.are.same(augend:find("21st", 1), { from = 1, to = 4 })
+            assert.are.same(augend:find("22d", 1), { from = 1, to = 3 })
+            assert.are.same(augend:find("23d", 1), { from = 1, to = 3 })
+
+            assert.are.same(augend:find("100th", 1), { from = 1, to = 5 })
+            assert.are.same(augend:find("1000th", 1), { from = 1, to = 6 })
+
+            assert.are.same(augend:find("-1st", 1), { from = 2, to = 4 })
+            assert.are.same(augend:find("-2d", 1), { from = 2, to = 3 })
+            assert.are.same(augend:find("-3d", 1), { from = 2, to = 3 })
+            assert.are.same(augend:find("-4th", 1), { from = 2, to = 4 })
+
+            assert.are.same(augend:find("-10th", 1), { from = 2, to = 5 })
+            assert.are.same(augend:find("-11th", 1), { from = 2, to = 5 })
+            assert.are.same(augend:find("-12th", 1), { from = 2, to = 5 })
+            assert.are.same(augend:find("-13th", 1), { from = 2, to = 5 })
+
+            assert.are.same(augend:find("-21st", 1), { from = 2, to = 5 })
+            assert.are.same(augend:find("-22d", 1), { from = 2, to = 4 })
+            assert.are.same(augend:find("-23d", 1), { from = 2, to = 4 })
+
+            assert.are.same(augend:find("-100th", 1), { from = 2, to = 6 })
+            assert.are.same(augend:find("-1000th", 1), { from = 2, to = 7 })
+
+            assert.are.same(augend:find("1001st", 4), { from = 1, to = 6 })
+            assert.are.same(augend:find("test the 2d", 1), { from = 10, to = 11 })
+            assert.are.same(augend:find("1st 2d 3d", 9), { from = 8, to = 9 })
+
+            assert.are.same(augend:find("manifest-2d.txt", 1), { from = 10, to = 11 })
+            assert.are.same(augend:find("---1st LDoc comment", 1), { from = 4, to = 6 })
+        end)
+        it("ignores non-ordinal elements", function()
+            assert.are.same(augend:find("1standard", 1), nil)
+            assert.are.same(augend:find("3dev", 1), nil)
+            assert.are.same(augend:find("10thousand", 1), nil)
+
+            assert.are.same(augend:find("5thousand 2d", 1), { from = 11, to = 12 })
+        end)
+    end)
+
+    describe("add function", function()
+        it("can increment ordinal", function()
+            assert.are.same(augend:add("1st", 1, 1), { text = "2d", cursor = 1 })
+            assert.are.same(augend:add("1st", 2, 1), { text = "3d", cursor = 1 })
+            assert.are.same(augend:add("1st", 3, 1), { text = "4th", cursor = 1 })
+            assert.are.same(augend:add("1st", 9, 1), { text = "10th", cursor = 1 })
+
+            assert.are.same(augend:add("2d", 1, 1), { text = "3d", cursor = 1 })
+            assert.are.same(augend:add("3d", 1, 1), { text = "4th", cursor = 1 })
+            assert.are.same(augend:add("9th", 1, 1), { text = "10th", cursor = 1 })
+
+            assert.are.same(augend:add("10th", 1, 1), { text = "11th", cursor = 1 })
+            assert.are.same(augend:add("11th", 1, 1), { text = "12th", cursor = 1 })
+            assert.are.same(augend:add("12th", 1, 1), { text = "13th", cursor = 1 })
+
+            assert.are.same(augend:add("20th", 1, 1), { text = "21st", cursor = 1 })
+            assert.are.same(augend:add("21st", 1, 1), { text = "22d", cursor = 1 })
+            assert.are.same(augend:add("22d", 1, 1), { text = "23d", cursor = 1 })
+
+            assert.are.same(augend:add("99th", 1, 1), { text = "100th", cursor = 1 })
+            assert.are.same(augend:add("999th", 1, 1), { text = "1000th", cursor = 1 })
+
+            assert.are.same(augend:add("1000th", -1, 1), { text = "999th", cursor = 1 })
+            assert.are.same(augend:add("100th", -1, 1), { text = "99th", cursor = 1 })
+
+            assert.are.same(augend:add("24th", -1, 1), { text = "23d", cursor = 1 })
+            assert.are.same(augend:add("23d", -1, 1), { text = "22d", cursor = 1 })
+            assert.are.same(augend:add("22d", -1, 1), { text = "21st", cursor = 1 })
+            assert.are.same(augend:add("21st", -1, 1), { text = "20th", cursor = 1 })
+
+            assert.are.same(augend:add("14th", -1, 1), { text = "13th", cursor = 1 })
+            assert.are.same(augend:add("13th", -1, 1), { text = "12th", cursor = 1 })
+            assert.are.same(augend:add("12th", -1, 1), { text = "11th", cursor = 1 })
+            assert.are.same(augend:add("11th", -1, 1), { text = "10th", cursor = 1 })
+
+            assert.are.same(augend:add("10th", -1, 1), { text = "9th", cursor = 1 })
+            assert.are.same(augend:add("4th", -1, 1), { text = "3d", cursor = 1 })
+            assert.are.same(augend:add("3d", -1, 1), { text = "2d", cursor = 1 })
+            assert.are.same(augend:add("2d", -1, 1), { text = "1st", cursor = 1 })
+
+            assert.are.same(augend:add("1st", -1, 1), { text = "0th", cursor = 1 })
+            assert.are.same(augend:add("1st", -2, 1), { text = "0th", cursor = 1 })
+
+            assert.are.same(augend:add("0th", -1, 1), { text = "0th", cursor = 1 })
+        end)
+    end)
+end)
