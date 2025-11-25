@@ -134,6 +134,7 @@ end
 
 M.alias = {
     bool = M.new { elements = { "true", "false" } },
+    Bool = M.new { elements = { "True", "False" } },
     alpha = M.new {
         elements = {
             "a",
@@ -221,6 +222,11 @@ M.alias = {
             "Samstag",
             "Sonntag",
         },
+        word = true,
+        cyclic = true,
+    },
+    en_weekday = M.new {
+        elements = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" },
         word = true,
         cyclic = true,
     },

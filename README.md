@@ -361,9 +361,12 @@ require("dial.config").augends:register_group{
 |`augend.date.alias["%H:%M"]`              |Time in the format `%H:%M`                       |`14:30`, ...                        |
 |`augend.constant.alias.de_weekday`        |German weekday                                   |`Mo`, `Di`, ..., `Sa`, `So`         |
 |`augend.constant.alias.de_weekday_full`   |German full weekday                              |`Montag`, `Dienstag`, ..., `Sonntag`|
+|`augend.constant.alias.en_weekday`        |English weekday                                  |`Mon`, `Tue`, ..., `Sat`, `Sun`     |
+|`augend.constant.alias.en_weekday_full`   |English full weekday                             |`Monday`, `Tuesday`, ..., `Sunday`  |
 |`augend.constant.alias.ja_weekday`        |Japanese weekday                                 |`月`, `火`, ..., `土`, `日`         |
 |`augend.constant.alias.ja_weekday_full`   |Japanese full weekday                            |`月曜日`, `火曜日`, ..., `日曜日`   |
 |`augend.constant.alias.bool`              |elements in boolean algebra (`true` and `false`) |`true`, `false`                     |
+|`augend.constant.alias.Bool`              |elements in boolean algebra (`True` and `False`) |`True`, `False`                     |
 |`augend.constant.alias.alpha`             |Lowercase alphabet letter (word)                 |`a`, `b`, `c`, ..., `z`             |
 |`augend.constant.alias.Alpha`             |Uppercase alphabet letter (word)                 |`A`, `B`, `C`, ..., `Z`             |
 |`augend.semver.alias.semver`              |Semantic version                                 |`0.3.0`, `1.22.1`, `3.9.1`, ...     |
