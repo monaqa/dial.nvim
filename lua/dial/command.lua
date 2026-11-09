@@ -113,6 +113,10 @@ end
 ---@param direction direction
 ---@param additive? boolean
 function M.operator_normal(direction, additive)
+    if not util.check_modifiable() then
+        return
+    end
+
     local col = vim.fn.col "."
     local line_num = vim.fn.line "."
     local line = vim.fn.getline "."
@@ -138,6 +142,10 @@ end
 ---@param direction direction
 ---@param stairlike boolean
 function M.operator_visual(direction, stairlike)
+    if not util.check_modifiable() then
+        return
+    end
+
     local mode = vim.fn.visualmode(0)
     local _, line1, col1, _ = unpack(vim.fn.getpos "'[")
     local _, line2, col2, _ = unpack(vim.fn.getpos "']")
@@ -200,6 +208,10 @@ function M.textobj()
 end
 
 function M.command(direction, line_range, groups)
+    if not util.check_modifiable() then
+        return
+    end
+
     local group_name = groups[1]
     if group_name == nil and vim.v.register == "=" then
         group_name = vim.fn.getreg("=", 1)

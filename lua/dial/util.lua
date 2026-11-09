@@ -186,4 +186,16 @@ function M.chars(text)
     return text:gmatch "[%z\1-\127\194-\244][\128-\191]*"
 end
 
+function M.check_modifiable()
+    if not vim.bo.modifiable then
+        local message = "E21: Cannot make changes, 'modifiable' is off"
+        vim.v.errmsg = message
+        vim.schedule(function()
+            vim.api.nvim_echo({ { message, "ErrorMsg" } }, true, { err = true })
+        end)
+        return false
+    end
+    return true
+end
+
 return M
